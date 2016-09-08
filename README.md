@@ -2,12 +2,15 @@
 A javascript implementation of the Webm Demuxer (matroska)
 
 
-## API
 
-### Properties
+
+## Properties
 #### audioCodec
+String describing the audio codec
 #### audioFormat
+
 #### videoCodec
+String describing video codec
 #### videoFormat
 #### videoPackets
 #### audioPackets
@@ -16,7 +19,7 @@ A javascript implementation of the Webm Demuxer (matroska)
 #### audioReady
 #### cpuTime
 
-### Methods
+## Methods
 #### onseek
 #### init
 #### close
