@@ -663,7 +663,8 @@ class Tracks{
             console.warn("invalid track type");
 
         trackInfo.lacing = (lacing > 0) ? true : false;
-        console.log(trackInfo);
+        console.log("NOT UPDATING");
+
         
         if(trackInfo.type === 1){ // 1 for video track
             console.log("loading video track");
@@ -671,16 +672,18 @@ class Tracks{
                 console.warn("invalid video settings");
             trackInfo.settings = videoSettings;
             trackEntry = new VideoTrack(this.dataView, trackInfo);
-            //trackEntry.parse();
+            trackEntry.parse();
             
         }else if(trackInfo.type === 2){ // 2 for audio track
-            /*
-            if (videoSettings.offset < 0 || audioSettings.offset >= 0)
-                console.warn("invalid video settings");
-            trackInfo.settings = videoSettings;
-            trackEntry = new VideoTrack(this.dataView, trackInfo);
+            console.log("creating audio track");
+            if (audioSettings.offset < 0 || videoSettings.offset >= 0)
+                console.warn("invalid audio settings");
+            trackInfo.settings = audioSettings;
+            trackEntry = new AudioTrack(this.dataView, trackInfo);
             trackEntry.parse();
-            */
+            
+        }else{
+            console.log("probably subtitles");
         }
      
         
@@ -747,33 +750,33 @@ class VideoTrack extends Track{
 
 
             switch(elementId.raw){
-                case Element.IdTable.PixelWidth :
-                    this.width = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0xB0 : //PixelWidth
+                    this.pixelWidth = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.PixelHeight :
-                    this.height = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0xBA : //PixelHeight
+                    this.pixelHeight = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.DisplayWidth :
-                    this.displayWidth = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0x54B0 : //DisplayWidth
+                    this.displayWidth = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.DisplayHeight :
-                    this.displayHeight = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0x54BA : //DisplayHeight
+                    this.displayHeight = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.DisplayUnit :
-                    this.displayUnit = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0x54B2 : //DisplayUnit
+                    this.displayUnit = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.StereoMode :
-                    this.stereoMode = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0x53B8 : //StereoMode
+                    this.stereoMode = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.FrameRate :
-                    this.frameRate = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case 0x2383E3 : //FrameRate
+                    this.frameRate = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
-                case Element.IdTable.Colour:
-                    console.log("color");
-                    //this.frameRate = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                case  0x55B0: //Colour
+                    console.log("color needs loading");
+                    //To do - load color here
                     break;
                 default:
-                    
+                    console.log("video meta not found, id : " + elementId.raw);
                     break;
             }
             
@@ -791,8 +794,9 @@ class AudioTrack extends Track{
     //5426
     constructor(dataView , info){
         super(dataView);
-        this.width = 0;
-        this.height = 0;
+        //this.width = 0;
+        //this.height = 0;
+        //5434
         
         this.info = info;
         this.settings = info.settings;
@@ -825,14 +829,19 @@ class AudioTrack extends Track{
             offset += elementWidth.width;
 
 
-            switch(elementId.raw){
-                case 0xB5 ://
-                    this.width = Element.readUnsignedInt(this.dataView, offset, elementWidth.data);
+            switch (elementId.raw) {
+                case 0xB5://SamplingFrequency
+                    this.rate = OGVDemuxerWebM.readFloat(this.dataView, offset, elementWidth.data);
                     break;
-                
-                
+                case 0x9F ://Channels
+                    this.channels = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                    break;
+                case 0x6264 ://BitDepth
+                    this.bitDepth = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                    break;
+
                 default:
-                    //Audio element not found
+                    console.warn("audio meta not found , id: " + elementId.raw);
                     break;
             }
             
