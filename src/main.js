@@ -89,7 +89,7 @@ class OGVDemuxerWebM {
         this.state = 0;
         
         //Only need this property cause nest egg has it
-        Object.defineProperty(this, "videoCodec" , {
+        Object.defineProperty(this, 'videoCodec' , {
             
             get : function(){
                 var codecID;
