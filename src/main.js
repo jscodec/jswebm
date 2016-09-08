@@ -87,6 +87,35 @@ class OGVDemuxerWebM {
         this.bufferQueue = [];
         this.segmentInfo = [];
         this.state = 0;
+        
+        //Only need this property cause nest egg has it
+        Object.defineProperty(this, "videoCodec" , {
+            
+            get : function(){
+                var codecID;
+               //Multiple video tracks are allowed, for now just return the first one
+                for(this.tracks.trackEntries in trackEntry){
+                    if(typeof trackEntry === VideoTrack){
+                        codecID = trackEntry.info.codecID;
+                        break;
+                    }
+                        
+                        
+                }
+                var codecName;
+                switch(codecID){
+                    case "V_VP8" :
+                        codecName =  "vp8";
+                        break;
+                    default:
+                        codecName = null;
+                        break;
+                };
+                
+                return codecName;
+                        
+            }
+        });
     }
 
     init(callback) {
@@ -614,6 +643,9 @@ class Tracks{
                     break;
                 case 0x536E : //Name
                     trackInfo.name = OGVDemuxerWebM.readString(this.dataView,offset, elementWidth.data);
+                    break;
+                case 0x258688 : //CodecName
+                    trackInfo.codecName = OGVDemuxerWebM.readString(this.dataView,offset, elementWidth.data);
                     break;
                 case 0x22B59C: //Language
                     trackInfo.language = OGVDemuxerWebM.readString(this.dataView,offset, elementWidth.data);

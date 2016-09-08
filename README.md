@@ -1,5 +1,7 @@
 # FlareWebmDemuxer
-A javascript implementation of the Webm Demuxer (matroska)
+A javascript implementation of the Webm Demuxer (matroska).
+
+Building for the OGV.js project.
 
 
 
@@ -8,7 +10,7 @@ A javascript implementation of the Webm Demuxer (matroska)
 
 `audioFormat`
 
-`videoCodec` String describing video codec
+`videoCodec` Plain text readable video codec string
 
 `videoFormat`
 
