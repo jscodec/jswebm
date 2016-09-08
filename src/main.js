@@ -751,10 +751,10 @@ class VideoTrack extends Track{
 
             switch(elementId.raw){
                 case 0xB0 : //PixelWidth
-                    this.pixelWidth = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                    this.width = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
                 case 0xBA : //PixelHeight
-                    this.pixelHeight = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                    this.height = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
                 case 0x54B0 : //DisplayWidth
                     this.displayWidth = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
@@ -769,7 +769,7 @@ class VideoTrack extends Track{
                     this.stereoMode = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
                     break;
                 case 0x2383E3 : //FrameRate
-                    this.frameRate = OGVDemuxerWebM.readUnsignedInt(this.dataView, offset, elementWidth.data);
+                    this.rate = OGVDemuxerWebM.readFloat(this.dataView, offset, elementWidth.data);
                     break;
                 case  0x55B0: //Colour
                     console.log("color needs loading");
