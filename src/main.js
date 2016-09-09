@@ -1,5 +1,159 @@
 'use strict';
+//http://localhost:8888/ogv.js/build/demo/#file=Curiosity's_Seven_Minutes_of_Terror.ogv&size=720p.webm
+class DataInterface{
+    
+    constructor(){
+        
+        this.overallPointer = 0;
+        this.internalPointer = 0;
+        this.dataBuffers = [];
+        this.currentBuffer;
+        this.markerPointer = 0;
+        
+        Object.defineProperty(this, 'markerBytesRead' , {
+            get: function(){
+                return this.markerPointer;
+            }
+        });
+   
+        
+    }
+    
+    recieveInput(data){
+        this.dataBuffers.push(new DataView(data));
+        
+            
+    }
+    
+    peekElement(){
+        
+        if(this.dataBuffers.length === 0)
+            return false; //Nothing to parse
+        
+        
+        //Try to read the element header
+        try{
+            
+            //The most Common Case
+            var currentBuffer = this.dataBuffers[0];
+            
+            var elementId = VINT.read(currentBuffer, this.internalPointer);
+            this.incrementPointers(elementId.width);
+            
+            var elementSize = VINT.read(currentBuffer, this.internalPointer);
+            this.incrementPointers(elementSize.width);
+            
+            //this.totalBytes = this.getTotalBytes(); //Update how many total bytes we have
+            //this.remainingBytes = this.getRemainingBytes(); // update how many bytes we have lefte
+            
+            return new ElementHeader(elementId.raw , elementSize.data);
+            
+        }catch(e){
+            console.warn("OBJECT IS PROBABLY SPLIT ACROSS BUFFERS");
+            //prepare to read from multiple buffers, if not return false
+            return false;
+        }
+        
+    }
+    
+    /*
+     * Check if we have enough bytes available in the buffer to read
+     * @param {number} n test if we have this many bytes available to read
+     * @returns {boolean} has enough bytes to read
+     */
+    peekBytes(n){
+        //First check if the first buffer has enough remaining bytes, don't need to loop if this is the case
+        var currentBufferBytes = this.dataBuffers[0].byteLength - this.internalPointer - n;
+        //If we have enough in this buffer just return true
+        if(currentBufferBytes > 0)
+            return true;
+        
+        if((this.getTotalBytes() - this.internalPointer - n) > 0)
+            return true;
+        else 
+            return false;
+    }
+    
+    getTotalBytes(){
+        var totalBytes;
+        for(var i in this.dataBuffers){
+            totalBytes += this.dataBuffers[i].byteLength;
+        }
+        return totalBytes;
+    }
+    
+    getRemainingBytes(){
+        this.dataBuffers[0].byteLength - this.internalPointer;
+    }
+    
+    setMarker(){
+        this.markerPointer = 0;
+    }
+    
+    removeMarker(){
+        
+    }
+    
+    incrementPointers(n) {
+        var bytesToAdd = n || 1;
+        this.internalPointer += bytesToAdd;
+        this.overallPointer += bytesToAdd;
+        this.markerPointer += bytesToAdd;
 
+    }
+    
+    readUnsignedInt(size){
+        var remainingBytes = this.getRemainingBytes();
+        //need to fix overflow for 64bit unsigned int
+        if ( size <= 0 || size > 8) {
+            console.warn("invalid file size");
+        }
+
+        var dataView = this.dataBuffers[0];
+                
+        var result = 0;
+        var b;
+
+        for (var i = 0; i < size; i++) {
+
+
+            b = dataView.getUint8(this.internalPointer);
+            if (i === 0 && b < 0) {
+                console.warn("invalid integer value");
+            }
+
+            result <<= 8;
+            result |= b;
+
+            this.incrementPointers();
+        }
+
+        return result;
+    }
+    
+    
+    readString(size) {
+        var tempString = '';
+        var dataView = this.dataBuffers[0];
+        for (var i = 0; i < size; i++) {
+            tempString += String.fromCharCode(dataView.getUint8(this.internalPointer));
+            this.incrementPointers();
+        }
+        return tempString;
+    }
+    
+}
+
+class ElementHeader{
+    
+    constructor(id, size){
+        this.id = id;
+        this.size = size;
+        this.headerSize;
+        this.offset;
+    }
+    
+}
 
 class VINT {
 
@@ -91,6 +245,10 @@ class OGVDemuxerWebM {
         this.videoPackets = [];
         this.audioPackets = [];
         this.loadedMetadata = false;
+        this.seekable = false;
+        this.headerIsLoaded = false;
+        this.dataInterface = new DataInterface();
+        this.currentElement = null; // placeholder for last element
         
         //Only need this property cause nest egg has it
 ////
@@ -160,21 +318,157 @@ class OGVDemuxerWebM {
     }
 
     receiveInput(data, callback) {
-        this.processing = true;
-        this.bufferQueue.push(new DataView(data));
-        if (this.state === 0){
-            this.parseHeader();
-            this.parse();
-            this.loadedMetadata = true;
-        }
-            
+        
+        //this.bufferQueue.push(new DataView(data));
+        this.dataInterface.recieveInput(data);
         callback();
-        console.log(this);
+        
     }
 
     process(callback) {
+        this.processing = true;
         console.log("processing!");
-        callback();
+        if(!this.headerIsLoaded){
+       
+            this.loadHeader();
+            
+            callback();
+
+        }else{
+            console.log(this);
+        }
+        
+        //this.tempParse();
+        //if (this.state === 0) {
+            
+            //this.parseHeader();
+            //this.parse();
+            //this.loadedMetadata = true;
+            //this.state = 1;
+        //}
+        this.processing = false;
+        
+        
+    }
+    
+    loadHeader(){
+        //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
+        
+        
+        //only load it if we didnt already load it
+        if(!this.currentElement)
+            this.currentElement = this.dataInterface.peekElement();
+        
+        if(this.currentElement){
+            
+            if (this.currentElement.id !== 0x1A45DFA3) { //EBML code
+                //If the header has not loaded and the first element is not the header, do not continue
+                console.warn('INVALID PARSE, HEADER NOT LOCATED');
+            }
+            
+            if (this.dataInterface.peekBytes(this.currentElement.size)) {
+                //We are safe to read entire element
+                this.dataInterface.setMarker();
+                    
+                while (this.dataInterface.markerBytesRead < this.currentElement.size) {
+                    
+                    var element = this.dataInterface.peekElement();
+                    switch (element.id) {
+                        case 0x4286: //EBMLVersion
+                            this.version = this.dataInterface.readUnsignedInt(element.size);
+                            break;
+                        case 0x42F7: //EBMLReadVersion
+                            this.readVersion = this.dataInterface.readUnsignedInt(element.size);
+                            break;
+                        case 0x42F2: //EBMLMaxIDLength
+                            this.maxIdLength = this.dataInterface.readUnsignedInt(element.size);
+                            break;
+                        case 0x42F3: //EBMLMaxSizeLength
+                            this.maxSizeLength = this.dataInterface.readUnsignedInt(element.size);
+                            break;
+                        case 0x4282: //DocType
+                            this.docType = this.dataInterface.readString(element.size);
+                            break;
+                        case 0x4287: //DocTypeVersion
+                            this.docTypeVersion = this.dataInterface.readUnsignedInt(element.size);
+                            break;
+                        case 0x4285: //DocTypeReadVersion
+                            this.docTypeReadVersion = this.dataInterface.readUnsignedInt(element.size);
+                            break;
+                        default:
+                            console.warn("Header element not found, skipping");
+                            break;
+                    }
+
+                }
+                console.log(this.dataInterface.markerBytesRead);
+                if (this.dataInterface.markerBytesRead !== this.currentElement.size) {
+                    console.warn("INVALID HEADER"); //should probably throw e
+                }
+
+
+
+                if (this.docType === null || this.docTypeReadVersion <= 0 || this.docTypeVersion <= 0) {
+                    console.warn("invalid file format");
+                }
+
+                // Make sure EBMLMaxIDLength and EBMLMaxSizeLength are valid.
+                if (this.maxIdLength <= 0 || this.maxIdLength > 4 || this.maxSizeLength <= 0 ||
+                        this.maxSizeLength > 8) {
+                    console.warn("invalid file format");
+                }
+
+                //this.state = 1; //Set State To Decode Ready
+                this.headerIsLoaded = true;
+             
+        
+                this.dataInterface.removeMarker();
+            }
+                
+        }
+    }
+    
+    tempParse(){
+        
+        //Only pull a new header if we don't already have one
+        if(!this.currentElement)
+            this.currentElement = this.dataInterface.peekElement();
+        
+        
+        
+        while(this.currentElement){
+            
+        }
+   
+        //Possibly for it to return false multiple times if needs a lot of chunks for each block or something
+        if(this.currentElement){
+            //only do work if we can pull an element header
+            switch(this.currentElement.id){
+                case 0x1A45DFA3: //EBML HEADER
+                    this.loadHeader();
+            }
+            /*
+            if(!this.headerHasLoaded){
+                //if our header has not loaded, must load first
+                if (this.currentElement.id !== 0x1A45DFA3) { //EBML code
+                    //If the header has not loaded and the first element is not the header, do not continue
+                    console.warn('INVALID PARSE, HEADER NOT LOCATED');
+                }
+                
+                if(this.dataInterface.peekBytes(this.currentElement.size)){
+                    //We are safe to read entire element
+                    this.loadHeader();
+                }
+                
+            }else{
+                //Doing work here
+                
+            }
+                                                            */
+        
+        }
+        
+        console.log(element);
     }
     
     parse(){
@@ -192,7 +486,7 @@ class OGVDemuxerWebM {
         offset += elementId.width;
         elementSize = VINT.read(dataView, offset);
         offset += elementSize.width;
-        
+        console.log("Segment width = " + elementSize.data);
 
         if (elementId.raw !== 0x18538067) { //segment code
             console.warn('INVALID Segment');
@@ -242,32 +536,41 @@ class OGVDemuxerWebM {
                     this.seekHead.dataOffset = offset;
                     this.seekHead.parse();
                     break;
-                    /*
+                    
                 case 0x1043A770: // Chapters
+                    console.log("found chapters");
+                    /*
                     this.chapters = new Chapters(this.dataView);
                     this.chapters.offset = elementOffset;
                     this.chapters.size = elementSize.data;
                     this.chapters.dataOffset = offset;
                     this.chapters.parse();
+                                            */
                     break;
                 case 0x1254C367: //Tags
+                    console.log("found tags");
+                    /*
                     this.tags = new Tags(this.dataView);
                     this.tags.offset = elementOffset;
                     this.tags.size = elementSize.data;
                     this.tags.dataOffset = offset;
                     this.tags.parse();
+                                                */
                     break;
                 //For now just load cluster data here    
                 case 0x1F43B675: //Cluster
-                    var cluster
+                    var cluster;
+                    console.log("found cluster");
+                    /*
                     cluster = new Cluster(this.dataView);
                     cluster.offset = elementOffset;
                     cluster.size = elementSize.data;
                     cluster.dataOffset = offset;
                     cluster.parse();
                     this.cluster = cluster;
+                                                    */
                     break;
-                    */
+                  
                 case 0xEC: //Void
                     //skip it
                     break;
@@ -366,7 +669,7 @@ class OGVDemuxerWebM {
             console.warn("invalid file format");
         }
         
-        this.state === 1; //Set State To Decode Ready
+        this.state = 1; //Set State To Decode Ready
         console.log(this);
 
     }
@@ -1024,7 +1327,8 @@ class Entry{
         offset += elementId.width;
         elementWidth = VINT.read(this.dataView, offset);
         offset += elementWidth.width;
-        this.id = OGVDemuxerWebM.readUnsignedInt(this.dataView,offset, elementWidth.data);
+        this.id = VINT.read(this.dataView, offset).data;
+        //this.id = OGVDemuxerWebM.readUnsignedInt(this.dataView,offset, elementWidth.data);
         offset += elementWidth.data;
         
         
