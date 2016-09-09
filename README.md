@@ -26,16 +26,22 @@ Building for the OGV.js project.
 
 `cpuTime`
 
+`duration`
+
+`tracks`
+
+`processing`
+
+`seekable`
+
 ## Methods
 `onseek`
 
-`init`
-
-`close`
+`init():Promise`
 
 `receiveInput`
 
-`process`
+`process(data:ArrayBuffer):Promise`
 
 `dequeueAudioPacket(callback)`
 
@@ -46,3 +52,15 @@ Building for the OGV.js project.
 `getKeypointOffset(timeSeconds, callback)`
 
 `seekToKeypoint(timeSeconds, callback)`
+
+`onpacket: function(event:Event)|null`
+
+`getKeypointOffset(timeSeconds:number):Promise`
+
+`flush():Promise`
+
+`close()`
+
+
+
+

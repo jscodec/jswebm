@@ -9,6 +9,7 @@ class VINT {
         this.data = data;
     }
 
+
     static read(dataview, offset) {
 
         var tempOctet = dataview.getUint8(offset);
@@ -87,15 +88,20 @@ class OGVDemuxerWebM {
         this.bufferQueue = [];
         this.segmentInfo = [];
         this.state = 0;
+        this.videoPackets = [];
+        this.audioPackets = [];
+        this.loadedMetadata = false;
         
         //Only need this property cause nest egg has it
+////
         Object.defineProperty(this, 'videoCodec' , {
             
             get : function(){
                 var codecID;
                //Multiple video tracks are allowed, for now just return the first one
-                for(this.tracks.trackEntries in trackEntry){
-                    if(typeof trackEntry === VideoTrack){
+                for(var i in this.tracks.trackEntries){
+                    var trackEntry = this.tracks.trackEntries[i];
+                    if(trackEntry instanceof VideoTrack){
                         codecID = trackEntry.info.codecID;
                         break;
                     }
@@ -106,6 +112,36 @@ class OGVDemuxerWebM {
                 switch(codecID){
                     case "V_VP8" :
                         codecName =  "vp8";
+                        break;
+                    default:
+                        codecName = null;
+                        break;
+                };
+                
+                return codecName;
+                        
+            }
+        });
+        
+        
+        Object.defineProperty(this, 'audioCodec' , {
+            
+            get : function(){
+                var codecID;
+               //Multiple video tracks are allowed, for now just return the first one
+                for(var i in this.tracks.trackEntries){
+                    var trackEntry = this.tracks.trackEntries[i];
+                    if(trackEntry instanceof AudioTrack){
+                        codecID = trackEntry.info.codecID;
+                        break;
+                    }
+                        
+                        
+                }
+                var codecName;
+                switch(codecID){
+                    case "A_VORBIS" :
+                        codecName =  "vorbis";
                         break;
                     default:
                         codecName = null;
@@ -129,9 +165,10 @@ class OGVDemuxerWebM {
         if (this.state === 0){
             this.parseHeader();
             this.parse();
+            this.loadedMetadata = true;
         }
             
-
+        callback();
         console.log(this);
     }
 
@@ -197,15 +234,15 @@ class OGVDemuxerWebM {
                     this.cues.offset = elementOffset;
                     this.cues.size = elementSize.data;
                     this.cues.dataOffset = offset;
-                    break;
-                    /*
+                    break; 
                 case 0x114D9B74: //SeekHead
-                    this.seekHead = new SeekHead(this.dataView);
+                    this.seekHead = new SeekHead(dataView);
                     this.seekHead.offset = elementOffset;
                     this.seekHead.size = elementSize.data;
                     this.seekHead.dataOffset = offset;
                     this.seekHead.parse();
                     break;
+                    /*
                 case 0x1043A770: // Chapters
                     this.chapters = new Chapters(this.dataView);
                     this.chapters.offset = elementOffset;
@@ -231,6 +268,9 @@ class OGVDemuxerWebM {
                     this.cluster = cluster;
                     break;
                     */
+                case 0xEC: //Void
+                    //skip it
+                    break;
                 default:
                     console.warn("not found id = " + elementId.raw);
                     break;
@@ -897,5 +937,110 @@ class TrackInfo{
         this.codecName;
     }
 }
+
+
+class SeekHead{
+    
+    constructor(dataView){
+        this.dataView = dataView;
+        this.offset;
+        this.dataOffset;
+        this.size;
+        this.entries = [];
+        this.entryCount = 0;
+        this.voidElements = [];
+        this.voidElementCount = 0;
+    }
+    
+    parse(){
+        //1495
+        console.log("parsing seek head");
+        this.entryCount = 0;
+        this.voidElementCount = 0;
+        var offset = this.dataOffset;
+        var end = this.dataOffset + this.size;
+        var elementId;
+        var elementWidth;
+        var elementOffset;
+        
+        while (offset < end) {
+            
+            //console.log(offset +","+ end);
+            elementOffset = offset;
+            elementId = VINT.read(this.dataView, offset);
+            offset += elementId.width;
+            elementWidth = VINT.read(this.dataView, offset);
+            offset += elementWidth.width;
+           
+           if(elementId.raw === 0x4DBB){ //Seek
+               var entry = new Entry(this.dataView);
+               entry.dataOffset = offset;
+               entry.offset = elementOffset;
+               entry.size = elementWidth.data;
+               entry.parse();
+               this.entries.push(entry);
+           }else if (elementId.raw === 0xEC){ // Void
+               
+           }
+
+            offset += elementWidth.data;
+            
+        }
+        
+        this.entryCount = this.entries.length;
+        this.voidElementCount = this.voidElements.length;
+        
+    }
+    
+}
+
+class Entry{
+    
+    constructor(dataView){
+        this.dataView = dataView;
+        this.offset;
+        this.dataOffset;
+        this.size;
+        this.id;
+        
+    }
+    
+    parse(){
+        //1732
+        //meeds to start with seek id
+        this.voidElementCount = 0;
+        var offset = this.dataOffset;
+        var end = this.dataOffset + this.size;
+        var elementId;
+        var elementWidth;
+        var elementOffset;
+        
+        elementOffset = offset;
+        elementId = VINT.read(this.dataView, offset);
+        if(elementId.raw !== 0x53AB){ // SeekID
+            console.warn("Seek ID not found");
+        }
+        
+        offset += elementId.width;
+        elementWidth = VINT.read(this.dataView, offset);
+        offset += elementWidth.width;
+        this.id = OGVDemuxerWebM.readUnsignedInt(this.dataView,offset, elementWidth.data);
+        offset += elementWidth.data;
+        
+        
+        elementId = VINT.read(this.dataView, offset);
+        if(elementId.raw !== 0x53AC){ // SeekPosition
+            console.warn("Seek Position not found");
+        }
+        offset += elementId.width;
+        elementWidth = VINT.read(this.dataView, offset);
+        offset += elementWidth.width;
+        this.seekPosition = OGVDemuxerWebM.readUnsignedInt(this.dataView,offset, elementWidth.data);
+        offset += elementWidth.data;
+
+    }
+    
+}
+
 
 module.exports = OGVDemuxerWebM;
