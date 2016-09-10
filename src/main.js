@@ -15,32 +15,129 @@ class DataInterface{
                 return this.markerPointer;
             }
         });
-   
         
+        this.tempId = null;
+        this.tempSize = null;
+        this.tempOctetWidth = null;
+        this.tempOctet = null;
+        this.tempByteBuffer = 0;
+        this.tempByteCounter = 0;
+        this.tempElementId = null;
+        this.tempElementSize = null;
+        this.tempVintWidth = null;
+        
+    }
+    
+    clearTemp() {
+        this._tempId = null;
+        this._tempSize = null;
+        this._tempOctetWidth = null;
+        this._tempOctet = null;
+        this._tempByteBuffer = null;
     }
     
     recieveInput(data){
         this.dataBuffers.push(new DataView(data));
+        if(this.dataBuffers.length === 1)
+            this.currentBuffer = this.dataBuffers[0];
+    }
+    
+    popBuffer(){
+        this.dataBuffers.shift();
+        this.internalPointer = 0;
+    }
+    
+    readVint() {
         
+        if(this.dataBuffers.length === 0)
+            return null; //Nothing to parse
+        console.log(this);
+        if (!this.tempOctet) {
+            this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
+            this.incrementPointers();
+            this.tempOctetWidth = this.calculateOctetWidth();
             
+                    
+            if (this.getRemainingBytes() === 0)
+                this.popBuffer();
+
+            if (this.dataBuffers.length === 0)// if we run out of data return null
+                return null; //Nothing to parse
+
+        }
+        
+        //We will have at least one byte to read
+        var tempByte;
+        while (this.tempByteCounter < this.tempOctetWidth) {
+            
+            
+            
+            if (this.tempByteCounter === 0) {
+                var mask = ((0xFF << this.tempOctetWidth) & 0xFF) >> this.tempOctetWidth;
+                this.tempByteBuffer = this.tempOctet & mask;
+            } else {
+                tempByte = this.readByte();
+                this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
+            }
+    
+            
+            this.tempByteCounter++;
+            
+            if (this.getRemainingBytes() === 0)
+                this.popBuffer();
+
+            if (this.dataBuffers.length === 0)// if we run out of data return null
+                return null; 
+            
+        }
+        
+        var result = this.tempByteBuffer;
+        
+        
+        this.tempId = null;
+        this.tempSize = null;
+        this.tempOctetMask = null;
+        this.tempOctetWidth = null;
+        this.tempOctet = null;
+        this.tempByteBuffer = 0;
+        this.tempByteCounter = 0;
+        
+        return result;
+        
+    }
+    
+    readByte(){
+        var byteToRead = this.currentBuffer.getUint8(this.internalPointer);
+        this.incrementPointers();
+        return byteToRead;
     }
     
     peekElement(){
-        
+        console.log("peeking element");
         if(this.dataBuffers.length === 0)
-            return false; //Nothing to parse
+            return null; //Nothing to parse
         
+        //check if we return an id
+        if (!this.tempElementId){
+            this.tempElementId = this.readVint();
+            if(this.tempElementId === null)
+                return null;
+        }
+            
+
         
+                
         //Try to read the element header
+        /*
         try{
             
             //The most Common Case
             var currentBuffer = this.dataBuffers[0];
             
-            var elementId = VINT.read(currentBuffer, this.internalPointer);
+            var elementId = VINT.read(this.currentBuffer, this.internalPointer);
             this.incrementPointers(elementId.width);
             
-            var elementSize = VINT.read(currentBuffer, this.internalPointer);
+            var elementSize = VINT.read(this.currentBuffer, this.internalPointer);
             this.incrementPointers(elementSize.width);
             
             //this.totalBytes = this.getTotalBytes(); //Update how many total bytes we have
@@ -53,6 +150,7 @@ class DataInterface{
             //prepare to read from multiple buffers, if not return false
             return false;
         }
+        */
         
     }
     
@@ -94,12 +192,27 @@ class DataInterface{
         
     }
     
+    calculateOctetWidth(){
+        var leadingZeroes = 0;
+        var zeroMask = 0x80;
+        do {
+            if (this.tempOctet & zeroMask)
+                break;
+
+            zeroMask = zeroMask >> 1;
+            leadingZeroes++;
+
+        } while (leadingZeroes < 8);
+
+        //Set the width of the octet
+        return leadingZeroes + 1;
+    }
+    
     incrementPointers(n) {
         var bytesToAdd = n || 1;
         this.internalPointer += bytesToAdd;
         this.overallPointer += bytesToAdd;
         this.markerPointer += bytesToAdd;
-
     }
     
     readUnsignedInt(size){
@@ -246,9 +359,12 @@ class OGVDemuxerWebM {
         this.audioPackets = [];
         this.loadedMetadata = false;
         this.seekable = false;
-        this.headerIsLoaded = false;
         this.dataInterface = new DataInterface();
         this.currentElement = null; // placeholder for last element
+        this.segmentIsLoaded = false; // have we found the segment position
+        this.segmentOffset;
+        this.segmentDataOffset;
+        this.headerIsLoaded = false;
         
         //Only need this property cause nest egg has it
 ////
@@ -313,7 +429,7 @@ class OGVDemuxerWebM {
     }
 
     init(callback) {
-        console.log("initializing demuxer webm");
+        console.warn("initializing demuxer webm");
         callback();
     }
 
@@ -332,10 +448,14 @@ class OGVDemuxerWebM {
        
             this.loadHeader();
             
-            callback();
+            //callback();
 
         }else{
             console.log(this);
+        }
+        
+        if(!this.segmentIsLoaded){
+            //this.loadSegment();
         }
         
         //this.tempParse();
@@ -347,8 +467,15 @@ class OGVDemuxerWebM {
             //this.state = 1;
         //}
         this.processing = false;
+        //callback();
         
         
+    }
+    
+    loadSegment(){
+        
+        
+        this.segmentIsLoaded = true;
     }
     
     loadHeader(){
@@ -358,10 +485,12 @@ class OGVDemuxerWebM {
         //only load it if we didnt already load it
         if(!this.currentElement)
             this.currentElement = this.dataInterface.peekElement();
+        this.headerIsLoaded = true;
         
+        /*
         if(this.currentElement){
             
-            if (this.currentElement.id !== 0x1A45DFA3) { //EBML code
+            if (this.currentElement.id !== 0x1A45DFA3) { //EBML 
                 //If the header has not loaded and the first element is not the header, do not continue
                 console.warn('INVALID PARSE, HEADER NOT LOCATED');
             }
@@ -420,12 +549,14 @@ class OGVDemuxerWebM {
 
                 //this.state = 1; //Set State To Decode Ready
                 this.headerIsLoaded = true;
+                this.currentElement = null;
              
         
                 this.dataInterface.removeMarker();
             }
                 
         }
+        */
     }
     
     tempParse(){
