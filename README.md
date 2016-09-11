@@ -3,6 +3,10 @@ A javascript implementation of the Webm Demuxer (matroska).
 
 Building for the OGV.js project.
 
+## Algorithm Overview
+The demuxer holds a queue of arrayBuffers which are sent in from the main player controller.
+ The difficulty lies in the way the buffers come in. In order to achieve progressive downloading, we must parse the data
+as it comes in, but it is not possible to ensure that the elements will be completely contained in one chunk ie: the elements can be arbitrarily broken up across one ore more incoming buffers.
 
 
 ## Properties
