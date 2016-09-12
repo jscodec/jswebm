@@ -9,8 +9,10 @@ The demuxer holds a queue of arrayBuffers which are sent in from the main player
 as it comes in, but it is not possible to ensure that the elements will be completely contained in one chunk 
 ie: the elements can be arbitrarily broken up across one ore more incoming buffers.
 
-### DataInterface
-* `receiveInput(data)` receives arrayBuffer chunks of arbitrary length.
+__Main goal__ : To parse the incoming buffers without unnecessary rewrites. The only write will be the time the final frame buffer is made which will be sent off to the decoders.
+
+### DataInterface Class
+* `receiveInput(data)` receives arrayBuffer chunks of arbitrary length, adds to queue
 * `process(data:ArrayBuffer)` is called from main loop
     * Parse as much as possible then exit.
     * Must pick up parsing where it left off.
@@ -25,7 +27,14 @@ The algorithm will then work as follows:
 * Test if there are enough bytes available in current buffer
     * If yes, read entire Vint
     * If not, use buffered read method saving state at each position (more overhead)
+* At each stage check if there are remaining bytes
+    * If no, dequeue buffer
+        * If no more buffers, return null or false (can't decide yet)
+* Upon next call to process, must pick up where it left off
  
+
+__Example of Element spread across 2 buffers__
+
 ![Alt](./EBML.png)
 
 # API
