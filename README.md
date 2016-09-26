@@ -1,4 +1,4 @@
-# FlareWebmDemuxer
+# Webm Demuxer
 A javascript implementation of the Webm Demuxer (matroska).
 
 Building for the OGV.js project.
@@ -36,6 +36,10 @@ The algorithm will then work as follows:
 __Example of Element spread across 2 buffers__
 
 ![Alt](./EBML.png)
+
+__Closeup of Vint or Element ID__
+
+![Alt](./vint.png)
 
 # API
 

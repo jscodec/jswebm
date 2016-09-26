@@ -8,6 +8,8 @@
     "author": "Brian Parra",
     "contributors": [
     ],
-    "dependencies": {},
-    "main" : "src/main.js"
+    "dependencies": {
+    
+    },
+    "main" : "src/WebmDemuxer.js"
 }
