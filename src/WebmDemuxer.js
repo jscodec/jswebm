@@ -30,7 +30,7 @@ if (typeof performance === 'undefined' || typeof performance.now === 'undefined'
 /**
  * @classdesc Wrapper class to handle webm demuxing
  */
-class OGVDemuxerWebM {
+class FlareWebmDemuxer {
 
     constructor() {
         this.shown = false; // for testin
@@ -40,7 +40,7 @@ class OGVDemuxerWebM {
         this.videoPackets = [];
         this.audioPackets = [];
         this.loadedMetadata = false;
-        this.seekable = true;
+        this.seekable = false;//keep false until seek is finished
         this.dataInterface = new DataInterface();
         this.segment = null;
         this.currentElement = null; // placeholder for last element
@@ -238,6 +238,8 @@ class OGVDemuxerWebM {
 
             }
         });
+        
+        console.log('%c FLARE WEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
     }
 
     /**
@@ -405,7 +407,6 @@ class OGVDemuxerWebM {
      * finds the beginnign of the segment. Should modify to allow level 0 voids, apparantly they are possible 
      */
     loadSegment() {
-        console.log("loading seg");
         if (this.state !== HEADER_LOADED)
             console.error("HEADER NOT LOADED");
 
@@ -737,4 +738,4 @@ class OGVDemuxerWebM {
 
 
 
-module.exports = OGVDemuxerWebM;
+module.exports = FlareWebmDemuxer;
