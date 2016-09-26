@@ -7,16 +7,11 @@
     ],
     "author": "Brian Parra",
     "contributors": [
-    ],
-    "devDependencies": {
-        "browserify": "^13.0.1",
-        "browserify-shim": "^3.5.0",
-        "webpack": "^1.12.2"
-    },
-    { "license" : "MIT" }
+    ],  
+    "license" : "MIT",
     "main" : "src/WebmDemuxer.js",
     "repository" :
-    { "type" : "git"
-    , "url" : "https://github.com/FlareMediaPlayer/FlareWebmDemuxer.git"
-    }
+        { "type" : "git" ,
+          "url" : "https://github.com/FlareMediaPlayer/FlareWebmDemuxer.git"
+        }
 }
