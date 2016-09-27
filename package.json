@@ -1,17 +1,16 @@
 {
-    "name": "flare-webm-demuxer",
-    "version": "0.0.0",
-    "keywords": [
-        "webm",
-        "ogv.js"
-    ],
-    "author": "Brian Parra",
-    "contributors": [
-    ],  
-    "license" : "MIT",
-    "main" : "src/WebmDemuxer.js",
-    "repository" :
-        { "type" : "git" ,
-          "url" : "https://github.com/FlareMediaPlayer/FlareWebmDemuxer.git"
-        }
+  "name": "flare-webm-demuxer",
+  "version": "0.0.1",
+  "keywords": [
+    "webm",
+    "ogv.js"
+  ],
+  "author": "Brian Parra",
+  "contributors": [],
+  "license": "MIT",
+  "main": "src/WebmDemuxer.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlareMediaPlayer/FlareWebmDemuxer.git"
+  }
 }
