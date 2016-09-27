@@ -18,6 +18,7 @@ class DataInterface{
         this.tempFloat64 = new DataView(new ArrayBuffer(8));
         this.tempFloat32 = new DataView(new ArrayBuffer(4));
         this.tempBinaryBuffer = null;
+        this.seekTarget;
         
         Object.defineProperty(this, 'markerBytesRead' , {
             get: function(){
@@ -82,6 +83,8 @@ class DataInterface{
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
         this.usingBufferedRead = false;
+        this.overallPointer = 0;
+        this.internalPointer = 0;
     }
     
     recieveInput(data){

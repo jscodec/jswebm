@@ -1,7 +1,7 @@
 'use strict';
 /**
  * @classdesc This class keeps track of keyframes for seeking
- * 
+ * 76514630 - 43 - 8
  */
 
 class Cues {
@@ -14,6 +14,7 @@ class Cues {
         this.entries = [];
         this.loaded = false;
         this.tempEntry = null;
+        this.demuxer = demuxer;
         this.currentElement = null;
     }
 
@@ -52,7 +53,7 @@ class Cues {
 
         if (this.dataInterface.offset !== this.end) {
             console.log(this);
-            throw "INVALID CUE FORMATTING"
+            throw "INVALID CUE FORMATTING";
         }
 
         this.loaded = true;

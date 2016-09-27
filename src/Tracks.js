@@ -34,13 +34,15 @@ class Tracks {
                     if (!this.trackLoader.loaded)
                         return;
                     else
-                        var trackEntry = this.trackLoader.getTrackEntry()
+                        var trackEntry = this.trackLoader.getTrackEntry();
                         this.trackEntries.push(trackEntry);
                         
                         
                     //Push the initializer on automatically
                     //put this in a vorbis class
-                    if (trackEntry.trackType === 2) {
+                    if(trackEntry.trackType === 1){
+                        this.demuxer.videoTrack = trackEntry;
+                    }else if (trackEntry.trackType === 2) {
                         var headerParser = new DataView(trackEntry.codecPrivate);
                         var packetCount = headerParser.getUint8(0);
                         var firstLength = headerParser.getUint8(1);
@@ -70,6 +72,7 @@ class Tracks {
                         });
                         
                         trackEntry.codecPrivate = null; //won't need it anymore
+                        this.demuxer.audioTrack = trackEntry;
                     }
                     break;
                 default:

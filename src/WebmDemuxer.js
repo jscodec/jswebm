@@ -18,7 +18,7 @@ var EXIT_OK = 666;
 
 var STATE_BEGIN = 0;
 var STATE_DECODING = 1;
-var STATE_SEEKING = 2;
+var STATE_SEEKING = 4;
 
 var getTimestamp;
 if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
@@ -40,7 +40,7 @@ class FlareWebmDemuxer {
         this.videoPackets = [];
         this.audioPackets = [];
         this.loadedMetadata = false;
-        this.seekable = false;//keep false until seek is finished
+        this.seekable = true;//keep false until seek is finished
         this.dataInterface = new DataInterface();
         this.segment = null;
         this.currentElement = null; // placeholder for last element
@@ -56,6 +56,7 @@ class FlareWebmDemuxer {
         this.cuesLoaded = false;
         this.isSeeking = false;
         this.tempSeekPosition = -1;
+        this.loadingCues = false;
 
         Object.defineProperty(this, 'duration', {
             get: function () {
@@ -293,6 +294,10 @@ class FlareWebmDemuxer {
             case SEGMENT_LOADED:
                 status = this.loadMeta();
                 if (this.state !== META_LOADED)
+                    break;
+            case STATE_SEEKING:
+                status = this.processSeeking();
+                //if (this.state !== META_LOADED)
                     break;
             default:
             //fill this out
@@ -567,21 +572,29 @@ class FlareWebmDemuxer {
      * @param {function} callback after flush complete
      */
     flush(callback) {
-        console.error("flushing");
-        if (!this.isSeeking) {
-
-            this.audioPackets = [];
-            this.videoPackets = [];
-            this.dataInterface.flush();
-            this.currentElement = null;
-        }
-
-
+        console.log("flushing demuxer buffer");
+        //this.audioPackets = [];
+        //this.videoPackets = [];
+        //this.dataInterface.flush();
+        //this.currentElement = null;
         //Note: was wrapped in a time function but the callback doesnt seem to take that param
 
         //console.log(this);
         //throw "TEST";
         callback();
+    }
+    
+    _flush() {
+        console.log("flushing demuxer buffer private");
+        this.audioPackets = [];
+        this.videoPackets = [];
+        this.dataInterface.flush();
+        this.currentElement = null;
+        //Note: was wrapped in a time function but the callback doesnt seem to take that param
+
+        //console.log(this);
+        //throw "TEST";
+ 
     }
 
     /**
@@ -605,83 +618,103 @@ class FlareWebmDemuxer {
      */
     seekToKeypoint(timeSeconds, callback) {
         var ret = this.time(function () {
-
+            
+            var status;
+            
+            
+            this.seekTime = timeSeconds * 1000000;
+            if (this.hasVideo) {
+                this.seekTrack = this.videoTrack;
+            } else if (this.hasAudio) {
+                this.seekTrack = this.audioTrack;
+            } else {
+                return 0;
+            }
             /*
-             * idea: Use to seek directly to point
-             * -check if cues loaded
-             * -- if not initCues
-             * 
-             * -calculate keypoint offset
-             * -flush
-             * -Seek to keypoint
-             * -continue loading as usual
-             * 
-             */
-
-
-            //Don't pay attention to rest for now
-            return 0;
-            //}
-            if (!this.isSeeking) {
-                console.warn("seek already initialized");
-                return 1;
+            if (this.state === STATE_SEEKING) {
+                status = this.processSeeking();
+            } else {
+                
             }
+            */
+            this.state = STATE_SEEKING;
+            this._flush();
+            if(!this.cuesLoaded)
+                this.initCues();
+ 
+            //this.processSeeking();
 
-            this.isSeeking = true;
-            this.tempSeekPosition = timeSeconds;
-            //seek to time in seconds * 1000
-            console.warn("seeking to " + timeSeconds * 1000);
-            //if the cues are not loaded, look in the seek head
-            if (!this.cuesLoaded) {
-                console.warn(this.segment.dataOffset);
+            return 1;
 
-                var length = this.seekHead.entries.length;
-                var entries = this.seekHead.entries;
-                console.warn(this.seekHead);
-                var seekOffset;
-                //Todo : make this less messy
-                for (var i = 0; i < length; i++) {
-                    if (entries[i].seekId === 0x1C53BB6B) // cues
-                        seekOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
-                }
-                this.dataInterface.offset = seekOffset;
-                this.onseek(seekOffset);
-
-
-            }
-
-            return 1; // always return 1?
         }.bind(this));
+        //doesnt need ret, it always returns 1
+        this.audioPackets = [];
+        this.videoPackets = [];
+        //this.currentElement = null;
+	
 
         callback(!!ret);
     }
+    
+    processSeeking() {
+        console.warn("Processing seek , cues offset = " + this.cuesOffset);
+        
 
-    /**
-     * Immedietly seek to position, used for restarting stream or when switching resolutions.
-     * I think this might be the fast seek
-     * @param {number} timeSeconds
-     * @param {function} callback
-     */
-    seekTo(timeSeconds, callback) {
+        if (!this.cuesLoaded) {
 
+            if (!this.currentElement) {
+                this.currentElement = this.dataInterface.peekElement();
+                if (this.currentElement === null)
+                    return 0;
+            }
+            if (!this.cues)
+                this.cues = new Cues(this.currentElement, this.dataInterface, this);
+            this.cues.load();
+            if (!this.cues.loaded)
+                return 0;
+            this.cuesLoaded = true;
+            console.warn("cues loaded");
+            console.log(this.cues);
+            throw "LOADED";
+        }
+
+    
+  
+                        
+
+        /*
+    this.dataInterface.lastSeekTarget = 0;
+        
+        var r = this.calculateKeypointOffset();
+        if (r) {
+            if (this.dataInterface.lastSeekTarget === 0) {
+                // Maybe we just need more data?
+                console.log("is seeking processing... FAILED ");
+            } else{
+                this.target = this.dataInterface.lastSeekTarget;
+                this.dataInterface.offset = target;
+                //this.seekFinish(target);
+            }
+        } else{
+            this.state = STATE_DECODING;
+            //console.log("is seeking processing... LOOKS ROLL OVER\n");
+            return 1;
+        }
+                                                                                                                    */
+    }
+    
+    
+    seekFinish(offsetLow, offsetHigh) {
+        var offset = offsetLow + offsetHigh * 0x100000000;
+        if (this.onseek) {
+            this.onseek(offset);
+        }
     }
 
-    /**
-     * If cues are not yet loaded at this point (should have been at least started to load)
-     * Save the desired location anyway, on the next process call when the cues are loaded jump to it
-     * @param {number} timeSeconds
-     * @param {function} callback
-     * When done scrubbing, reinitialize the stream here.
-     */
-    onScrubEnd(timeSeconds, callback) {
-        console.warn("End seek triggered");
 
-        //should flush before restarting
-        var seekOffset = 4452; //hardcoded testing
-        //this.dataInterface.offset = seekOffset;
-        this.isSeeking = false;
-        this.onseek(seekOffset);
-        console.log(this);
+    
+    close(){
+        //nothing for now
     }
 
     /**
@@ -691,43 +724,71 @@ class FlareWebmDemuxer {
      */
     initCues() {
 
+        if (!this.cuesOffset) {
+
+            var length = this.seekHead.entries.length;
+            var entries = this.seekHead.entries;
+            console.warn(this.seekHead);
+            var seekOffset;
+            //Todo : make this less messy
+            for (var i = 0; i < length; i++) {
+                if (entries[i].seekId === 0x1C53BB6B) // cues
+                    this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
+            }
+        }
+
+        this.dataInterface.flush();
+        this._flush();
+        this.dataInterface.offset = this.cuesOffset;
+        this.loadingCues = true;
+        this.onseek(this.cuesOffset);
+
     }
 
-    /*
-     * Trigger the beginnign of a scrub event
-     */
-    scrubStart(timeSeconds, callback) {
-        console.log("scrub start");
-    }
-
-    /**
-     * Called when the user drags the slider, can init the seek loading.
-     * Use this for scrubbing, can have a different preview algorithm
-     * check if cues loaded, if not do cues init
-     * @param {number} timeSeconds
-     * @param {function} callback
-     */
-    onScrub(timeSeconds, callback) {
-        console.log("scrubing");
-    }
-
-    /*
-     * Finish the scrub and reinit stream here
-     * @param {number} timeSeconds
-     * @returns {Number}
-     */
-    scrubEnd(timeSeconds, callback) {
-        console.warn("scrub end ");
-    }
 
     /**
      * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
      * @param {number} timeSeconds
      * @returns {number} offset in bytes relative to cluster, or file, doesnt matter since we save the cluster offset anyway.
      */
-    calculateKeypointOffset(timeSeconds) {
+    calculateKeypointOffset() {
+        
+   
+  var r;
+  //struct cue_point * cue_point;
+  //struct cue_track_positions * pos;
+  //uint64_t seek_pos, tc_scale;
 
-    }
+   
+        if (!this.cuesLoaded) {
+            //r = ne_init_cue_points(ctx, -1);
+            this.initCues();
+            if (!this.cuesLoaded)
+                return 0;
+        }
+/*
+  tc_scale = ne_get_timecode_scale(ctx);
+
+  cue_point = ne_find_cue_point_for_tstamp(ctx, ctx->segment.cues.cue_point.head,
+                                           track, tc_scale, tstamp);
+  if (!cue_point)
+    return -1;
+
+  pos = ne_find_cue_position_for_track(ctx, cue_point->cue_track_positions.head, track);
+  if (pos == NULL)
+    return -1;
+
+  if (ne_get_uint(pos->cluster_position, &seek_pos) != 0)
+    return -1;
+
+  // Seek to (we assume) the start of a Cluster element. 
+  r = nestegg_offset_seek(ctx, ctx->segment_offset + seek_pos);
+  if (r != 0)
+    return -1;
+
+  return 0;
+         */
+}
 
 }
 
