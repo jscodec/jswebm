@@ -279,7 +279,7 @@ class FlareWebmDemuxer {
 
         var start = getTimestamp();
         var status = false;
-        console.warn("processing");
+        //console.warn("processing");
 
 
         //this.processing = true;
@@ -625,7 +625,7 @@ class FlareWebmDemuxer {
             var status;
             
             
-            this.seekTime = timeSeconds * 1000000;
+            this.seekTime = timeSeconds * 1000000000;
             if (this.hasVideo) {
                 this.seekTrack = this.videoTrack;
             } else if (this.hasAudio) {
@@ -771,7 +771,7 @@ class FlareWebmDemuxer {
      * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
      */
     calculateKeypointOffset() {
-        console.warn("seektime saved is " + this.seekTime);
+        
 
         var r;
         //struct cue_point * cue_point;
@@ -781,19 +781,22 @@ class FlareWebmDemuxer {
         this.seekTime;
         var cuesPoints = this.cues.entries; //cache for faster lookups;
         var length = this.cues.entries.length; // total number of cues;
-        var scanPoint;
+        var scanPoint = cuesPoints[0];
+        var tempPoint;
         
         
         //do linear search now
         //Todo, make binary search
-        for (var i = 0; i < length ; i++){
-            scanPoint = cuesPoints[i];
-            if(scanPoint.cueTime * timecodeScale > this.seekTime)
+        for (var i = 1; i < length ; i++){
+            tempPoint = cuesPoints[i];
+            if(tempPoint.cueTime * timecodeScale > this.seekTime)
                 break;
+            scanPoint = tempPoint;
         }
         
         this.seekCueTarget = scanPoint;
-        
+        console.warn("seektime saved is " + this.seekTime);
+        console.warn("cue target saved is " + this.seekCueTarget.cueTime * timecodeScale);
         
         
         /*
