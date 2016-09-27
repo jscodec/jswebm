@@ -48,6 +48,8 @@ class Cues {
 
             this.tempEntry = null;
             this.currentElement = null;
+            //this.cueTrackPositions = this.tempEntry;
+            //this.tempEntry = null;
         }
 
 
@@ -124,10 +126,10 @@ class CuePoint {
 
             switch (this.currentElement.id) {
                 case 0xB7: //Cue Track Positions
-                    if (!this.tempElement)
-                        this.tempElement = new CueTrackPositions(this.currentElement, this.dataInterface);
-                    this.tempElement.load();
-                    if (!this.tempElement.loaded)
+                    if (!this.cueTrackPositions)
+                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
+                    this.cueTrackPositions.load();
+                    if (!this.cueTrackPositions.loaded)
                         return;
                     break;
 

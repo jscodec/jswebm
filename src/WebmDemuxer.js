@@ -6,7 +6,7 @@ var SegmentInfo = require('./SegmentInfo.js');
 var Tracks = require('./Tracks.js');
 var Cluster = require('./Cluster.js');
 var Cues = require('./Cues.js');
-
+var ElementHeader = require('./ElementHeader.js');
 
 //States
 var INITIAL_STATE = 0;
@@ -57,6 +57,7 @@ class FlareWebmDemuxer {
         this.isSeeking = false;
         this.tempSeekPosition = -1;
         this.loadingCues = false;
+        this.seekCueTarget = null;
 
         Object.defineProperty(this, 'duration', {
             get: function () {
@@ -278,6 +279,7 @@ class FlareWebmDemuxer {
 
         var start = getTimestamp();
         var status = false;
+        console.warn("processing");
 
 
         //this.processing = true;
@@ -572,7 +574,7 @@ class FlareWebmDemuxer {
      * @param {function} callback after flush complete
      */
     flush(callback) {
-        console.log("flushing demuxer buffer");
+        //console.log("flushing demuxer buffer");
         //this.audioPackets = [];
         //this.videoPackets = [];
         //this.dataInterface.flush();
@@ -585,7 +587,7 @@ class FlareWebmDemuxer {
     }
     
     _flush() {
-        console.log("flushing demuxer buffer private");
+        //console.log("flushing demuxer buffer private");
         this.audioPackets = [];
         this.videoPackets = [];
         this.dataInterface.flush();
@@ -617,6 +619,7 @@ class FlareWebmDemuxer {
      * @param {function} callback 
      */
     seekToKeypoint(timeSeconds, callback) {
+        
         var ret = this.time(function () {
             
             var status;
@@ -650,6 +653,8 @@ class FlareWebmDemuxer {
         //doesnt need ret, it always returns 1
         this.audioPackets = [];
         this.videoPackets = [];
+        //console.warn("seektime is " + timeSeconds);
+        //console.warn("seektime saved is " + this.seekTime);
         //this.currentElement = null;
 	
 
@@ -657,9 +662,9 @@ class FlareWebmDemuxer {
     }
     
     processSeeking() {
-        console.warn("Processing seek , cues offset = " + this.cuesOffset);
+        //console.warn("Processing seek , cues offset = " + this.seekTime);
         
-
+        //Have to load cues if not available
         if (!this.cuesLoaded) {
 
             if (!this.currentElement) {
@@ -675,10 +680,26 @@ class FlareWebmDemuxer {
             this.cuesLoaded = true;
             console.warn("cues loaded");
             console.log(this.cues);
-            throw "LOADED";
         }
-
-    
+        //now we can caluclate the pointer offset
+        this.calculateKeypointOffset();
+        this._flush(); //incase loading cues
+        //we should now have the cue point
+        console.warn("target");
+        this.seekCueTarget;
+        var clusterOffset =  this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
+        console.log("clusterOffset : " + clusterOffset);
+        var relativePosition = 4467;//clusterOffset + this.seekCueTarget.cueTrackPositions.cueRelativePosition;
+        
+        this.currentElement = new ElementHeader(0x1F43B675 , -1 , clusterOffset, -1);
+        this.currentCluster = new Cluster(this.currentElement, this.dataInterface, this);
+        
+        
+        this.dataInterface.offset = relativePosition;
+        this.onseek(relativePosition);
+        this.state = SEGMENT_LOADED;
+        return 0;
+        
   
                         
 
@@ -748,25 +769,34 @@ class FlareWebmDemuxer {
 
     /**
      * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
-     * @param {number} timeSeconds
-     * @returns {number} offset in bytes relative to cluster, or file, doesnt matter since we save the cluster offset anyway.
      */
     calculateKeypointOffset() {
-        
-   
-  var r;
-  //struct cue_point * cue_point;
-  //struct cue_track_positions * pos;
-  //uint64_t seek_pos, tc_scale;
+        console.warn("seektime saved is " + this.seekTime);
 
-   
-        if (!this.cuesLoaded) {
-            //r = ne_init_cue_points(ctx, -1);
-            this.initCues();
-            if (!this.cuesLoaded)
-                return 0;
+        var r;
+        //struct cue_point * cue_point;
+        //struct cue_track_positions * pos;
+        //uint64_t seek_pos, tc_scale;
+        var timecodeScale = this.segmentInfo.timecodeScale;
+        this.seekTime;
+        var cuesPoints = this.cues.entries; //cache for faster lookups;
+        var length = this.cues.entries.length; // total number of cues;
+        var scanPoint;
+        
+        
+        //do linear search now
+        //Todo, make binary search
+        for (var i = 0; i < length ; i++){
+            scanPoint = cuesPoints[i];
+            if(scanPoint.cueTime * timecodeScale > this.seekTime)
+                break;
         }
-/*
+        
+        this.seekCueTarget = scanPoint;
+        
+        
+        
+        /*
   tc_scale = ne_get_timecode_scale(ctx);
 
   cue_point = ne_find_cue_point_for_tstamp(ctx, ctx->segment.cues.cue_point.head,

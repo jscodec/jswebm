@@ -8,7 +8,11 @@ class Cluster {
         this.dataInterface = dataInterface;
         this.offset = clusterHeader.offset;
         this.size = clusterHeader.size;
-        this.end = clusterHeader.end;
+        if (clusterHeader.end === -1)
+            this.end = clusterHeader.end;
+        else
+            this.end = Number.MAX_VALUE;
+        this.dataOffset = clusterHeader.dataOffset;
         this.loaded = false;  
         this.tempEntry = null;
         this.currentElement = null;
@@ -61,9 +65,7 @@ load() {
                     //TODO, ADD VOID
                 default:
          
-                    console.log(this);
-                    console.warn("Cluster element not found + id: " + this.currentElement.id);
-                    throw "STOP HERE";
+                    //This means we probably are out of the cluster now, double check bounds when end not available
                     break;
 
             }
@@ -75,10 +77,10 @@ load() {
         }
         
 
-        if (this.dataInterface.offset !== this.end){
-            console.log(this);
-            throw "INVALID CLUSTER FORMATTING";
-        }
+        //if (this.dataInterface.offset !== this.end){
+          //  console.log(this);
+            //throw "INVALID CLUSTER FORMATTING";
+        //}
         
 
         this.loaded = true;
