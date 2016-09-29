@@ -124,7 +124,7 @@ class SimpleBlock {
         this.end;// = blockHeader.end;
         this.loaded = false;
         this.trackNumber = null;
-        this.timeCode = null;
+        this.timeCode = -1;
         this.flags = null;
         this.keyframe = false;
         this.invisible = false;
@@ -151,7 +151,7 @@ class SimpleBlock {
         this.end = end;
         this.loaded = false;
         this.trackNumber = null;
-        this.timeCode = null;
+        this.timeCode = -1;
         this.flags = null;
         this.keyframe = false;
         this.invisible = false;
@@ -191,7 +191,7 @@ class SimpleBlock {
             this.loadTrack();
         }
 
-        if (!this.timeCode) {
+        if (this.timeCode === -1) {
             this.timeCode = this.dataInterface.readUnsignedInt(2);//Be signed for some reason?
             if (this.timeCode === null)
                 return null;
