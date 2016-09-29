@@ -53,20 +53,21 @@ class Tracks {
                         //throw "last length  = " + thirdLength;
                         var start = 3;
                         var end = start + firstLength;
-                        this.demuxer.audioPackets.push({//This could be improved
+                        var demuxer = this.demuxer; //cache reference
+                        demuxer.audioPackets.push({//This could be improved
                             data: headerParser.buffer.slice(start, end),
                             timestamp: -1
                         });
                         start = end;
                         end = start + secondLength;
                         
-                        this.demuxer.audioPackets.push({//This could be improved
+                        demuxer.audioPackets.push({//This could be improved
                             data: headerParser.buffer.slice(start, end),
                             timestamp: -1
                         });
                         start = end;
                         end = start + thirdLength;
-                        this.demuxer.audioPackets.push({//This could be improved
+                        demuxer.audioPackets.push({//This could be improved
                             data: headerParser.buffer.slice(start, end),
                             timestamp: -1
                         });

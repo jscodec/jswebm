@@ -375,7 +375,14 @@ class FlareWebmDemuxer {
                 case 0x1F43B675: //Cluster
                     if (!this.currentCluster) {
                         var metaWasLoaded = this.loadedMetadata;
-                        this.currentCluster = new Cluster(this.tempElementHeader.getData(), this.dataInterface, this);
+                        this.currentCluster = new Cluster(
+                                this.tempElementHeader.offset,
+                                this.tempElementHeader.size,
+                                this.tempElementHeader.end,
+                                this.tempElementHeader.dataOffset,
+                                this.dataInterface,
+                                this
+                                );
                         if (this.loadedMetadata && !metaWasLoaded)
                             return true;
                     }
@@ -384,7 +391,7 @@ class FlareWebmDemuxer {
                         return status;
                     }
 
-                    //this.clusters.push(this.currentCluster); //TODO: Don't overwrite this, make id's to keep track or something
+                    
                     this.currentCluster = null;
                     break;
 
@@ -454,11 +461,11 @@ class FlareWebmDemuxer {
 
     loadHeader() {
         //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
-
+        var dataInterface = this.dataInterface; //cache dataInterface reference
 
         //only load it if we didnt already load it
         if (!this.elementEBML) {
-            this.elementEBML = this.dataInterface.peekElement();
+            this.elementEBML = dataInterface.peekElement();
             if (!this.elementEBML)
                 return null;
 
@@ -468,18 +475,20 @@ class FlareWebmDemuxer {
             }
         }
 
-        while (this.dataInterface.offset < this.elementEBML.end) {
+        while (dataInterface.offset < this.elementEBML.end) {
             if (!this.tempElementHeader.status) {
-                this.dataInterface.peekAndSetElement(this.tempElementHeader);
+                dataInterface.peekAndSetElement(this.tempElementHeader);
                 if (!this.tempElementHeader.status)
                     return null;
             }
+            
+            
 
 
             switch (this.tempElementHeader.id) {
 
                 case 0x4286: //EBMLVersion
-                    var version = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (version !== null)
                         this.version = version;
                     else
@@ -487,7 +496,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x42F7: //EBMLReadVersion 
-                    var readVersion = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (readVersion !== null)
                         this.readVersion = readVersion;
                     else
@@ -495,7 +504,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x42F2: //EBMLMaxIDLength
-                    var maxIdLength = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    var maxIdLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (maxIdLength !== null)
                         this.maxIdLength = maxIdLength;
                     else
@@ -503,7 +512,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x42F3: //EBMLMaxSizeLength
-                    var maxSizeLength = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    var maxSizeLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (maxSizeLength !== null)
                         this.maxSizeLength = maxSizeLength;
                     else
@@ -511,7 +520,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x4282: //DocType
-                    var docType = this.dataInterface.readString(this.tempElementHeader.size);
+                    var docType = dataInterface.readString(this.tempElementHeader.size);
                     if (docType !== null)
                         this.docType = docType;
                     else
@@ -519,7 +528,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x4287: //DocTypeVersion //worked
-                    var docTypeVersion = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    var docTypeVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (docTypeVersion !== null)
                         this.docTypeVersion = docTypeVersion;
                     else
@@ -527,7 +536,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x4285: //DocTypeReadVersion //worked
-                    var docTypeReadVersion = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    var docTypeReadVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (docTypeReadVersion !== null)
                         this.docTypeReadVersion = docTypeReadVersion;
                     else
@@ -562,8 +571,6 @@ class FlareWebmDemuxer {
      * @param {function} callback after packet removal complete
      */
     dequeueVideoPacket(callback) {
-        //console.warn(this);
-        //throw "STOP";
         if (this.videoPackets.length) {
             var packet = this.videoPackets.shift().data;
             callback(packet);
@@ -591,10 +598,6 @@ class FlareWebmDemuxer {
         this.dataInterface.flush();
         this.currentElement = null;
         //Note: was wrapped in a time function but the callback doesnt seem to take that param
-
-        //console.log(this);
-        //throw "TEST";
-
     }
 
     /**
@@ -645,17 +648,10 @@ class FlareWebmDemuxer {
         //doesnt need ret, it always returns 1
         this.audioPackets = [];
         this.videoPackets = [];
-        //console.warn("seektime is " + timeSeconds);
-        //console.warn("seektime saved is " + this.seekTime);
-        //this.currentElement = null;
-
-
         callback(!!ret);
     }
 
     processSeeking() {
-        //console.warn("Processing seek , cues offset = " + this.seekTime);
-
         //Have to load cues if not available
         if (!this.cuesLoaded) {
 
@@ -682,11 +678,6 @@ class FlareWebmDemuxer {
         var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
         console.log("clusterOffset : " + clusterOffset);
         //var relativePosition = 4467;//clusterOffset + this.seekCueTarget.cueTrackPositions.cueRelativePosition;
-
-        //this.currentElement = new ElementHeader(0x1F43B675 , -1 , clusterOffset, -1);
-        //this.currentCluster = new Cluster(this.currentElement, this.dataInterface, this);
-
-
         //this.dataInterface.offset = relativePosition;
         this.dataInterface.offset = clusterOffset;
         this.onseek(clusterOffset);
