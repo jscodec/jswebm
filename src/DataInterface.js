@@ -390,6 +390,40 @@ class DataInterface{
                 
     }
     
+    /**
+     * sets the information on an existing element without creating a new objec
+     */
+    peekAndSetElement(element){
+
+        if(this.dataBuffers.length === 0)
+            return null; //Nothing to parse
+        
+        //check if we return an id
+        if (!this.tempElementId){
+            this.tempElementId = this.readId();
+            if(this.tempElementId === null)
+                return null;
+        }
+        
+        
+        if (!this.tempElementSize) {
+            this.tempElementSize = this.readVint();
+            if (this.tempElementSize === null)
+                return null;
+        }
+        
+        element.init(this.tempElementId , this.tempElementSize, this.tempElementOffset, this.overallPointer);
+        
+        //clear the temp holders
+        this.tempElementId = null;
+        this.tempElementSize = null;
+        this.tempElementOffset = null;
+        
+        
+        //return element;
+                
+    }
+    
     /*
      * Check if we have enough bytes available in the buffer to read
      * @param {number} n test if we have this many bytes available to read

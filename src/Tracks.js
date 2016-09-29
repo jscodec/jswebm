@@ -42,7 +42,7 @@ class Tracks {
                     //put this in a vorbis class
                     if(trackEntry.trackType === 1){
                         this.demuxer.videoTrack = trackEntry;
-                    }else if (trackEntry.trackType === 2) {
+                    }else if (trackEntry.trackType === 2 && this.demuxer.audioCodec === "vorbis") {
                         var headerParser = new DataView(trackEntry.codecPrivate);
                         var packetCount = headerParser.getUint8(0);
                         var firstLength = headerParser.getUint8(1);

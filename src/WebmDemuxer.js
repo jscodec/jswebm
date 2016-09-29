@@ -47,6 +47,8 @@ class FlareWebmDemuxer {
         this.segmentIsLoaded = false; // have we found the segment position
         this.segmentDataOffset;
         this.headerIsLoaded = false;
+        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
+        this.tempElementHeader.reset();
         this.currentElement = null;
         this.segmentInfo = null; // assuming 1 for now
         this.tracks = null;
@@ -326,37 +328,37 @@ class FlareWebmDemuxer {
      */
     loadMeta() {
         var status = false;
-
+        
         while (this.dataInterface.offset < this.segment.end) {
-            if (!this.currentElement) {
-                this.currentElement = this.dataInterface.peekElement();
-                if (this.currentElement === null)
+            if (!this.tempElementHeader.status) {
+                this.dataInterface.peekAndSetElement(this.tempElementHeader);
+                if (!this.tempElementHeader.status)
                     return null;
             }
 
 
-            switch (this.currentElement.id) {
+            switch (this.tempElementHeader.id) {
 
                 case 0x114D9B74: //Seek Head
                     if (!this.seekHead)
-                        this.seekHead = new SeekHead(this.currentElement, this.dataInterface);
+                        this.seekHead = new SeekHead(this.tempElementHeader.getData(), this.dataInterface);
                     this.seekHead.load();
                     if (!this.seekHead.loaded)
                         return false;
                     break;
 
                 case 0xEC: //VOid
-                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+                    if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
                         return false;
                     else
-                        this.dataInterface.skipBytes(this.currentElement.size);
+                        this.dataInterface.skipBytes(this.tempElementHeader.size);
 
                     console.log("FOUND VOID, SKIPPING");
                     break;
 
                 case 0x1549A966: //Info
                     if (!this.segmentInfo)
-                        this.segmentInfo = new SegmentInfo(this.currentElement, this.dataInterface);
+                        this.segmentInfo = new SegmentInfo(this.tempElementHeader.getData(), this.dataInterface);
                     this.segmentInfo.load();
                     if (!this.segmentInfo.loaded)
                         return false;
@@ -364,7 +366,7 @@ class FlareWebmDemuxer {
 
                 case 0x1654AE6B: //Tracks
                     if (!this.tracks)
-                        this.tracks = new Tracks(this.currentElement, this.dataInterface, this);
+                        this.tracks = new Tracks(this.tempElementHeader.getData(), this.dataInterface, this);
                     this.tracks.load();
                     if (!this.tracks.loaded)
                         return false;
@@ -373,7 +375,7 @@ class FlareWebmDemuxer {
                 case 0x1F43B675: //Cluster
                     if (!this.currentCluster) {
                         var metaWasLoaded = this.loadedMetadata;
-                        this.currentCluster = new Cluster(this.currentElement, this.dataInterface, this);
+                        this.currentCluster = new Cluster(this.tempElementHeader.getData(), this.dataInterface, this);
                         if (this.loadedMetadata && !metaWasLoaded)
                             return true;
                     }
@@ -388,7 +390,7 @@ class FlareWebmDemuxer {
 
                 case 0x1C53BB6B: //Cues
                     if (!this.cues)
-                        this.cues = new Cues(this.currentElement, this.dataInterface, this);
+                        this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
                     this.cues.load();
                     if (!this.cues.loaded)
                         return false;
@@ -397,13 +399,17 @@ class FlareWebmDemuxer {
 
                 default:
                     this.state = META_LOADED;//testing
-                    return;
-                    console.error("body element not found, skipping, id = " + this.currentElement.id);
+                    if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
+                        return false;
+                    else
+                        this.dataInterface.skipBytes(this.tempElementHeader.size);
+
+                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING");
                     break;
 
             }
 
-            this.currentElement = null;
+            this.tempElementHeader.reset();
         }
 
         this.state = META_LOADED;
@@ -463,17 +469,17 @@ class FlareWebmDemuxer {
         }
 
         while (this.dataInterface.offset < this.elementEBML.end) {
-            if (!this.currentElement) {
-                this.currentElement = this.dataInterface.peekElement();
-                if (this.currentElement === null)
+            if (!this.tempElementHeader.status) {
+                this.dataInterface.peekAndSetElement(this.tempElementHeader);
+                if (!this.tempElementHeader.status)
                     return null;
             }
 
 
-            switch (this.currentElement.id) {
+            switch (this.tempElementHeader.id) {
 
                 case 0x4286: //EBMLVersion
-                    var version = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var version = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (version !== null)
                         this.version = version;
                     else
@@ -481,7 +487,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x42F7: //EBMLReadVersion 
-                    var readVersion = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var readVersion = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (readVersion !== null)
                         this.readVersion = readVersion;
                     else
@@ -489,7 +495,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x42F2: //EBMLMaxIDLength
-                    var maxIdLength = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var maxIdLength = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (maxIdLength !== null)
                         this.maxIdLength = maxIdLength;
                     else
@@ -497,7 +503,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x42F3: //EBMLMaxSizeLength
-                    var maxSizeLength = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var maxSizeLength = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (maxSizeLength !== null)
                         this.maxSizeLength = maxSizeLength;
                     else
@@ -505,7 +511,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x4282: //DocType
-                    var docType = this.dataInterface.readString(this.currentElement.size);
+                    var docType = this.dataInterface.readString(this.tempElementHeader.size);
                     if (docType !== null)
                         this.docType = docType;
                     else
@@ -513,7 +519,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x4287: //DocTypeVersion //worked
-                    var docTypeVersion = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var docTypeVersion = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (docTypeVersion !== null)
                         this.docTypeVersion = docTypeVersion;
                     else
@@ -521,7 +527,7 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x4285: //DocTypeReadVersion //worked
-                    var docTypeReadVersion = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var docTypeReadVersion = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (docTypeReadVersion !== null)
                         this.docTypeReadVersion = docTypeReadVersion;
                     else
@@ -533,7 +539,7 @@ class FlareWebmDemuxer {
 
             }
 
-            this.currentElement = null;
+            this.tempElementHeader.reset();
         }
 
         this.headerIsLoaded = true;

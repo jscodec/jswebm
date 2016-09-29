@@ -1,5 +1,6 @@
 'use strict';
 var UNSET = -1;
+var ElementHeader = require('./ElementHeader.js');
 
 class Cluster {
 
@@ -18,7 +19,10 @@ class Cluster {
         this.currentElement = null;
         this.timeCode = null;
         this.tempBlock = null;
-        this.blocks = [];
+        //this.blocks = [];
+        
+        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
+        this.tempElementHeader.reset();
         
         
         //this should go somewhere else!!
@@ -30,17 +34,17 @@ load() {
         var status = false;
 
         while (this.dataInterface.offset < this.end) {
-            if (!this.currentElement) {
-                this.currentElement = this.dataInterface.peekElement();
-                if (this.currentElement === null)
+            if (!this.tempElementHeader.status) {
+                this.dataInterface.peekAndSetElement(this.tempElementHeader);
+                if (!this.tempElementHeader.status)
                     return null;
             }
 
 
-            switch (this.currentElement.id) {
+            switch (this.tempElementHeader.id) {
 
                 case 0xE7: //TimeCode
-                    var timeCode = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (timeCode !== null)
                         this.timeCode = timeCode;
                     else
@@ -49,16 +53,16 @@ load() {
 
                 case 0xA3: //Simple Block
                     if (!this.tempBlock)
-                        this.tempBlock = new SimpleBlock(this.currentElement, this.dataInterface, this);
+                        this.tempBlock = new SimpleBlock(this.tempElementHeader.getData(), this.dataInterface, this);
                     this.tempBlock.load();
                     if (!this.tempBlock.loaded)
                         return 0;
-                    else
-                        this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
+                    //else
+                      //  this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
                     this.tempBlock = null;
                     
                     this.tempEntry = null;
-                    this.currentElement = null;
+                    this.tempElementHeader.reset();
                     return true;
                     break;
                     
@@ -71,7 +75,7 @@ load() {
             }
             
             this.tempEntry = null;
-            this.currentElement = null;
+            this.tempElementHeader.reset();
             return status;
             //return 1;
         }
@@ -96,7 +100,6 @@ var EBML_LACING = 3;
 class SimpleBlock{
     
     constructor(blockHeader , dataInterface, cluster) {
-        
         this.cluster = cluster;
         this.dataInterface = dataInterface;
         this.offset = blockHeader.offset;
@@ -120,8 +123,12 @@ class SimpleBlock{
         this.frameLength = null;
         this.isLaced = false;
         this.stop = this.offset + this.size;
-
-
+    }
+    
+    
+    
+    reset(){
+        
     }
     
     loadTrack(){
