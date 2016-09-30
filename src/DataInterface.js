@@ -390,6 +390,40 @@ class DataInterface{
                 
     }
     
+    /**
+     * sets the information on an existing element without creating a new objec
+     */
+    peekAndSetElement(element){
+
+        if(this.dataBuffers.length === 0)
+            return null; //Nothing to parse
+        
+        //check if we return an id
+        if (!this.tempElementId){
+            this.tempElementId = this.readId();
+            if(this.tempElementId === null)
+                return null;
+        }
+        
+        
+        if (!this.tempElementSize) {
+            this.tempElementSize = this.readVint();
+            if (this.tempElementSize === null)
+                return null;
+        }
+        
+        element.init(this.tempElementId , this.tempElementSize, this.tempElementOffset, this.overallPointer);
+        
+        //clear the temp holders
+        this.tempElementId = null;
+        this.tempElementSize = null;
+        this.tempElementOffset = null;
+        
+        
+        //return element;
+                
+    }
+    
     /*
      * Check if we have enough bytes available in the buffer to read
      * @param {number} n test if we have this many bytes available to read
@@ -484,7 +518,7 @@ class DataInterface{
         this.internalPointer += bytesToAdd;
         this.overallPointer += bytesToAdd;
     }
-    
+    /*
     readUnsignedInt(size){
         
         if (!this.currentBuffer)// if we run out of data return null
@@ -536,6 +570,53 @@ class DataInterface{
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
         return tempResult;
+    }*/
+        readUnsignedInt(size) {
+
+        if (!this.currentBuffer)// if we run out of data return null
+            return null; //Nothing to parse
+
+        //need to fix overflow for 64bit unsigned int
+        if (size <= 0 || size > 8) {
+            console.warn("invalid file size");
+        }
+
+        var dataView = this.dataBuffers[0];
+
+        if (this.tempResult === null)
+            this.tempResult = 0;
+
+        if (this.tempCounter === INITIAL_COUNTER)
+            this.tempCounter = 0;
+
+        var b;
+
+        while (this.tempCounter < size) {
+
+            if (!this.currentBuffer)// if we run out of data return null
+                return null; //Nothing to parse
+
+            b = this.readByte();
+
+            if (this.tempCounter === 0 && b < 0) {
+                console.warn("invalid integer value");
+            }
+
+
+            this.tempResult <<= 8;
+            this.tempResult |= b;
+
+            if (this.remainingBytes === 0)
+                this.popBuffer();
+
+            this.tempCounter++;
+        }
+
+        //clear the temp resut
+        var result = this.tempResult;
+        this.tempResult = null;
+        this.tempCounter = INITIAL_COUNTER;
+        return result;
     }
 
     readSignedInt(size) {
@@ -598,7 +679,7 @@ class DataInterface{
 
             if (!this.currentBuffer){// if we run out of data return null
                 //save progress
-                this.tempString = tempString;
+                this.tempString += tempString;
                 return null; //Nothing to parse
             }
 
@@ -612,9 +693,12 @@ class DataInterface{
         }
         
         //var tempString = this.tempString;
+        
+        this.tempString += tempString;
+        var retString = this.tempString;
         this.tempString = null;
         this.tempCounter = INITIAL_COUNTER;
-        return tempString;
+        return retString;
     }
     
     readFloat(size) {

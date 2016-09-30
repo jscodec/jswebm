@@ -42,7 +42,7 @@ class Tracks {
                     //put this in a vorbis class
                     if(trackEntry.trackType === 1){
                         this.demuxer.videoTrack = trackEntry;
-                    }else if (trackEntry.trackType === 2) {
+                    }else if (trackEntry.trackType === 2 && this.demuxer.audioCodec === "vorbis") {
                         var headerParser = new DataView(trackEntry.codecPrivate);
                         var packetCount = headerParser.getUint8(0);
                         var firstLength = headerParser.getUint8(1);
@@ -53,20 +53,21 @@ class Tracks {
                         //throw "last length  = " + thirdLength;
                         var start = 3;
                         var end = start + firstLength;
-                        this.demuxer.audioPackets.push({//This could be improved
+                        var demuxer = this.demuxer; //cache reference
+                        demuxer.audioPackets.push({//This could be improved
                             data: headerParser.buffer.slice(start, end),
                             timestamp: -1
                         });
                         start = end;
                         end = start + secondLength;
                         
-                        this.demuxer.audioPackets.push({//This could be improved
+                        demuxer.audioPackets.push({//This could be improved
                             data: headerParser.buffer.slice(start, end),
                             timestamp: -1
                         });
                         start = end;
                         end = start + thirdLength;
-                        this.demuxer.audioPackets.push({//This could be improved
+                        demuxer.audioPackets.push({//This could be improved
                             data: headerParser.buffer.slice(start, end),
                             timestamp: -1
                         });
