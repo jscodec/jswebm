@@ -9,16 +9,12 @@ var Cues = require('./Cues.js');
 var ElementHeader = require('./ElementHeader.js');
 
 //States
-var INITIAL_STATE = 0;
-var HEADER_LOADED = 1;
-var SEGMENT_LOADED = 2;
+var STATE_INITIAL = 0;
+var STATE_DECODING = 1;
+var STATE_SEEKING = 2;
 var META_LOADED = 3;
 var EXIT_OK = 666;
 
-
-var STATE_BEGIN = 0;
-var STATE_DECODING = 1;
-var STATE_SEEKING = 4;
 
 var getTimestamp;
 if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
@@ -36,7 +32,7 @@ class FlareWebmDemuxer {
         this.shown = false; // for testin
         this.clusters = [];
         this.segmentInfo = [];
-        this.state = INITIAL_STATE;
+        this.state = STATE_INITIAL;
         this.videoPackets = [];
         this.audioPackets = [];
         this.loadedMetadata = false;
@@ -287,16 +283,12 @@ class FlareWebmDemuxer {
         //this.processing = true;
 
         switch (this.state) {
-            case INITIAL_STATE:
-                this.loadHeader();
-                if (this.state !== HEADER_LOADED)
+            case STATE_INITIAL:
+                this.initDemuxer();
+                if (this.state !== STATE_DECODING)
                     break;
-            case HEADER_LOADED:
-                this.loadSegment();
-                if (this.state !== SEGMENT_LOADED)
-                    break;
-            case SEGMENT_LOADED:
-                status = this.loadMeta();
+            case STATE_DECODING:
+                status = this.load();
                 if (this.state !== META_LOADED)
                     break;
             case STATE_SEEKING:
@@ -318,7 +310,6 @@ class FlareWebmDemuxer {
             result = 0;
         }
 
-        //console.info("processing return : " + result);
         callback(!!result);
     }
 
@@ -326,7 +317,7 @@ class FlareWebmDemuxer {
      * General process loop, 
      * TODO, refactor this!!!!!
      */
-    loadMeta() {
+    load() {
         var status = false;
         
         while (this.dataInterface.offset < this.segment.end) {
@@ -352,8 +343,6 @@ class FlareWebmDemuxer {
                         return false;
                     else
                         this.dataInterface.skipBytes(this.tempElementHeader.size);
-
-                    console.log("FOUND VOID, SKIPPING");
                     break;
 
                 case 0x1549A966: //Info
@@ -423,13 +412,104 @@ class FlareWebmDemuxer {
         return status;
     }
 
-    /**
-     * finds the beginnign of the segment. Should modify to allow level 0 voids, apparantly they are possible 
-     */
-    loadSegment() {
-        if (this.state !== HEADER_LOADED)
-            console.error("HEADER NOT LOADED");
+    initDemuxer() {
+        //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
+        var dataInterface = this.dataInterface; //cache dataInterface reference
 
+        if (!this.headerIsLoaded) {
+            //only load it if we didnt already load it
+            if (!this.elementEBML) {
+                this.elementEBML = dataInterface.peekElement();
+                if (!this.elementEBML)
+                    return null;
+
+                if (this.elementEBML.id !== 0x1A45DFA3) { //EBML 
+                    //If the header has not loaded and the first element is not the header, do not continue
+                    console.warn('INVALID PARSE, HEADER NOT LOCATED');
+                }
+            }
+
+            var end = this.elementEBML.end;
+            while (dataInterface.offset < end) {
+                if (!this.tempElementHeader.status) {
+                    dataInterface.peekAndSetElement(this.tempElementHeader);
+                    if (!this.tempElementHeader.status)
+                        return null;
+                }
+
+
+
+
+                switch (this.tempElementHeader.id) {
+
+                    case 0x4286: //EBMLVersion
+                        var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                        if (version !== null)
+                            this.version = version;
+                        else
+                            return null;
+                        break;
+
+                    case 0x42F7: //EBMLReadVersion 
+                        var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                        if (readVersion !== null)
+                            this.readVersion = readVersion;
+                        else
+                            return null;
+                        break;
+
+                    case 0x42F2: //EBMLMaxIDLength
+                        var maxIdLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                        if (maxIdLength !== null)
+                            this.maxIdLength = maxIdLength;
+                        else
+                            return null;
+                        break;
+
+                    case 0x42F3: //EBMLMaxSizeLength
+                        var maxSizeLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                        if (maxSizeLength !== null)
+                            this.maxSizeLength = maxSizeLength;
+                        else
+                            return null;
+                        break;
+
+                    case 0x4282: //DocType
+                        var docType = dataInterface.readString(this.tempElementHeader.size);
+                        if (docType !== null)
+                            this.docType = docType;
+                        else
+                            return null;
+                        break;
+
+                    case 0x4287: //DocTypeVersion //worked
+                        var docTypeVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                        if (docTypeVersion !== null)
+                            this.docTypeVersion = docTypeVersion;
+                        else
+                            return null;
+                        break;
+
+                    case 0x4285: //DocTypeReadVersion //worked
+                        var docTypeReadVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                        if (docTypeReadVersion !== null)
+                            this.docTypeReadVersion = docTypeReadVersion;
+                        else
+                            return null;
+                        break;
+                    default:
+                        console.warn("Header element not found, skipping");
+                        break;
+
+                }
+
+                this.tempElementHeader.reset();
+            }
+
+            this.headerIsLoaded = true;
+        }
+        
+        //Now find segment offsets
         if (!this.currentElement)
             this.currentElement = this.dataInterface.peekElement();
 
@@ -456,108 +536,10 @@ class FlareWebmDemuxer {
 
         this.currentElement = null;
         this.segmentIsLoaded = true;
-        this.state = SEGMENT_LOADED;
-    }
-
-    loadHeader() {
-        //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
-        var dataInterface = this.dataInterface; //cache dataInterface reference
-
-        //only load it if we didnt already load it
-        if (!this.elementEBML) {
-            this.elementEBML = dataInterface.peekElement();
-            if (!this.elementEBML)
-                return null;
-
-            if (this.elementEBML.id !== 0x1A45DFA3) { //EBML 
-                //If the header has not loaded and the first element is not the header, do not continue
-                console.warn('INVALID PARSE, HEADER NOT LOCATED');
-            }
-        }
-
-        while (dataInterface.offset < this.elementEBML.end) {
-            if (!this.tempElementHeader.status) {
-                dataInterface.peekAndSetElement(this.tempElementHeader);
-                if (!this.tempElementHeader.status)
-                    return null;
-            }
-            
-            
-
-
-            switch (this.tempElementHeader.id) {
-
-                case 0x4286: //EBMLVersion
-                    var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (version !== null)
-                        this.version = version;
-                    else
-                        return null;
-                    break;
-
-                case 0x42F7: //EBMLReadVersion 
-                    var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (readVersion !== null)
-                        this.readVersion = readVersion;
-                    else
-                        return null;
-                    break;
-
-                case 0x42F2: //EBMLMaxIDLength
-                    var maxIdLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (maxIdLength !== null)
-                        this.maxIdLength = maxIdLength;
-                    else
-                        return null;
-                    break;
-
-                case 0x42F3: //EBMLMaxSizeLength
-                    var maxSizeLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (maxSizeLength !== null)
-                        this.maxSizeLength = maxSizeLength;
-                    else
-                        return null;
-                    break;
-
-                case 0x4282: //DocType
-                    var docType = dataInterface.readString(this.tempElementHeader.size);
-                    if (docType !== null)
-                        this.docType = docType;
-                    else
-                        return null;
-                    break;
-
-                case 0x4287: //DocTypeVersion //worked
-                    var docTypeVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (docTypeVersion !== null)
-                        this.docTypeVersion = docTypeVersion;
-                    else
-                        return null;
-                    break;
-
-                case 0x4285: //DocTypeReadVersion //worked
-                    var docTypeReadVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (docTypeReadVersion !== null)
-                        this.docTypeReadVersion = docTypeReadVersion;
-                    else
-                        return null;
-                    break;
-                default:
-                    console.warn("Header element not found, skipping");
-                    break;
-
-            }
-
-            this.tempElementHeader.reset();
-        }
-
-        this.headerIsLoaded = true;
-        this.state = HEADER_LOADED;
+        this.state = STATE_DECODING;
     }
 
     dequeueAudioPacket(callback) {
-        //console.warn("Dequeing audio");
-
         if (this.audioPackets.length) {
             var packet = this.audioPackets.shift().data;
             callback(packet);
@@ -673,23 +655,12 @@ class FlareWebmDemuxer {
         this.calculateKeypointOffset();
         this._flush(); //incase loading cues
         //we should now have the cue point
-        console.warn("target");
-        this.seekCueTarget;
         var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
         console.log("clusterOffset : " + clusterOffset);
-        //var relativePosition = 4467;//clusterOffset + this.seekCueTarget.cueTrackPositions.cueRelativePosition;
-        //this.dataInterface.offset = relativePosition;
         this.dataInterface.offset = clusterOffset;
         this.onseek(clusterOffset);
-        this.state = SEGMENT_LOADED;
+        this.state = STATE_DECODING;
         return 0;
-    }
-
-    seekFinish(offsetLow, offsetHigh) {
-        var offset = offsetLow + offsetHigh * 0x100000000;
-        if (this.onseek) {
-            this.onseek(offset);
-        }
     }
 
     close() {
@@ -728,8 +699,6 @@ class FlareWebmDemuxer {
      * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
      */
     calculateKeypointOffset() {
-
-
         var r;
         var timecodeScale = this.segmentInfo.timecodeScale;
         this.seekTime;
@@ -750,7 +719,6 @@ class FlareWebmDemuxer {
         }
 
         this.seekCueTarget = scanPoint;
-
     }
 
 }

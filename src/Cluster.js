@@ -151,7 +151,7 @@ class SimpleBlock {
         this.end = end;
         this.loaded = false;
         this.trackNumber = null;
-        this.timeCode = -1;
+        this.timeCode = null;
         this.flags = null;
         this.keyframe = false;
         this.invisible = false;
@@ -180,25 +180,26 @@ class SimpleBlock {
 
     load() {
         //6323
+        var dataInterface = this.dataInterface;
         if (this.loaded)
             throw "ALREADY LOADED";
 
 
-        if (!this.trackNumber) {
-            this.trackNumber = this.dataInterface.readVint();
+        if (this.trackNumber === null) {
+            this.trackNumber = dataInterface.readVint();
             if (this.trackNumber === null)
                 return null;
             this.loadTrack();
         }
 
-        if (this.timeCode === -1) {
-            this.timeCode = this.dataInterface.readUnsignedInt(2);//Be signed for some reason?
+        if (this.timeCode === null) {
+            this.timeCode = dataInterface.readUnsignedInt(2);//Be signed for some reason?
             if (this.timeCode === null)
                 return null;
         }
 
         if (this.flags === null) {/// FIX THIS
-            this.flags = this.dataInterface.readUnsignedInt(1);
+            this.flags = dataInterface.readUnsignedInt(1);
             if (this.flags === null)
                 return null;
 
@@ -215,7 +216,7 @@ class SimpleBlock {
         if (this.lacing === XIPH_LACING || this.lacing === EBML_LACING) {
             console.warn("DETECTING LACING");
             if (!this.lacedFrameCount) {
-                this.lacedFrameCount = this.dataInterface.readByte();
+                this.lacedFrameCount = dataInterface.readByte();
                 if (this.lacedFrameCount === null)
                     return null;
 
@@ -226,7 +227,7 @@ class SimpleBlock {
                 this.tempCounter = 0;
 
             while (this.tempCounter < this.lacedFrameCount) {
-                var frameSize = this.dataInterface.readByte();
+                var frameSize = dataInterface.readByte();
                 if (frameSize === null)
                     return null;
                 this.frameSizes.push(frameSize);
@@ -239,7 +240,7 @@ class SimpleBlock {
 
         //console.warn(this);
         if (!this.headerSize)
-            this.headerSize = this.dataInterface.offset - this.dataOffset;
+            this.headerSize = dataInterface.offset - this.dataOffset;
 
 
         switch (this.lacing) {
@@ -271,15 +272,15 @@ class SimpleBlock {
                 }
 
 
-                var tempFrame = this.dataInterface.getBinary(this.frameLength);
+                var tempFrame = dataInterface.getBinary(this.frameLength);
 
                 if (tempFrame === null) {
-                    if (this.dataInterface.usingBufferedRead === false)
+                    if (dataInterface.usingBufferedRead === false)
                         throw "SHOULD BE BUFFERED READ";
                     //console.warn("frame has been split");
                     return null;
                 } else {
-                    if (this.dataInterface.usingBufferedRead === true)
+                    if (dataInterface.usingBufferedRead === true)
                         throw "SHOULD NOT BE BUFFERED READ";
 
                     if (tempFrame.byteLength !== this.frameLength)
@@ -296,7 +297,7 @@ class SimpleBlock {
                 }
 
 
-                if (this.dataInterface.usingBufferedRead === true)
+                if (dataInterface.usingBufferedRead === true)
                     throw "SHOULD NOT BE BUFFERED READ";
 
                 var fullTimeCode = this.timeCode + this.cluster.timeCode;
@@ -329,7 +330,7 @@ class SimpleBlock {
                 throw "STOP HERE";
         }
 
-        if (this.end !== this.dataInterface.offset) {
+        if (this.end !== dataInterface.offset) {
 
             console.error(this);
             throw "INVALID BLOCK SIZE";

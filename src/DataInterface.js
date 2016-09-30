@@ -518,7 +518,7 @@ class DataInterface{
         this.internalPointer += bytesToAdd;
         this.overallPointer += bytesToAdd;
     }
-    
+    /*
     readUnsignedInt(size){
         
         if (!this.currentBuffer)// if we run out of data return null
@@ -570,6 +570,53 @@ class DataInterface{
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
         return tempResult;
+    }*/
+        readUnsignedInt(size) {
+
+        if (!this.currentBuffer)// if we run out of data return null
+            return null; //Nothing to parse
+
+        //need to fix overflow for 64bit unsigned int
+        if (size <= 0 || size > 8) {
+            console.warn("invalid file size");
+        }
+
+        var dataView = this.dataBuffers[0];
+
+        if (this.tempResult === null)
+            this.tempResult = 0;
+
+        if (this.tempCounter === INITIAL_COUNTER)
+            this.tempCounter = 0;
+
+        var b;
+
+        while (this.tempCounter < size) {
+
+            if (!this.currentBuffer)// if we run out of data return null
+                return null; //Nothing to parse
+
+            b = this.readByte();
+
+            if (this.tempCounter === 0 && b < 0) {
+                console.warn("invalid integer value");
+            }
+
+
+            this.tempResult <<= 8;
+            this.tempResult |= b;
+
+            if (this.remainingBytes === 0)
+                this.popBuffer();
+
+            this.tempCounter++;
+        }
+
+        //clear the temp resut
+        var result = this.tempResult;
+        this.tempResult = null;
+        this.tempCounter = INITIAL_COUNTER;
+        return result;
     }
 
     readSignedInt(size) {
@@ -632,7 +679,7 @@ class DataInterface{
 
             if (!this.currentBuffer){// if we run out of data return null
                 //save progress
-                this.tempString = tempString;
+                this.tempString += tempString;
                 return null; //Nothing to parse
             }
 
@@ -646,9 +693,12 @@ class DataInterface{
         }
         
         //var tempString = this.tempString;
+        
+        this.tempString += tempString;
+        var retString = this.tempString;
         this.tempString = null;
         this.tempCounter = INITIAL_COUNTER;
-        return tempString;
+        return retString;
     }
     
     readFloat(size) {
