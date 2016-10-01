@@ -59,7 +59,7 @@ class Cues {
         }
 
         this.loaded = true;
-        console.warn(this);
+        //console.warn(this);
     }
 
     getCount() {

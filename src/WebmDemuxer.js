@@ -13,6 +13,7 @@ var STATE_INITIAL = 0;
 var STATE_DECODING = 1;
 var STATE_SEEKING = 2;
 var META_LOADED = 3;
+var STATE_FINISHED = 4;
 var EXIT_OK = 666;
 
 
@@ -56,6 +57,7 @@ class FlareWebmDemuxer {
         this.tempSeekPosition = -1;
         this.loadingCues = false;
         this.seekCueTarget = null;
+        this.eof = false;
 
         Object.defineProperty(this, 'duration', {
             get: function () {
@@ -289,8 +291,8 @@ class FlareWebmDemuxer {
                     break;
             case STATE_DECODING:
                 status = this.load();
-                if (this.state !== META_LOADED)
-                    break;
+                //if (this.state !== STATE_FINISHED)
+                break;
             case STATE_SEEKING:
                 status = this.processSeeking();
                 //if (this.state !== META_LOADED)
@@ -326,8 +328,7 @@ class FlareWebmDemuxer {
                 if (!this.tempElementHeader.status)
                     return null;
             }
-
-
+            
             switch (this.tempElementHeader.id) {
 
                 case 0x114D9B74: //Seek Head
@@ -360,6 +361,15 @@ class FlareWebmDemuxer {
                     if (!this.tracks.loaded)
                         return false;
                     break;
+                    
+                    case 0x1C53BB6B: //Cues
+                    if (!this.cues)
+                        this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
+                    this.cues.load();
+                    if (!this.cues.loaded)
+                        return false;
+                    this.cuesLoaded = true;
+                    break;
 
                 case 0x1F43B675: //Cluster
                     if (!this.currentCluster) {
@@ -384,15 +394,8 @@ class FlareWebmDemuxer {
                     this.currentCluster = null;
                     break;
 
-                case 0x1C53BB6B: //Cues
-                    if (!this.cues)
-                        this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
-                    this.cues.load();
-                    if (!this.cues.loaded)
-                        return false;
-                    this.cuesLoaded = true;
-                    break;
-
+                
+            
                 default:
                     this.state = META_LOADED;//testing
                     if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
@@ -408,7 +411,8 @@ class FlareWebmDemuxer {
             this.tempElementHeader.reset();
         }
 
-        this.state = META_LOADED;
+        this.eof = true;
+        this.state = STATE_FINISHED;
         return status;
     }
 
@@ -436,9 +440,6 @@ class FlareWebmDemuxer {
                     if (!this.tempElementHeader.status)
                         return null;
                 }
-
-
-
 
                 switch (this.tempElementHeader.id) {
 
@@ -578,7 +579,9 @@ class FlareWebmDemuxer {
         this.audioPackets = [];
         this.videoPackets = [];
         this.dataInterface.flush();
+        //this.tempElementHeader.reset();
         this.currentElement = null;
+        this.eof = false;
         //Note: was wrapped in a time function but the callback doesnt seem to take that param
     }
 
@@ -649,7 +652,7 @@ class FlareWebmDemuxer {
                 return 0;
             this.cuesLoaded = true;
             console.warn("cues loaded");
-            console.log(this.cues);
+            //console.log(this.cues);
         }
         //now we can caluclate the pointer offset
         this.calculateKeypointOffset();

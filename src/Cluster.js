@@ -9,10 +9,12 @@ class Cluster {
         this.dataInterface = dataInterface;
         this.offset = offset;
         this.size = size;
-        if (end === -1)
+        if (end !== -1){
             this.end = end;
-        else
+        } 
+        else{
             this.end = Number.MAX_VALUE;
+        }
         this.dataOffset = dataOffset;
         this.loaded = false;
         this.tempEntry = null;
@@ -79,7 +81,8 @@ class Cluster {
 
                     this.tempEntry = null;
                     this.tempElementHeader.reset();
-                    return true;
+                    if(this.dataInterface.offset !== this.end)
+                        return true;
                     break;
 
                     //TODO, ADD VOID
@@ -92,7 +95,7 @@ class Cluster {
 
             this.tempEntry = null;
             this.tempElementHeader.reset();
-            return status;
+            
             //return 1;
         }
 
@@ -104,7 +107,7 @@ class Cluster {
 
 
         this.loaded = true;
-        return 0;
+        return status;
     }
 }
 
