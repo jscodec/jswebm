@@ -36,46 +36,9 @@ class Tracks {
                     else
                         var trackEntry = this.trackLoader.getTrackEntry();
                         this.trackEntries.push(trackEntry);
-                        
-                        
-                    //Push the initializer on automatically
-                    //put this in a vorbis class
-                    if(trackEntry.trackType === 1){
-                        this.demuxer.videoTrack = trackEntry;
-                    }else if (trackEntry.trackType === 2 && this.demuxer.audioCodec === "vorbis") {
-                        var headerParser = new DataView(trackEntry.codecPrivate);
-                        var packetCount = headerParser.getUint8(0);
-                        var firstLength = headerParser.getUint8(1);
-                        var secondLength = headerParser.getUint8(2);
-                        var thirdLength = headerParser.byteLength - firstLength - secondLength -1;
-                        if(packetCount !== 2)
-                            throw "INVALID VORBIS HEADER";
-                        //throw "last length  = " + thirdLength;
-                        var start = 3;
-                        var end = start + firstLength;
-                        var demuxer = this.demuxer; //cache reference
-                        demuxer.audioPackets.push({//This could be improved
-                            data: headerParser.buffer.slice(start, end),
-                            timestamp: -1
-                        });
-                        start = end;
-                        end = start + secondLength;
-                        
-                        demuxer.audioPackets.push({//This could be improved
-                            data: headerParser.buffer.slice(start, end),
-                            timestamp: -1
-                        });
-                        start = end;
-                        end = start + thirdLength;
-                        demuxer.audioPackets.push({//This could be improved
-                            data: headerParser.buffer.slice(start, end),
-                            timestamp: -1
-                        });
-                        
-                        trackEntry.codecPrivate = null; //won't need it anymore
-                        this.demuxer.audioTrack = trackEntry;
-                    }
+                      
                     break;
+                    
                 default:
                     console.warn("TRACK BUG");
                     throw "Track entry not found";

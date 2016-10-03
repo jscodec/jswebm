@@ -58,6 +58,12 @@ class FlareWebmDemuxer {
         this.loadingCues = false;
         this.seekCueTarget = null;
         this.eof = false;
+        this.videoFormat = null;
+        this.audioFormat = null;
+        this.videoCodec = null;
+        this.audioFormat = null;
+        this.videoTrack = null;
+        this.audioTrack = null;
 
         Object.defineProperty(this, 'duration', {
             get: function () {
@@ -80,57 +86,6 @@ class FlareWebmDemuxer {
                 } else {
                     return false;
                 }
-            }
-        });
-
-
-        Object.defineProperty(this, 'audioFormat', {
-            get: function () {
-                var channels;
-                var rate;
-                for (var i in this.tracks.trackEntries) {
-                    var trackEntry = this.tracks.trackEntries[i];
-                    if (trackEntry.trackType === 2) { // audio track
-                        channels = trackEntry.channels;
-                        rate = trackEntry.rate;
-                        break;
-                    }
-                }
-                //console.error("channels : " + channels + "rate : " + rate);
-                var test;
-                return test;
-                return {
-                    channels: channels,
-                    rate: rate
-                };
-            }
-        });
-
-        Object.defineProperty(this, 'videoFormat', {
-            //in case multiple video tracks? maybe make single track since probably slower to loop
-            get: function () {
-                var tempTrack;
-                for (var i in this.tracks.trackEntries) {
-                    var trackEntry = this.tracks.trackEntries[i];
-                    if (trackEntry.trackType === 1) { // video track
-                        tempTrack = trackEntry;
-                        break;
-                    }
-                }
-                var fps = 0;//For now?
-                return {
-                    width: tempTrack.width,
-                    height: tempTrack.height,
-                    chromaWidth: tempTrack.width >> 1,
-                    chromaHeight: tempTrack.height >> 1,
-                    cropLeft: tempTrack.pixelCropLeft,
-                    cropTop: tempTrack.pixelCropTop,
-                    cropWidth: tempTrack.width - tempTrack.pixelCropLeft - tempTrack.pixelCropRight,
-                    cropHeight: tempTrack.height - tempTrack.pixelCropTop - tempTrack.pixelCropBottom,
-                    displayWidth: tempTrack.displayWidth,
-                    displayHeight: tempTrack.displayHeight,
-                    fps: fps
-                };
             }
         });
 
@@ -180,67 +135,6 @@ class FlareWebmDemuxer {
             }
         });
 
-        //Only need this property cause nest egg has it
-
-        Object.defineProperty(this, 'videoCodec', {
-            get: function () {
-                var codecID;
-                //Multiple video tracks are allowed, for now just return the first one
-                for (var i in this.tracks.trackEntries) {
-                    var trackEntry = this.tracks.trackEntries[i];
-                    if (trackEntry.trackType === 1) { // video track
-                        codecID = trackEntry.codecID;
-                        break;
-                    }
-
-
-                }
-                var codecName;
-                switch (codecID) {
-                    case "V_VP8" :
-                        codecName = "vp8";
-                        break;
-                    default:
-                        codecName = null;
-                        break;
-                }
-                ;
-
-                return codecName;
-
-            }
-        });
-
-
-        Object.defineProperty(this, 'audioCodec', {
-            get: function () {
-                var codecID;
-                //Multiple video tracks are allowed, for now just return the first one
-                for (var i in this.tracks.trackEntries) {
-                    var trackEntry = this.tracks.trackEntries[i];
-                    if (trackEntry.trackType === 2) {
-                        codecID = trackEntry.codecID;
-                        break;
-                    }
-
-
-                }
-                var codecName;
-                switch (codecID) {
-                    case "A_VORBIS" :
-                        codecName = "vorbis";
-                        break;
-                    default:
-                        codecName = null;
-                        break;
-                }
-                ;
-
-                return codecName;
-
-            }
-        });
-
         console.log('%c FLARE WEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
     }
 
@@ -265,7 +159,113 @@ class FlareWebmDemuxer {
 
         callback();
     }
+    
+    /**
+     * 
+     * Sets up the meta data validation after
+     */
+    validateMetadata() {
+        var codecID;
+        var channels;
+        var rate;
+        var tempTrack;
+        //Multiple video tracks are allowed, for now just return the first one
+        for (var i in this.tracks.trackEntries) {
+            var trackEntry = this.tracks.trackEntries[i];
+            if (trackEntry.trackType === 2) {
+                tempTrack = trackEntry;
+                codecID = trackEntry.codecID;
+                channels = trackEntry.channels;
+                rate = trackEntry.rate;
+                break;
+            }
+        }
+        this.audioTrack = tempTrack;
+        var codecName;
+        switch (codecID) {
+            case "A_VORBIS":
+                this.audioCodec = "vorbis";
+                this.initVorbisHeaders(tempTrack);
+                break;
+            default:
+                this.audioCodec = null;
+                break;
+        }
 
+
+        for (var i in this.tracks.trackEntries) {
+            var trackEntry = this.tracks.trackEntries[i];
+            if (trackEntry.trackType === 1) { // video track
+                tempTrack = trackEntry;
+                codecID = trackEntry.codecID;
+                break;
+            }
+        }
+
+        switch (codecID) {
+            case "V_VP8" :
+                this.videoCodec = "vp8";
+                break;
+            default:
+                this.videoCodec = null;
+                break;
+        }
+
+
+        this.videoTrack = tempTrack;
+        var fps = 0;//For now?
+        this.videoFormat = {
+            width: tempTrack.width,
+            height: tempTrack.height,
+            chromaWidth: tempTrack.width >> 1,
+            chromaHeight: tempTrack.height >> 1,
+            cropLeft: tempTrack.pixelCropLeft,
+            cropTop: tempTrack.pixelCropTop,
+            cropWidth: tempTrack.width - tempTrack.pixelCropLeft - tempTrack.pixelCropRight,
+            cropHeight: tempTrack.height - tempTrack.pixelCropTop - tempTrack.pixelCropBottom,
+            displayWidth: tempTrack.displayWidth,
+            displayHeight: tempTrack.displayHeight,
+            fps: fps
+        };
+
+        this.loadedMetadata = true;
+    }
+
+    initVorbisHeaders(trackEntry) {
+        var headerParser = new DataView(trackEntry.codecPrivate);
+        var packetCount = headerParser.getUint8(0);
+        var firstLength = headerParser.getUint8(1);
+        var secondLength = headerParser.getUint8(2);
+        var thirdLength = headerParser.byteLength - firstLength - secondLength - 1;
+        if (packetCount !== 2)
+            throw "INVALID VORBIS HEADER";
+        //throw "last length  = " + thirdLength;
+        var start = 3;
+        var end = start + firstLength;
+
+        this.audioPackets.push({//This could be improved
+            data: headerParser.buffer.slice(start, end),
+            timestamp: -1
+        });
+        start = end;
+        end = start + secondLength;
+
+        this.audioPackets.push({//This could be improved
+            data: headerParser.buffer.slice(start, end),
+            timestamp: -1
+        });
+        start = end;
+        end = start + thirdLength;
+        this.audioPackets.push({//This could be improved
+            data: headerParser.buffer.slice(start, end),
+            timestamp: -1
+        });
+
+        //trackEntry.codecPrivate = null; //won't need it anymore
+        this.audioTrack = trackEntry;
+    }
+
+            
     receiveInput(data, callback) {
         var ret = this.time(function () {
             //console.log("got input");
@@ -372,8 +372,12 @@ class FlareWebmDemuxer {
                     break;
 
                 case 0x1F43B675: //Cluster
+                    if (!this.loadedMetadata) {
+	                        this.validateMetadata();
+	                        return true;
+	                    }
                     if (!this.currentCluster) {
-                        var metaWasLoaded = this.loadedMetadata;
+                       // var metaWasLoaded = this.loadedMetadata;
                         this.currentCluster = new Cluster(
                                 this.tempElementHeader.offset,
                                 this.tempElementHeader.size,
@@ -382,8 +386,8 @@ class FlareWebmDemuxer {
                                 this.dataInterface,
                                 this
                                 );
-                        if (this.loadedMetadata && !metaWasLoaded)
-                            return true;
+                        //if (this.loadedMetadata && !metaWasLoaded)
+                          //  return true;
                     }
                     status = this.currentCluster.load();
                     if (!this.currentCluster.loaded) {
@@ -581,6 +585,7 @@ class FlareWebmDemuxer {
         this.dataInterface.flush();
         //this.tempElementHeader.reset();
         this.currentElement = null;
+        this.currentCluster = null;
         this.eof = false;
         //Note: was wrapped in a time function but the callback doesnt seem to take that param
     }
@@ -656,7 +661,7 @@ class FlareWebmDemuxer {
         }
         //now we can caluclate the pointer offset
         this.calculateKeypointOffset();
-        this._flush(); //incase loading cues
+        //this._flush(); //incase loading cues
         //we should now have the cue point
         var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
         console.log("clusterOffset : " + clusterOffset);

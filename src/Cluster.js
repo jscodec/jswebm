@@ -9,12 +9,12 @@ class Cluster {
         this.dataInterface = dataInterface;
         this.offset = offset;
         this.size = size;
-        if (end !== -1){
+        //if (end !== -1){
             this.end = end;
-        } 
-        else{
-            this.end = Number.MAX_VALUE;
-        }
+        //} 
+        //else{
+          //  this.end = Number.MAX_VALUE;
+        //}
         this.dataOffset = dataOffset;
         this.loaded = false;
         this.tempEntry = null;
@@ -29,7 +29,7 @@ class Cluster {
 
 
         //this should go somewhere else!!
-        this.demuxer.loadedMetadata = true; // Testing only
+        //this.demuxer.loadedMetadata = true; // Testing only
         return true;
     }
     

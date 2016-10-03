@@ -22,12 +22,6 @@ class DataInterface{
         this.tempBinaryBuffer = null;
         this.seekTarget;
         
-        Object.defineProperty(this, 'markerBytesRead' , {
-            get: function(){
-                return this.markerPointer;
-            }
-        });
-        
         Object.defineProperty(this, 'offset' , {
             get: function(){
                 return this.overallPointer;
@@ -82,6 +76,7 @@ class DataInterface{
         this.tempElementId = null;
         this.tempElementSize = null;
         this.tempVintWidth = null;
+        this.tempBinaryBuffer = null;
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
         this.usingBufferedRead = false;
@@ -828,6 +823,8 @@ class DataInterface{
             this.tempCounter += bytesToCopy;
         }
         
+        if(this.tempBinaryBuffer.byteLength !== length)
+            console.warn("invalid read");
         var tempBinaryBuffer = this.tempBinaryBuffer;
         this.tempBinaryBuffer = null;
         this.tempCounter = INITIAL_COUNTER;
