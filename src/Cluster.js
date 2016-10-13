@@ -21,7 +21,6 @@ class Cluster {
         this.currentElement = null;
         this.timeCode = null;
         this.tempBlock = null;
-        //this.blocks = [];
 
         this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
         this.tempElementHeader.reset();
@@ -170,6 +169,9 @@ class SimpleBlock {
         this.isLaced = false;
         this.stop = this.offset + this.size;
         this.status = true;
+        this.trackEntries = this.cluster.demuxer.tracks.trackEntries;
+        this.videoPackets = this.cluster.demuxer.videoPackets;
+        this.audioPackets = this.cluster.demuxer.audioPackets;
     }
 
     reset() {
@@ -178,7 +180,7 @@ class SimpleBlock {
 
     loadTrack() {
         //could be cleaner
-        this.track = this.cluster.demuxer.tracks.trackEntries[this.trackNumber - 1];
+        this.track = this.trackEntries[this.trackNumber - 1];
     }
 
     load() {
@@ -213,9 +215,6 @@ class SimpleBlock {
                 throw "INVALID LACING";
         }
 
-
-
-
         if (this.lacing === XIPH_LACING || this.lacing === EBML_LACING) {
             console.warn("DETECTING LACING");
             if (!this.lacedFrameCount) {
@@ -236,10 +235,7 @@ class SimpleBlock {
                 this.frameSizes.push(frameSize);
                 this.tempCounter++;
             }
-
-
         }
-
 
         //console.warn(this);
         if (!this.headerSize)
@@ -288,15 +284,6 @@ class SimpleBlock {
 
                     if (tempFrame.byteLength !== this.frameLength)
                         throw "INVALID FRAME";
-
-                    /*
-                     if((this.dataInterface.offset - this.tempMarker) !== this.frameLength){
-                     console.warn((this.dataInterface.offset - this.tempMarker));
-                     throw "OFFSET ERROR";  
-                     }*/
-
-
-                    //console.warn("frame complete");
                 }
 
 
@@ -312,13 +299,13 @@ class SimpleBlock {
 
 
                 if (this.track.trackType === 1) {
-                    this.cluster.demuxer.videoPackets.push({//This could be improved
+                    this.videoPackets.push({//This could be improved
                         data: tempFrame,
                         timestamp: timeStamp,
                         keyframeTimestamp: timeStamp
                     });
                 } else if (this.track.trackType === 2) {
-                    this.cluster.demuxer.audioPackets.push({//This could be improved
+                    this.audioPackets.push({//This could be improved
                         data: tempFrame,
                         timestamp: timeStamp
                     });
