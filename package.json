@@ -5,6 +5,9 @@
     "webm",
     "ogv.js"
   ],
+  "scripts": {
+    "build": "webpack"
+  },
   "author": "Brian Parra",
   "contributors": [],
   "license": "MIT",
@@ -12,5 +15,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/FlareMediaPlayer/FlareWebmDemuxer.git"
+  },
+  "dependencies": {
+    "webpack": "^1.13.3",
+    "google-closure-compiler-js": "^20161024.0.0"
   }
 }

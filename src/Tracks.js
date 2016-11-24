@@ -1,5 +1,5 @@
 'use strict';
-
+var Seek = require('./Seek.js');
 class Tracks {
 
     constructor(seekHeadHeader, dataInterface, demuxer) {
