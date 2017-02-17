@@ -733,7 +733,11 @@ class FlareWebmDemuxer {
 
 
 
+if(window)
+    window.OGVDemuxerWebM = FlareWebmDemuxer;
 
+if(self)
+    self.OGVDemuxerWebM = FlareWebmDemuxer;
 
 
 

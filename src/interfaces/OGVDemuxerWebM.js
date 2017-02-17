@@ -69,6 +69,11 @@ class OGVDemuxer {
 }
 
 //Expose our new class to the window's global scope
-if (window) {
+
+
+if(window)
     window.OGVDemuxer = OGVDemuxer;
-}
+
+if(self)
+    self.OGVDemuxer = OGVDemuxer;
+

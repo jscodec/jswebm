@@ -1,24 +1,33 @@
 const ClosureCompiler = require('google-closure-compiler-js').webpack;
 const path = require('path');
  
-module.exports = {
+var OGV = {
   entry: [
-    path.join(__dirname, 'src', 'interfaces' , 'OGVDemuxer.js' )
+    path.join(__dirname, 'src', 'interfaces' , 'OGVDemuxerWebM.js' )
   ],
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'OGVDemuxer.js'
+  }  
+};
+
+var OGVMin = {
+  entry: [
+    path.join(__dirname, 'src', 'interfaces' , 'OGVDemuxerWebM.js' )
+  ],
+  output: {
+    path: path.join(__dirname, 'build'),
+    filename: 'ogv-demuxer-webm.js'
   },
   plugins: [
     new ClosureCompiler({
       options: {
-        //languageIn: 'ECMASCRIPT6',
-        //languageOut: 'ECMASCRIPT5',
-        compilationLevel: 'ADVANCED',
+        compilationLevel: 'SIMPLE',
         warningLevel: 'VERBOSE'
       }
     })
   ]
 };
 
-//./src/interfaces/OGVDemuxer.js ./build/OGVDemuxer.js
+
+module.exports = [OGVMin];
