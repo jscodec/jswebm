@@ -504,59 +504,7 @@ class DataInterface{
         this.internalPointer += bytesToAdd;
         this.overallPointer += bytesToAdd;
     }
-    /*
-    readUnsignedInt(size){
-        
-        if (!this.currentBuffer)// if we run out of data return null
-                return null; //Nothing to parse
-            
-        //need to fix overflow for 64bit unsigned int
-        if ( size <= 0 || size > 8) {
-            console.warn("invalid file size");
-        }
-  
-        if(this.tempResult === null)
-            this.tempResult = 0;
 
-        if (this.tempCounter === INITIAL_COUNTER)
-            this.tempCounter = 0;
-
-        var b;
-
-        var tempCounter = this.tempCounter;
-        var tempResult = this.tempResult;
-        
-        while (tempCounter < size) {
-
-            if (!this.currentBuffer){// if we run out of data return null
-                //save progress;
-                this.tempCounter = tempCounter;
-                this.tempResult = tempResult;
-                return null; //Nothing to parse
-            }
-
-            b = this.readByte();
-
-            if (tempCounter === 0 && b < 0) {
-                console.warn("invalid integer value");
-            }
-
-
-            tempResult <<= 8;
-            tempResult |= b;
-
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
-            
-            tempCounter++;
-        }
-
-        //clear the temp resut
-        //var result = this.tempResult;
-        this.tempResult = null;
-        this.tempCounter = INITIAL_COUNTER;
-        return tempResult;
-    }*/
     readUnsignedInt(size) {
 
         if (!this.currentBuffer)// if we run out of data return null

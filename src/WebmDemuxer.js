@@ -701,13 +701,12 @@ class JsWebm {
         this.calculateKeypointOffset();
         //we should now have the cue point
         var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
-        //console.log("SEEK TARGET : " + clusterOffset );
+
         this._flush();
         this.dataInterface.offset = clusterOffset;
         this.onseek(clusterOffset);
         this.state = STATE_DECODING;
-        //console.warn("done seek");
-        //console.warn("datainterface offset is " + this.dataInterface.offset);
+
         return 0;
     }
 
@@ -732,11 +731,6 @@ class JsWebm {
                     this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
             }
         }
-
-        //this._flush();
-        
-        //this.loadingCues = true;
-        //console.warn("CUES offset LOADED--");
         
     }
 
