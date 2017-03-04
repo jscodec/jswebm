@@ -1,6 +1,6 @@
 'use strict';
 
-var DataInterface = require('./DataInterface.js');
+var DataInterface = require('./DataInterface/DataInterface.js');
 var SeekHead = require('./SeekHead.js');
 var SegmentInfo = require('./SegmentInfo.js');
 var Tracks = require('./Tracks.js');
@@ -134,12 +134,12 @@ class JsWebm {
                 }
             }
         });
-        
+
         Object.defineProperty(this, 'nextKeyframeTimestamp', {
-		get: function() {
-			throw "looking for kf timestamp";
-		}
-	});
+            get: function () {
+                throw "looking for kf timestamp";
+            }
+        });
 
 
         console.log('%c JSWEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
@@ -157,7 +157,7 @@ class JsWebm {
         //console.log('demux time ' + delta);
         return ret;
     }
-    
+
     /**
      * 
      * Sets up the meta data validation after
@@ -268,10 +268,10 @@ class JsWebm {
      * @param {arraybuffer} data
      * @returns {void}
      */
-    queueData(data){
+    queueData(data) {
         this.dataInterface.recieveInput(data);
     }
-    
+
     demux() {
         var status = false;
         switch (this.state) {
@@ -290,15 +290,15 @@ class JsWebm {
             default:
             //fill this out
         }
-        
+
         return status;
     }
 
-      process(callback) {
+    process(callback) {
 
         var start = getTimestamp();
         var status = false;
-  
+
 
         //this.processing = true;
 
@@ -318,7 +318,7 @@ class JsWebm {
                 break;
             default:
                 throw "state got wrecked";
-            //fill this out
+                //fill this out
         }
 
         //this.processing = false;
@@ -342,14 +342,14 @@ class JsWebm {
      */
     load() {
         var status = false;
-        
+
         while (this.dataInterface.offset < this.segment.end) {
             if (!this.tempElementHeader.status) {
                 this.dataInterface.peekAndSetElement(this.tempElementHeader);
                 if (!this.tempElementHeader.status)
                     return null;
             }
-            
+
             switch (this.tempElementHeader.id) {
 
                 case 0x114D9B74: //Seek Head
@@ -382,8 +382,8 @@ class JsWebm {
                     if (!this.tracks.loaded)
                         return false;
                     break;
-                    
-                    case 0x1C53BB6B: //Cues
+
+                case 0x1C53BB6B: //Cues
                     if (!this.cues)
                         this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
                     this.cues.load();
@@ -394,11 +394,11 @@ class JsWebm {
 
                 case 0x1F43B675: //Cluster
                     if (!this.loadedMetadata) {
-	                        this.validateMetadata();
-	                        return true;
-	                    }
+                        this.validateMetadata();
+                        return true;
+                    }
                     if (!this.currentCluster) {
-                       // var metaWasLoaded = this.loadedMetadata;
+                        // var metaWasLoaded = this.loadedMetadata;
                         //console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
                         this.currentCluster = new Cluster(
                                 this.tempElementHeader.offset,
@@ -410,23 +410,23 @@ class JsWebm {
                                 );
                         //console.warn(this.currentCluster);
                         //if (this.loadedMetadata && !metaWasLoaded)
-                          //  return true;
-                          //console.warn(this.currentCluster);
+                        //  return true;
+                        //console.warn(this.currentCluster);
                     }
-       
-                    
+
+
                     status = this.currentCluster.load();
                     if (!this.currentCluster.loaded) {
                         return status;
                     }
-                    
 
-                    
+
+
                     this.currentCluster = null;
                     break;
 
-                
-            
+
+
                 default:
                     this.state = META_LOADED;//testing
                     if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
@@ -540,7 +540,7 @@ class JsWebm {
 
             this.headerIsLoaded = true;
         }
-        
+
         //Now find segment offsets
         if (!this.currentElement)
             this.currentElement = this.dataInterface.peekElement();
@@ -594,8 +594,6 @@ class JsWebm {
         }
     }
 
-
-
     _flush() {
         //console.log("flushing demuxer buffer private");
         this.audioPackets = [];
@@ -604,8 +602,8 @@ class JsWebm {
         //this.tempElementHeader.reset();
         this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
         this.tempElementHeader.reset();
-        
-        
+
+
         this.currentElement = null;
         this.currentCluster = null;
         this.eof = false;
@@ -632,10 +630,10 @@ class JsWebm {
      * @param {function} callback 
      */
     seekToKeypoint(timeSeconds, callback) {
-        
+
         this.state = STATE_SEEKING;
         console.warn("SEEK BEING CALLED");
-        
+
         var ret = this.time(function () {
 
             var status;
@@ -661,7 +659,7 @@ class JsWebm {
         this.audioPackets = [];
         this.videoPackets = [];
         callback(!!ret);
-        
+
     }
 
     processSeeking() {
@@ -669,34 +667,34 @@ class JsWebm {
         //Have to load cues if not available
         if (!this.cuesLoaded) {
             //throw "cues not loaded";
-            if (!this.cuesOffset){
+            if (!this.cuesOffset) {
                 this.initCues();
                 this._flush();
                 this.dataInterface.offset = this.cuesOffset;
                 this.onseek(this.cuesOffset);
                 return 0;
             }
-            
+
             if (!this.currentElement) {
-                
+
                 this.currentElement = this.dataInterface.peekElement();
                 if (this.currentElement === null)
                     return 0;
             }
-            
+
             if (!this.cues)
                 this.cues = new Cues(this.currentElement, this.dataInterface, this);
-            
+
             //processing cues
             this.cues.load();
             if (!this.cues.loaded)
                 return 0;
-            
+
             this.cuesLoaded = true;
             //console.warn(this.cues);
             return 0;
         }
-        
+
         //now we can caluclate the pointer offset
         this.calculateKeypointOffset();
         //we should now have the cue point
@@ -709,8 +707,6 @@ class JsWebm {
 
         return 0;
     }
-
-
 
     /**
      * Possibly use this to initialize cues if not loaded, can be called from onScrub or seekTo
@@ -731,7 +727,7 @@ class JsWebm {
                     this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
             }
         }
-        
+
     }
 
     /**

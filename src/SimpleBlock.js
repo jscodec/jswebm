@@ -1,3 +1,5 @@
+'use strict';
+
 var NO_LACING = 0;
 var XIPH_LACING = 1;
 var FIXED_LACING = 2;

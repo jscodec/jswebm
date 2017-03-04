@@ -86,6 +86,7 @@ class TrackLoader {
         this.trackData.codecDelay = null;
         this.trackData.seekPreRoll = null;
         this.tempTrack = null;
+        this.minCache = null;
     }
 
     init(trackheader, dataInterface) {
@@ -107,6 +108,7 @@ class TrackLoader {
         this.trackData.seekPreRoll = null;
         this.trackData.trackUID = null;
         this.tempTrack = null;
+        this.minCache = null;
     }
 
     load() {
@@ -236,8 +238,16 @@ class TrackLoader {
                         return null;
                     break;
 
+                case 0x6DE7: //MinCache
+                    var minCache = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    if (minCache !== null)
+                        this.trackData.minCache = minCache;
+                    else
+                        return null;
+                    break;
+                    
                 default:
-                    console.warn("track data element not found, skipping");
+                    console.warn("track data element not found, skipping : " + this.currentElement.id.toString(16));
                     break;
 
             }
@@ -362,7 +372,7 @@ class VideoTrack extends Track{
                 case 0x55B0: //Color
                     console.error("NO COLOR LOADING YET");
                 default:
-                    console.warn("Ifno element not found, skipping");
+                    console.warn("Info element not found, skipping: " + this.currentElement.id.toFixed(16));
                     break;
 
             }

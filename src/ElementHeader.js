@@ -1,4 +1,4 @@
-'use-strict';
+'use strict';
 
 /**
  * @classdesc A class to handle managment of matroska elements

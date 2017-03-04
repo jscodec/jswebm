@@ -6,7 +6,8 @@
 
 var INITIAL_COUNTER = -1;
 
-var ElementHeader = require('./ElementHeader.js');
+var ElementHeader = require('../ElementHeader.js');
+var DateParser = require('./DateParser.js');
 
 class DataInterface{
     
@@ -21,6 +22,7 @@ class DataInterface{
         this.tempFloat32 = new DataView(new ArrayBuffer(4));
         this.tempBinaryBuffer = null;
         this.seekTarget;
+        this.dateParser = new DateParser();
         
         Object.defineProperty(this, 'offset' , {
             get: function(){
@@ -96,6 +98,10 @@ class DataInterface{
     
     popBuffer(){
         this.currentBuffer = null;
+    }
+    
+    readDate(size){
+        return this.readSignedInt(size);
     }
     
     readId(){
@@ -667,7 +673,37 @@ class DataInterface{
 
 
         } else if (size === 4) {
-            throw "implement this!";
+            
+             if (this.tempCounter === INITIAL_COUNTER)
+                this.tempCounter = 0;
+
+            if (this.tempResult === null){
+                this.tempResult = 0;
+                this.tempFloat32.setFloat32(0, 0);
+            }
+                
+
+            var b;
+
+            while (this.tempCounter < size) {
+
+                if (!this.currentBuffer)// if we run out of data return null
+                    return null; //Nothing to parse
+
+
+
+                b = this.readByte();
+
+                this.tempFloat32.setUint8(this.tempCounter, b);
+
+                if (this.remainingBytes === 0)
+                    this.currentBuffer = null; 
+
+                this.tempCounter++;
+            }
+            
+            this.tempResult = this.tempFloat32.getFloat32(0);
+            
         } else {
             throw "INVALID FLOAT LENGTH";
         }

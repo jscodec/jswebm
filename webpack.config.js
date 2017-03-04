@@ -1,13 +1,13 @@
 const ClosureCompiler = require('google-closure-compiler-js').webpack;
 const path = require('path');
  
-var OGV = {
+var JsWebm = {
   entry: [
-    path.join(__dirname, 'src', 'interfaces' , 'OGVDemuxerWebM.js' )
+    path.join(__dirname, 'src', 'interfaces' , 'JsWebm.js' )
   ],
   output: {
     path: path.join(__dirname, 'build'),
-    filename: 'OGVDemuxer.js'
+    filename: 'jswebm.js'
   }  
 };
 
@@ -32,4 +32,4 @@ var OGVMin = {
 };
 
 
-module.exports = [OGVMin];
+module.exports = [OGVMin, JsWebm];

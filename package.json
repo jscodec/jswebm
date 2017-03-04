@@ -8,7 +8,8 @@
      "jsvpx"
   ],
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "test": "node test/test.js"
   },
   "author": "Brian Parra",
   "contributors": [],

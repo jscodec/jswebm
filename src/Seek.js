@@ -1,3 +1,5 @@
+'use strict';
+
 class Seek{
     
     constructor(seekHeader, dataInterface) {
@@ -40,7 +42,7 @@ class Seek{
                     break;
  
                 default:
-                    console.warn("Seek element not found, skipping");
+                    console.warn("Seek element not found, skipping : " + this.currentElement.id.toFixed(16));
                     break;
 
             }

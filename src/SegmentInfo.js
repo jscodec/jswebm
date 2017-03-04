@@ -16,6 +16,7 @@ class SegmentInfo {
         this.loaded = false;
         this.segmentUID = null;
         this.duration = null;
+        this.dateUTC;
 
     }
 
@@ -81,8 +82,16 @@ class SegmentInfo {
                         return null;
                     break;
                     
+                case 0x4461 : //DateUTC
+                    var dateUTC = this.dataInterface.readDate(this.currentElement.size);
+                    if (dateUTC !== null)
+                        this.dateUTC = dateUTC;
+                    else
+                        return null;
+                    break;
+                    
                 default:
-                    console.error("Ifno element not found, skipping : " + this.currentElement.id);
+                    console.error("Ifno element not found, skipping : " + this.currentElement.id.toString(16));
                     break; 
 
             }
