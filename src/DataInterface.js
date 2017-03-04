@@ -82,10 +82,14 @@ class DataInterface{
         this.usingBufferedRead = false;
         this.overallPointer = 0;
         this.internalPointer = 0;
+        this.tempFloat64 = new DataView(new ArrayBuffer(8));
+        this.tempFloat32 = new DataView(new ArrayBuffer(4));
         
     }
     
     recieveInput(data){
+        if(this.currentBuffer)
+            throw "Buffer getting wrecked";
         this.currentBuffer = new DataView(data);
         this.internalPointer = 0;
     }

@@ -55,10 +55,12 @@ class Cluster {
 
                 case 0xE7: //TimeCode
                     var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (timeCode !== null)
+                    if (timeCode !== null){
                         this.timeCode = timeCode;
-                    else
+                        console.warn("timecode seeked to:" + this.timeCode);
+                    }else{
                         return null;
+                    }
                     break;
 
                 case 0xA3: //Simple Block
@@ -302,7 +304,8 @@ class SimpleBlock {
                     this.videoPackets.push({//This could be improved
                         data: tempFrame,
                         timestamp: timeStamp,
-                        keyframeTimestamp: timeStamp
+                        keyframeTimestamp: timeStamp,
+                        isKeyframe : true
                     });
                 } else if (this.track.trackType === 2) {
                     this.audioPackets.push({//This could be improved

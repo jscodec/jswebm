@@ -27,7 +27,7 @@ if (typeof performance === 'undefined' || typeof performance.now === 'undefined'
 /**
  * @classdesc Wrapper class to handle webm demuxing
  */
-class FlareWebmDemuxer {
+class JsWebm {
 
     constructor() {
         this.shown = false; // for testin
@@ -134,8 +134,15 @@ class FlareWebmDemuxer {
                 }
             }
         });
+        
+        Object.defineProperty(this, 'nextKeyframeTimestamp', {
+		get: function() {
+			throw "looking for kf timestamp";
+		}
+	});
 
-        console.log('%c FLARE WEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
+
+        console.log('%c JSWEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
     }
 
     /**
@@ -149,15 +156,6 @@ class FlareWebmDemuxer {
         this.cpuTime += delta;
         //console.log('demux time ' + delta);
         return ret;
-    }
-
-    /**
-     * 
-     * @param {function} callback
-     */
-    init(callback) {
-
-        callback();
     }
     
     /**
@@ -265,25 +263,17 @@ class FlareWebmDemuxer {
         this.audioTrack = trackEntry;
     }
 
-            
-    receiveInput(data, callback) {
-        var ret = this.time(function () {
-            //console.log("got input");
-            this.dataInterface.recieveInput(data);
-        }.bind(this));
-        callback();
-
+    /**
+     * This function ques up more data to the internal buffer
+     * @param {arraybuffer} data
+     * @returns {void}
+     */
+    queueData(data){
+        this.dataInterface.recieveInput(data);
     }
-
-    process(callback) {
-
-        var start = getTimestamp();
+    
+    demux() {
         var status = false;
-        //console.warn("processing");
-
-
-        //this.processing = true;
-
         switch (this.state) {
             case STATE_INITIAL:
                 this.initDemuxer();
@@ -300,6 +290,37 @@ class FlareWebmDemuxer {
             default:
             //fill this out
         }
+        
+        return status;
+    }
+
+      process(callback) {
+
+        var start = getTimestamp();
+        var status = false;
+        console.warn("processing + " + this.state);
+
+
+        //this.processing = true;
+
+        switch (this.state) {
+            case STATE_INITIAL:
+                this.initDemuxer();
+                if (this.state !== STATE_DECODING)
+                    break;
+            case STATE_DECODING:
+                status = this.load();
+                //if (this.state !== STATE_FINISHED)
+                break;
+            case STATE_SEEKING:
+                console.warn("Seek processing");
+                status = this.processSeeking();
+                //if (this.state !== META_LOADED)
+                break;
+            default:
+                throw "state got wrecked";
+            //fill this out
+        }
 
         //this.processing = false;
         var delta = (getTimestamp() - start);
@@ -312,6 +333,8 @@ class FlareWebmDemuxer {
             result = 0;
         }
 
+        //console.warn("done process");
+        console.warn("done process : " + result);
         callback(!!result);
     }
 
@@ -378,6 +401,7 @@ class FlareWebmDemuxer {
 	                    }
                     if (!this.currentCluster) {
                        // var metaWasLoaded = this.loadedMetadata;
+                        console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
                         this.currentCluster = new Cluster(
                                 this.tempElementHeader.offset,
                                 this.tempElementHeader.size,
@@ -386,13 +410,18 @@ class FlareWebmDemuxer {
                                 this.dataInterface,
                                 this
                                 );
+                        //console.warn(this.currentCluster);
                         //if (this.loadedMetadata && !metaWasLoaded)
                           //  return true;
+                          console.warn(this.currentCluster);
                     }
+       
+                    
                     status = this.currentCluster.load();
                     if (!this.currentCluster.loaded) {
                         return status;
                     }
+                    
 
                     
                     this.currentCluster = null;
@@ -401,6 +430,7 @@ class FlareWebmDemuxer {
                 
             
                 default:
+                    throw "Fucked up";
                     this.state = META_LOADED;//testing
                     if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
                         return false;
@@ -560,23 +590,14 @@ class FlareWebmDemuxer {
     dequeueVideoPacket(callback) {
         if (this.videoPackets.length) {
             var packet = this.videoPackets.shift().data;
+            //console.warn("dequeing packet size: " + packet.byteLength);
             callback(packet);
         } else {
             callback(null);
         }
     }
 
-    /**
-     * Clear the current packet buffers and reset the pointers for new read position.
-     * Should only need to do this once right before we send a seek request.
-     * 
-     * Needs to be cleaned up, Don't call so many times
-     * @param {function} callback after flush complete
-     */
-    flush(callback) {
-        //nop
-        callback();
-    }
+
 
     _flush() {
         //console.log("flushing demuxer buffer private");
@@ -584,6 +605,10 @@ class FlareWebmDemuxer {
         this.videoPackets = [];
         this.dataInterface.flush();
         //this.tempElementHeader.reset();
+        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
+        this.tempElementHeader.reset();
+        
+        
         this.currentElement = null;
         this.currentCluster = null;
         this.eof = false;
@@ -610,7 +635,10 @@ class FlareWebmDemuxer {
      * @param {function} callback 
      */
     seekToKeypoint(timeSeconds, callback) {
-
+        
+        this.state = STATE_SEEKING;
+        console.warn("SEEK BEING CALLED");
+        
         var ret = this.time(function () {
 
             var status;
@@ -625,55 +653,68 @@ class FlareWebmDemuxer {
                 return 0;
             }
 
-            this.state = STATE_SEEKING;
-            this._flush();
-            if (!this.cuesLoaded)
-                this.initCues();
-
+            //this._flush();
+            this.processSeeking();
 
 
             return 1;
 
         }.bind(this));
-        //doesnt need ret, it always returns 1
+
         this.audioPackets = [];
         this.videoPackets = [];
         callback(!!ret);
+        
     }
 
     processSeeking() {
+        console.warn("process seek");
         //Have to load cues if not available
         if (!this.cuesLoaded) {
-
+            //throw "cues not loaded";
+            if (!this.cuesOffset){
+                this.initCues();
+                this._flush();
+                this.dataInterface.offset = this.cuesOffset;
+                this.onseek(this.cuesOffset);
+                return 0;
+            }
+            
             if (!this.currentElement) {
+                
                 this.currentElement = this.dataInterface.peekElement();
                 if (this.currentElement === null)
                     return 0;
             }
+            
             if (!this.cues)
                 this.cues = new Cues(this.currentElement, this.dataInterface, this);
+            
+            //processing cues
             this.cues.load();
             if (!this.cues.loaded)
                 return 0;
+            
             this.cuesLoaded = true;
-            console.warn("cues loaded");
-            //console.log(this.cues);
+            //console.warn(this.cues);
+            return 0;
         }
+        
         //now we can caluclate the pointer offset
         this.calculateKeypointOffset();
-        //this._flush(); //incase loading cues
         //we should now have the cue point
         var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
-        console.log("clusterOffset : " + clusterOffset);
+        //console.log("SEEK TARGET : " + clusterOffset );
+        this._flush();
         this.dataInterface.offset = clusterOffset;
         this.onseek(clusterOffset);
         this.state = STATE_DECODING;
+        //console.warn("done seek");
+        //console.warn("datainterface offset is " + this.dataInterface.offset);
         return 0;
     }
 
-    close() {
-        //nothing for now
-    }
+
 
     /**
      * Possibly use this to initialize cues if not loaded, can be called from onScrub or seekTo
@@ -686,7 +727,7 @@ class FlareWebmDemuxer {
 
             var length = this.seekHead.entries.length;
             var entries = this.seekHead.entries;
-            console.warn(this.seekHead);
+            //console.warn(this.seekHead);
             var seekOffset;
             //Todo : make this less messy
             for (var i = 0; i < length; i++) {
@@ -695,12 +736,11 @@ class FlareWebmDemuxer {
             }
         }
 
-        this.dataInterface.flush();
-        this._flush();
-        this.dataInterface.offset = this.cuesOffset;
-        this.loadingCues = true;
-        this.onseek(this.cuesOffset);
-
+        //this._flush();
+        
+        //this.loadingCues = true;
+        //console.warn("CUES offset LOADED--");
+        
     }
 
     /**
@@ -731,15 +771,4 @@ class FlareWebmDemuxer {
 
 }
 
-
-
-if(window)
-    window.OGVDemuxerWebM = FlareWebmDemuxer;
-
-if(self)
-    self.OGVDemuxerWebM = FlareWebmDemuxer;
-
-
-
-
-module.exports = FlareWebmDemuxer;
+module.exports = JsWebm;

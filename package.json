@@ -1,9 +1,10 @@
 {
-  "name": "flare-webm-demuxer",
-  "version": "0.0.2",
+  "name": "jswebm",
+  "version": "0.0.3",
   "keywords": [
     "webm",
-    "ogv.js"
+    "ogv.js",
+    "jscodec"
   ],
   "scripts": {
     "build": "webpack"
@@ -14,7 +15,7 @@
   "main": "src/WebmDemuxer.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/FlareMediaPlayer/FlareWebmDemuxer.git"
+    "url": "https://github.com/jscodec/jswebm"
   },
   "dependencies": {
     "webpack": "^1.13.3",

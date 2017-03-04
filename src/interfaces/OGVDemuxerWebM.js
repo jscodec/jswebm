@@ -4,7 +4,7 @@
  * Abstracts away Demuxer logic away from ogv logic!
  * 
  */
-var Demuxer = require('../WebmDemuxer.js');
+var JsWebm = require('../WebmDemuxer.js');
 
 var getTimestamp;
 if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
@@ -13,13 +13,13 @@ if (typeof performance === 'undefined' || typeof performance.now === 'undefined'
     getTimestamp = performance.now.bind(performance);
 }
 
-class OGVDemuxer {
+class OGVDemuxerWebM extends JsWebm{
 
-    constructor() {
-        this.demuxer = new Demuxer();
+    constructor(){
+        super();
     }
-
-    /**
+    
+     /**
      * 
      * @param {function} callback
      */
@@ -27,12 +27,8 @@ class OGVDemuxer {
 
         callback();
     }
-
-    close() {
-        //nothing for now
-    }
-
-    /**
+    
+     /**
      * Clear the current packet buffers and reset the pointers for new read position.
      * Should only need to do this once right before we send a seek request.
      * 
@@ -43,37 +39,29 @@ class OGVDemuxer {
         //nop
         callback();
     }
-    
+
+    close() {
+        //nothing for now
+    }
+
     receiveInput(data, callback) {
         var ret = this.time(function () {
             //console.log("got input");
-            this.demuxer.dataInterface.recieveInput(data);
+            //this.dataInterface.recieveInput(data);
+            this.queueData(data);
         }.bind(this));
         callback();
-
-    }
-
-    /**
-     * Times a function call
-     */
-    time(func) {
-        var start = getTimestamp(),
-                ret;
-        ret = func();
-        var delta = (getTimestamp() - start);
-        this.cpuTime += delta;
-        //console.log('demux time ' + delta);
-        return ret;
     }
 
 }
 
 //Expose our new class to the window's global scope
-
-
 if(window)
-    window.OGVDemuxer = OGVDemuxer;
+    window.OGVDemuxerWebM = OGVDemuxerWebM;
 
 if(self)
-    self.OGVDemuxer = OGVDemuxer;
+    self.OGVDemuxerWebM = OGVDemuxerWebM;
+
+
+
 
