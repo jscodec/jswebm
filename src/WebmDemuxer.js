@@ -298,8 +298,7 @@ class JsWebm {
 
         var start = getTimestamp();
         var status = false;
-        console.warn("processing + " + this.state);
-
+  
 
         //this.processing = true;
 
@@ -333,8 +332,7 @@ class JsWebm {
             result = 0;
         }
 
-        //console.warn("done process");
-        console.warn("done process : " + result);
+
         callback(!!result);
     }
 
@@ -401,7 +399,7 @@ class JsWebm {
 	                    }
                     if (!this.currentCluster) {
                        // var metaWasLoaded = this.loadedMetadata;
-                        console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
+                        //console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
                         this.currentCluster = new Cluster(
                                 this.tempElementHeader.offset,
                                 this.tempElementHeader.size,
@@ -413,7 +411,7 @@ class JsWebm {
                         //console.warn(this.currentCluster);
                         //if (this.loadedMetadata && !metaWasLoaded)
                           //  return true;
-                          console.warn(this.currentCluster);
+                          //console.warn(this.currentCluster);
                     }
        
                     
@@ -430,7 +428,6 @@ class JsWebm {
                 
             
                 default:
-                    throw "Fucked up";
                     this.state = META_LOADED;//testing
                     if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
                         return false;
