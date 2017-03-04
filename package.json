@@ -4,7 +4,8 @@
   "keywords": [
     "webm",
     "ogv.js",
-    "jscodec"
+    "jscodec",
+     "jsvpx"
   ],
   "scripts": {
     "build": "webpack"
