@@ -57,7 +57,7 @@ class Cluster {
                     var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
                     if (timeCode !== null){
                         this.timeCode = timeCode;
-                        console.warn("timecode seeked to:" + this.timeCode);
+                        //console.warn("timecode seeked to:" + this.timeCode);
                     }else{
                         return null;
                     }

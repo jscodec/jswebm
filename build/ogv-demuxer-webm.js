@@ -1,82 +1,3194 @@
-var $jscomp={scope:{},inherits:function(b,a){function d(){}d.prototype=a.prototype;b.prototype=new d;b.prototype.constructor=b;for(var e in a)if(Object.defineProperties){var f=Object.getOwnPropertyDescriptor(a,e);f&&Object.defineProperty(b,e,f)}else b[e]=a[e]}};$jscomp.defineProperty="function"==typeof Object.defineProperties?Object.defineProperty:function(b,a,d){if(d.get||d.set)throw new TypeError("ES3 does not support getters and setters.");b!=Array.prototype&&b!=Object.prototype&&(b[a]=d.value)};
-$jscomp.getGlobal=function(b){return"undefined"!=typeof window&&window===b?b:"undefined"!=typeof global&&null!=global?global:b};$jscomp.global=$jscomp.getGlobal(this);$jscomp.polyfill=function(b,a,d,e){if(a){d=$jscomp.global;b=b.split(".");for(e=0;e<b.length-1;e++){var f=b[e];f in d||(d[f]={});d=d[f]}b=b[b.length-1];e=d[b];a=a(e);a!=e&&null!=a&&$jscomp.defineProperty(d,b,{configurable:!0,writable:!0,value:a})}};$jscomp.SYMBOL_PREFIX="jscomp_symbol_";
-$jscomp.initSymbol=function(){$jscomp.initSymbol=function(){};$jscomp.global.Symbol||($jscomp.global.Symbol=$jscomp.Symbol)};$jscomp.symbolCounter_=0;$jscomp.Symbol=function(b){return $jscomp.SYMBOL_PREFIX+(b||"")+$jscomp.symbolCounter_++};
-$jscomp.initSymbolIterator=function(){$jscomp.initSymbol();var b=$jscomp.global.Symbol.iterator;b||(b=$jscomp.global.Symbol.iterator=$jscomp.global.Symbol("iterator"));"function"!=typeof Array.prototype[b]&&$jscomp.defineProperty(Array.prototype,b,{configurable:!0,writable:!0,value:function(){return $jscomp.arrayIterator(this)}});$jscomp.initSymbolIterator=function(){}};$jscomp.arrayIterator=function(b){var a=0;return $jscomp.iteratorPrototype(function(){return a<b.length?{done:!1,value:b[a++]}:{done:!0}})};
-$jscomp.iteratorPrototype=function(b){$jscomp.initSymbolIterator();b={next:b};b[$jscomp.global.Symbol.iterator]=function(){return this};return b};$jscomp.array=$jscomp.array||{};$jscomp.iteratorFromArray=function(b,a){$jscomp.initSymbolIterator();b instanceof String&&(b+="");var d=0,e={next:function(){if(d<b.length){var f=d++;return{value:a(f,b[f]),done:!1}}e.next=function(){return{done:!0,value:void 0}};return e.next()}};e[Symbol.iterator]=function(){return e};return e};
-$jscomp.polyfill("Array.prototype.entries",function(b){return b?b:function(){return $jscomp.iteratorFromArray(this,function(a,d){return[a,d]})}},"es6-impl","es3");$jscomp.findInternal=function(b,a,d){b instanceof String&&(b=String(b));for(var e=b.length,f=0;f<e;f++){var c=b[f];if(a.call(d,c,f,b))return{i:f,v:c}}return{i:-1,v:void 0}};$jscomp.polyfill("Array.prototype.find",function(b){return b?b:function(a,d){return $jscomp.findInternal(this,a,d).v}},"es6-impl","es3");
-(function(b){function a(e){if(d[e])return d[e].exports;var f=d[e]={exports:{},id:e,loaded:!1};b[e].call(f.exports,f,f.exports,a);f.loaded=!0;return f.exports}var d={};a.m=b;a.c=d;a.p="";return a(0)})([function(b,a,d){b.exports=d(1)},function(b,a,d){var e=d(2);"undefined"!==typeof performance&&"undefined"!==typeof performance.now&&performance.now.bind(performance);b=function(){e.call(this)};$jscomp.inherits(b,e);b.prototype.init=function(a){a()};b.prototype.flush=function(a){a()};b.prototype.close=
-function(){};b.prototype.receiveInput=function(a,c){this.time(function(){this.queueData(a)}.bind(this));c()};window&&(window.OGVDemuxerWebM=b);self&&(self.OGVDemuxerWebM=b)},function(b,a,d){var e=d(3),f=d(6),c=d(8),h=d(9),g=d(10),l=d(12),m=d(4),k;k="undefined"===typeof performance||"undefined"===typeof performance.now?Date.now:performance.now.bind(performance);a=function(){this.shown=!1;this.clusters=[];this.segmentInfo=[];this.state=0;this.videoPackets=[];this.audioPackets=[];this.loadedMetadata=
-!1;this.seekable=!0;this.dataInterface=new e;this.currentElement=this.segment=null;this.segmentIsLoaded=!1;this.segmentDataOffset;this.headerIsLoaded=!1;this.tempElementHeader=new m(-1,-1,-1,-1);this.tempElementHeader.reset();this.currentCluster=this.tracks=this.segmentInfo=this.currentElement=null;this.cpuTime=0;this.seekHead=null;this.isSeeking=this.cuesLoaded=!1;this.tempSeekPosition=-1;this.loadingCues=!1;this.seekCueTarget=null;this.eof=!1;this.audioTrack=this.videoTrack=this.audioFormat=this.videoCodec=
-this.audioFormat=this.videoFormat=null;Object.defineProperty(this,"duration",{get:function(){return 0>this.segmentInfo.duration?-1:this.segmentInfo.duration/1E3}});Object.defineProperty(this,"frameReady",{get:function(){return 0<this.videoPackets.length}});Object.defineProperty(this,"hasAudio",{get:function(){return this.loadedMetadata&&this.audioCodec?!0:!1}});Object.defineProperty(this,"audioReady",{get:function(){return 0<this.audioPackets.length}});Object.defineProperty(this,"audioTimestamp",
-{get:function(){return 0<this.audioPackets.length?this.audioPackets[0].timestamp:-1}});Object.defineProperty(this,"frameTimestamp",{get:function(){return 0<this.videoPackets.length?this.videoPackets[0].timestamp:-1}});Object.defineProperty(this,"keyframeTimestamp",{get:function(){return 0<this.videoPackets.length?this.videoPackets[0].keyframeTimestamp:-1}});Object.defineProperty(this,"hasVideo",{get:function(){return this.loadedMetadata&&this.videoCodec?!0:!1}});Object.defineProperty(this,"nextKeyframeTimestamp",
-{get:function(){throw"looking for kf timestamp";}});console.log("%c JSWEBM DEMUXER LOADED","background: #F27127; color:  #2a2a2a")};a.prototype.time=function(a){var c=k();a=a();c=k()-c;this.cpuTime+=c;return a};a.prototype.validateMetadata=function(){var a,c,d;for(d in this.tracks.trackEntries){var b=this.tracks.trackEntries[d];if(2===b.trackType){c=b;a=b.codecID;break}}this.audioTrack=c;switch(a){case "A_VORBIS":this.audioCodec="vorbis";this.initVorbisHeaders(c);break;default:this.audioCodec=null}for(d in this.tracks.trackEntries)if(b=
-this.tracks.trackEntries[d],1===b.trackType){c=b;a=b.codecID;break}switch(a){case "V_VP8":this.videoCodec="vp8";break;default:this.videoCodec=null}this.videoTrack=c;this.videoFormat={width:c.width,height:c.height,chromaWidth:c.width>>1,chromaHeight:c.height>>1,cropLeft:c.pixelCropLeft,cropTop:c.pixelCropTop,cropWidth:c.width-c.pixelCropLeft-c.pixelCropRight,cropHeight:c.height-c.pixelCropTop-c.pixelCropBottom,displayWidth:c.displayWidth,displayHeight:c.displayHeight,fps:0};this.loadedMetadata=!0};
-a.prototype.initVorbisHeaders=function(c){var a=new DataView(c.codecPrivate),d=a.getUint8(0),b=a.getUint8(1),e=a.getUint8(2),g=a.byteLength-b-e-1;if(2!==d)throw"INVALID VORBIS HEADER";d=3;b=d+b;this.audioPackets.push({data:a.buffer.slice(d,b),timestamp:-1});d=b;b=d+e;this.audioPackets.push({data:a.buffer.slice(d,b),timestamp:-1});d=b;this.audioPackets.push({data:a.buffer.slice(d,d+g),timestamp:-1});this.audioTrack=c};a.prototype.queueData=function(c){this.dataInterface.recieveInput(c)};a.prototype.demux=
-function(){var c=!1;switch(this.state){case 0:if(this.initDemuxer(),1!==this.state)break;case 1:c=this.load();break;case 2:c=this.processSeeking()}return c};a.prototype.process=function(c){var a=k(),d=!1;switch(this.state){case 0:if(this.initDemuxer(),1!==this.state)break;case 1:d=this.load();break;case 2:console.warn("Seek processing");d=this.processSeeking();break;default:throw"state got wrecked";}a=k()-a;this.cpuTime+=a;c(!(1!==d&&!0!==d))};a.prototype.load=function(){for(var a=!1;this.dataInterface.offset<
-this.segment.end;){if(!this.tempElementHeader.status&&(this.dataInterface.peekAndSetElement(this.tempElementHeader),!this.tempElementHeader.status))return null;switch(this.tempElementHeader.id){case 290298740:this.seekHead||(this.seekHead=new f(this.tempElementHeader.getData(),this.dataInterface));this.seekHead.load();if(!this.seekHead.loaded)return!1;break;case 236:if(this.dataInterface.peekBytes(this.tempElementHeader.size))this.dataInterface.skipBytes(this.tempElementHeader.size);else return!1;
-break;case 357149030:this.segmentInfo||(this.segmentInfo=new c(this.tempElementHeader.getData(),this.dataInterface));this.segmentInfo.load();if(!this.segmentInfo.loaded)return!1;break;case 374648427:this.tracks||(this.tracks=new h(this.tempElementHeader.getData(),this.dataInterface,this));this.tracks.load();if(!this.tracks.loaded)return!1;break;case 475249515:this.cues||(this.cues=new l(this.tempElementHeader.getData(),this.dataInterface,this));this.cues.load();if(!this.cues.loaded)return!1;this.cuesLoaded=
-!0;break;case 524531317:if(!this.loadedMetadata)return this.validateMetadata(),!0;this.currentCluster||(this.currentCluster=new g(this.tempElementHeader.offset,this.tempElementHeader.size,this.tempElementHeader.end,this.tempElementHeader.dataOffset,this.dataInterface,this));a=this.currentCluster.load();if(!this.currentCluster.loaded)return a;this.currentCluster=null;break;default:this.state=3;if(this.dataInterface.peekBytes(this.tempElementHeader.size))this.dataInterface.skipBytes(this.tempElementHeader.size);
-else return!1;console.log("UNSUPORTED ELEMENT FOUND, SKIPPING")}this.tempElementHeader.reset()}this.eof=!0;this.state=4;return a};a.prototype.initDemuxer=function(){var c=this.dataInterface;if(!this.headerIsLoaded){if(!this.elementEBML){this.elementEBML=c.peekElement();if(!this.elementEBML)return null;440786851!==this.elementEBML.id&&console.warn("INVALID PARSE, HEADER NOT LOCATED")}for(var a=this.elementEBML.end;c.offset<a;){if(!this.tempElementHeader.status&&(c.peekAndSetElement(this.tempElementHeader),
-!this.tempElementHeader.status))return null;switch(this.tempElementHeader.id){case 17030:var d=c.readUnsignedInt(this.tempElementHeader.size);if(null!==d)this.version=d;else return null;break;case 17143:d=c.readUnsignedInt(this.tempElementHeader.size);if(null!==d)this.readVersion=d;else return null;break;case 17138:d=c.readUnsignedInt(this.tempElementHeader.size);if(null!==d)this.maxIdLength=d;else return null;break;case 17139:d=c.readUnsignedInt(this.tempElementHeader.size);if(null!==d)this.maxSizeLength=
-d;else return null;break;case 17026:d=c.readString(this.tempElementHeader.size);if(null!==d)this.docType=d;else return null;break;case 17031:d=c.readUnsignedInt(this.tempElementHeader.size);if(null!==d)this.docTypeVersion=d;else return null;break;case 17029:d=c.readUnsignedInt(this.tempElementHeader.size);if(null!==d)this.docTypeReadVersion=d;else return null;break;default:console.warn("Header element not found, skipping")}this.tempElementHeader.reset()}this.headerIsLoaded=!0}this.currentElement||
-(this.currentElement=this.dataInterface.peekElement());if(!this.currentElement)return null;switch(this.currentElement.id){case 408125543:this.segment=this.currentElement;break;case 236:if(this.dataInterface.peekBytes(this.currentElement.size))this.dataInterface.skipBytes();else return null;break;default:console.warn("Global element not found, id: "+this.currentElement.id)}this.currentElement=null;this.segmentIsLoaded=!0;this.state=1};a.prototype.dequeueAudioPacket=function(c){if(this.audioPackets.length){var a=
-this.audioPackets.shift().data;c(a)}else c(null)};a.prototype.dequeueVideoPacket=function(c){if(this.videoPackets.length){var a=this.videoPackets.shift().data;c(a)}else c(null)};a.prototype._flush=function(){this.audioPackets=[];this.videoPackets=[];this.dataInterface.flush();this.tempElementHeader=new m(-1,-1,-1,-1);this.tempElementHeader.reset();this.currentCluster=this.currentElement=null;this.eof=!1};a.prototype.getKeypointOffset=function(c,a){c=this.time(function(){return-1}.bind(this));a(c)};
-a.prototype.seekToKeypoint=function(c,a){this.state=2;console.warn("SEEK BEING CALLED");var d=this.time(function(){this.seekTime=1E9*c;if(this.hasVideo)this.seekTrack=this.videoTrack;else if(this.hasAudio)this.seekTrack=this.audioTrack;else return 0;this.processSeeking();return 1}.bind(this));this.audioPackets=[];this.videoPackets=[];a(!!d)};a.prototype.processSeeking=function(){console.warn("process seek");if(!this.cuesLoaded){if(!this.cuesOffset)return this.initCues(),this._flush(),this.dataInterface.offset=
-this.cuesOffset,this.onseek(this.cuesOffset),0;if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return 0;this.cues||(this.cues=new l(this.currentElement,this.dataInterface,this));this.cues.load();if(!this.cues.loaded)return 0;this.cuesLoaded=!0;return 0}this.calculateKeypointOffset();var c=this.seekCueTarget.cueTrackPositions.cueClusterPosition+this.segment.dataOffset;this._flush();this.dataInterface.offset=c;this.onseek(c);this.state=1;return 0};
-a.prototype.initCues=function(){if(!this.cuesOffset)for(var c=this.seekHead.entries.length,a=this.seekHead.entries,d=0;d<c;d++)475249515===a[d].seekId&&(this.cuesOffset=a[d].seekPosition+this.segment.dataOffset)};a.prototype.calculateKeypointOffset=function(){var c=this.segmentInfo.timecodeScale;this.seekTime;var a=this.cues.entries,d=this.cues.entries.length,b=a[0],e,g=1;for(g;g<d;g++){e=a[g];if(e.cueTime*c>this.seekTime)break;b=e}this.seekCueTarget=b};b.exports=a},function(b,a,d){var e=d(4),f=d(5);
-a=function(){this.internalPointer=this.overallPointer=0;this.currentBuffer=null;this.markerPointer=0;this.tempFloat64=new DataView(new ArrayBuffer(8));this.tempFloat32=new DataView(new ArrayBuffer(4));this.tempBinaryBuffer=null;this.seekTarget;this.dateParser=new f;Object.defineProperty(this,"offset",{get:function(){return this.overallPointer},set:function(c){this.overallPointer=c}});this.tempOctet=this.tempOctetWidth=this.tempSize=this.tempElementDataOffset=this.tempElementOffset=null;this.tempByteCounter=
-this.tempByteBuffer=0;this.tempResult=this.tempVintWidth=this.tempElementSize=this.tempElementId=null;this.tempCounter=-1;this.usingBufferedRead=!1;Object.defineProperty(this,"remainingBytes",{get:function(){return this.currentBuffer?this.currentBuffer.byteLength-this.internalPointer:0}})};a.prototype.flush=function(){this.tempOctet=this.tempOctetWidth=this.tempSize=this.tempElementDataOffset=this.tempElementOffset=this.currentBuffer=null;this.tempByteCounter=this.tempByteBuffer=0;this.tempResult=
-this.tempBinaryBuffer=this.tempVintWidth=this.tempElementSize=this.tempElementId=null;this.tempCounter=-1;this.usingBufferedRead=!1;this.internalPointer=this.overallPointer=0;this.tempFloat64=new DataView(new ArrayBuffer(8));this.tempFloat32=new DataView(new ArrayBuffer(4))};a.prototype.recieveInput=function(c){if(this.currentBuffer)throw"Buffer getting wrecked";this.currentBuffer=new DataView(c);this.internalPointer=0};a.prototype.popBuffer=function(){this.currentBuffer=null};a.prototype.readDate=
-function(c){return this.readSignedInt(c)};a.prototype.readId=function(){if(!this.currentBuffer)return null;if(!this.tempOctet){if(!this.currentBuffer)return null;this.tempElementOffset=this.overallPointer;this.tempOctet=this.currentBuffer.getUint8(this.internalPointer);this.incrementPointers();this.tempOctetWidth=this.calculateOctetWidth();0===this.remainingBytes&&(this.currentBuffer=null)}var c;this.tempByteCounter||(this.tempByteCounter=0);for(;this.tempByteCounter<this.tempOctetWidth;){if(!this.currentBuffer)return null;
-0===this.tempByteCounter?this.tempByteBuffer=this.tempOctet:(c=this.readByte(),this.tempByteBuffer=this.tempByteBuffer<<8|c);this.tempByteCounter++;0===this.remainingBytes&&(this.currentBuffer=null)}c=this.tempByteBuffer;this.tempOctetWidth=this.tempByteBuffer=this.tempByteCounter=this.tempOctet=null;return c};a.prototype.readVint=function(){if(!this.currentBuffer)return null;if(!this.tempOctet){if(!this.currentBuffer)return null;this.tempOctet=this.currentBuffer.getUint8(this.internalPointer);this.incrementPointers();
-this.tempOctetWidth=this.calculateOctetWidth();0===this.remainingBytes&&(this.currentBuffer=null)}this.tempByteCounter||(this.tempByteCounter=0);for(var c,a=this.tempOctetWidth;this.tempByteCounter<a;){if(!this.currentBuffer)return null;0===this.tempByteCounter?this.tempByteBuffer=this.tempOctet&(255<<a&255)>>a:(c=this.readByte(),this.tempByteBuffer=this.tempByteBuffer<<8|c);this.tempByteCounter++;0===this.remainingBytes&&(this.currentBuffer=null)}c=this.tempByteBuffer;this.tempByteBuffer=this.tempByteCounter=
-this.tempOctetWidth=this.tempOctet=null;return c};a.prototype.bufferedReadVint=function(){var c;this.tempByteCounter||(this.tempByteCounter=0);for(;this.tempByteCounter<this.tempOctetWidth;){if(!this.currentBuffer)return null;0===this.tempByteCounter?this.tempByteBuffer=this.tempOctet&(255<<this.tempOctetWidth&255)>>this.tempOctetWidth:(c=this.readByte(),this.tempByteBuffer=this.tempByteBuffer<<8|c);this.tempByteCounter++;0===this.remainingBytes&&(this.currentBuffer=null)}c=this.tempByteBuffer;this.tempByteBuffer=
-this.tempByteCounter=null;return c};a.prototype.clearTemps=function(){this.tempOctet=this.tempOctetWidth=this.tempOctetMask=this.tempSize=this.tempId=null;this.tempByteCounter=this.tempByteBuffer=0;this.usingBufferedRead=!1};a.prototype.forceReadVint=function(){var c;switch(this.tempOctetWidth){case 1:c=this.tempOctet&127;break;case 2:c=this.tempOctet&63;c=c<<8|this.currentBuffer.getUint8(this.internalPointer);this.incrementPointers();break;case 3:c=this.tempOctet&31;c=c<<16|this.currentBuffer.getUint16(this.internalPointer);
-this.incrementPointers(2);break;case 4:c=this.tempOctet&15;c=c<<16|this.currentBuffer.getUint16(this.internalPointer);this.incrementPointers(2);c=c<<8|this.currentBuffer.getUint8(this.internalPointer);this.incrementPointers();break;case 5:console.warn("finish this");break;case 6:console.warn("finish this");break;case 7:console.warn("finish this");break;case 8:c=this.tempOctet&0,c=c<<8|this.currentBuffer.getUint8(this.internalPointer),this.incrementPointers(),c=c<<16|this.currentBuffer.getUint16(this.internalPointer),
-this.incrementPointers(2),c=c<<32|this.currentBuffer.getUint32(this.internalPointer),this.incrementPointers(4)}0===this.remainingBytes&&(this.currentBuffer=null);this.tempOctet=this.tempOctetWidth=null;return c};a.prototype.readByte=function(){this.currentBuffer||console.error("READING OUT OF BOUNDS");var c=this.currentBuffer.getUint8(this.internalPointer);this.incrementPointers();0===this.remainingBytes&&(this.currentBuffer=null);return c};a.prototype.readSignedByte=function(){this.currentBuffer||
-console.error("READING OUT OF BOUNDS");var c=this.currentBuffer.getInt8(this.internalPointer);this.incrementPointers();0===this.remainingBytes&&(this.currentBuffer=null);return c};a.prototype.peekElement=function(){if(!this.currentBuffer||!this.tempElementId&&(this.tempElementId=this.readId(),null===this.tempElementId)||!this.tempElementSize&&(this.tempElementSize=this.readVint(),null===this.tempElementSize))return null;var c=new e(this.tempElementId,this.tempElementSize,this.tempElementOffset,this.overallPointer);
-this.tempElementOffset=this.tempElementSize=this.tempElementId=null;return c};a.prototype.peekAndSetElement=function(c){if(!this.currentBuffer||!this.tempElementId&&(this.tempElementId=this.readId(),null===this.tempElementId)||!this.tempElementSize&&(this.tempElementSize=this.readVint(),null===this.tempElementSize))return null;c.init(this.tempElementId,this.tempElementSize,this.tempElementOffset,this.overallPointer);this.tempElementOffset=this.tempElementSize=this.tempElementId=null};a.prototype.peekBytes=
-function(c){return this.currentBuffer?0<=this.currentBuffer.byteLength-this.internalPointer-c?!0:!1:!1};a.prototype.skipBytes=function(c){for(var a,d=0;d<c;){if(!this.currentBuffer)throw"Invalid Skip Length";a=c-d>this.remainingBytes?this.remainingBytes:c-d;this.incrementPointers(a);0===this.remainingBytes&&(this.currentBuffer=null);d+=a}};a.prototype.getRemainingBytes=function(){return this.currentBuffer?this.currentBuffer.byteLength-this.internalPointer:0};a.prototype.calculateOctetWidth=function(){var c=
-0,a=128;do{if(this.tempOctet&a)break;a>>=1;c++}while(8>c);return c+1};a.prototype.incrementPointers=function(c){c=c||1;this.internalPointer+=c;this.overallPointer+=c};a.prototype.readUnsignedInt=function(c){if(!this.currentBuffer)return null;(0>=c||8<c)&&console.warn("invalid file size");null===this.tempResult&&(this.tempResult=0);-1===this.tempCounter&&(this.tempCounter=0);for(var a;this.tempCounter<c;){if(!this.currentBuffer)return null;a=this.readByte();0===this.tempCounter&&0>a&&console.warn("invalid integer value");
-this.tempResult<<=8;this.tempResult|=a;0===this.remainingBytes&&(this.currentBuffer=null);this.tempCounter++}c=this.tempResult;this.tempResult=null;this.tempCounter=-1;return c};a.prototype.readSignedInt=function(c){if(!this.currentBuffer)return null;(0>=c||8<c)&&console.warn("invalid file size");null===this.tempResult&&(this.tempResult=0);-1===this.tempCounter&&(this.tempCounter=0);for(var a;this.tempCounter<c;){if(!this.currentBuffer)return null;a=0===this.tempCounter?this.readByte():this.readSignedByte();
-this.tempResult<<=8;this.tempResult|=a;0===this.remainingBytes&&(this.currentBuffer=null);this.tempCounter++}c=this.tempResult;this.tempResult=null;this.tempCounter=-1;return c};a.prototype.readString=function(c){this.tempString||(this.tempString="");-1===this.tempCounter&&(this.tempCounter=0);for(var a="";this.tempCounter<c;){if(!this.currentBuffer)return this.tempString+=a,null;a+=String.fromCharCode(this.readByte());0>=this.remainingBytes&&(this.currentBuffer=null);this.tempCounter++}c=this.tempString+=
-a;this.tempString=null;this.tempCounter=-1;return c};a.prototype.readFloat=function(a){if(8===a){-1===this.tempCounter&&(this.tempCounter=0);null===this.tempResult&&(this.tempResult=0,this.tempFloat64.setFloat64(0,0));for(var c;this.tempCounter<a;){if(!this.currentBuffer)return null;c=this.readByte();this.tempFloat64.setUint8(this.tempCounter,c);0===this.remainingBytes&&(this.currentBuffer=null);this.tempCounter++}this.tempResult=this.tempFloat64.getFloat64(0)}else if(4===a){-1===this.tempCounter&&
-(this.tempCounter=0);null===this.tempResult&&(this.tempResult=0,this.tempFloat32.setFloat32(0,0));for(;this.tempCounter<a;){if(!this.currentBuffer)return null;c=this.readByte();this.tempFloat32.setUint8(this.tempCounter,c);0===this.remainingBytes&&(this.currentBuffer=null);this.tempCounter++}this.tempResult=this.tempFloat32.getFloat32(0)}else throw"INVALID FLOAT LENGTH";a=this.tempResult;this.tempResult=null;this.tempCounter=-1;return a};a.prototype.getBinary=function(a){if(this.usingBufferedRead&&
-null===this.tempCounter)throw"COUNTER WAS ERASED";if(this.remainingBytes>=a&&!this.usingBufferedRead){var c=this.currentBuffer.buffer.slice(this.internalPointer,this.internalPointer+a);this.incrementPointers(a);0===this.remainingBytes&&(this.currentBuffer=null);return c}if(!1===this.usingBufferedRead&&0<this.tempCounter)throw"INVALID BUFFERED READ";this.usingBufferedRead=!0;this.tempBinaryBuffer||(this.tempBinaryBuffer=new Uint8Array(a));-1===this.tempCounter&&(this.tempCounter=0);for(var d;this.tempCounter<
-a;){if(!this.currentBuffer){if(!1===this.usingBufferedRead)throw"INVALID return  case";return null}c=a-this.tempCounter>this.remainingBytes?this.remainingBytes:a-this.tempCounter;d=new Uint8Array(this.currentBuffer.buffer,this.internalPointer,c);this.tempBinaryBuffer.set(d,this.tempCounter);this.incrementPointers(c);0===this.remainingBytes&&(this.currentBuffer=null);this.tempCounter+=c}this.tempBinaryBuffer.byteLength!==a&&console.warn("invalid read");a=this.tempBinaryBuffer;this.tempBinaryBuffer=
-null;this.tempCounter=-1;this.usingBufferedRead=!1;return a.buffer};b.exports=a},function(b,a){a=function(a,b,f,c){this.id=a;this.size=b;this.offset=f;this.dataOffset=c;this.end=c+b;this.status=!0};a.prototype.init=function(a,b,f,c){this.id=a;this.size=b;this.offset=f;this.dataOffset=c;this.end=c+b;this.status=!0};a.prototype.reset=function(){this.status=!1};a.prototype.getData=function(){return{id:this.id,size:this.size,offset:this.offset,dataOffset:this.dataOffset,end:this.end}};b.exports=a},function(b,
-a){b.exports=function(){}},function(b,a,d){var e=d(7);a=function(a,c){this.dataInterface=c;this.offset=a.offset;this.size=a.size;this.end=a.end;this.entries=[];this.entryCount=0;this.voidElements=[];this.voidElementCount=0;this.loaded=!1;this.currentElement=this.tempEntry=null};a.prototype.load=function(){for(var a=this.end;this.dataInterface.offset<a;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 19899:this.tempEntry||
-(this.tempEntry=new e(this.currentElement,this.dataInterface));this.tempEntry.load();if(this.tempEntry.loaded)this.entries.push(this.tempEntry);else return;break;default:console.warn("Seek Head element not found")}this.currentElement=this.tempEntry=null}if(this.dataInterface.offset!==this.end)throw console.log(this),"INVALID SEEKHEAD FORMATTING";this.loaded=!0};b.exports=a},function(b,a){a=function(a,b){this.size=a.size;this.offset=a.offset;this.end=a.end;this.dataInterface=b;this.loaded=!1;this.currentElement=
-null;this.seekPosition=this.seekId=-1};a.prototype.load=function(){for(;this.dataInterface.offset<this.end;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 21419:var a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.seekId=a;else return null;break;case 21420:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.seekPosition=a;else return null;
-break;default:console.warn("Seek element not found, skipping : "+this.currentElement.id.toFixed(16))}this.currentElement=null}this.dataInterface.offset!==this.end&&console.error("Invalid Seek Formatting");this.loaded=!0};b.exports=a},function(b,a){a=function(a,b){this.dataInterface=b;this.offset=a.offset;this.size=a.size;this.end=a.end;this.dataOffset=this.title=this.writingApp=this.muxingApp=null;this.timecodeScale=1E6;this.duration=-1;this.loaded=!1;this.duration=this.segmentUID=null;this.dateUTC};
-a.prototype.load=function(){for(var a=this.end;this.dataInterface.offset<a;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 2807729:var b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.timecodeScale=b;else return null;break;case 19840:b=this.dataInterface.readString(this.currentElement.size);if(null!==b)this.muxingApp=b;else return null;break;case 22337:b=this.dataInterface.readString(this.currentElement.size);
-if(null!==b)this.writingApp=b;else return null;break;case 31657:b=this.dataInterface.readString(this.currentElement.size);if(null!==b)this.title=b;else return null;break;case 29604:b=this.dataInterface.readString(this.currentElement.size);if(null!==b)this.segmentUID=b;else return null;break;case 17545:b=this.dataInterface.readFloat(this.currentElement.size);if(null!==b)this.duration=b;else return null;break;case 17505:b=this.dataInterface.readDate(this.currentElement.size);if(null!==b)this.dateUTC=
-b;else return null;break;default:console.error("Ifno element not found, skipping : "+this.currentElement.id.toString(16))}this.currentElement=null}this.dataInterface.offset!==this.end&&console.error("Invalid SegmentInfo Formatting");this.loaded=!0};b.exports=a},function(b,a,d){var e=d(7);a=function(a,c,b){this.demuxer=b;this.dataInterface=c;this.offset=a.offset;this.size=a.size;this.end=a.end;this.trackEntries=[];this.loaded=!1;this.currentElement=this.tempEntry=null;this.trackLoader=new f};a.prototype.load=
-function(){for(;this.dataInterface.offset<this.end;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 174:this.trackLoader.loading||this.trackLoader.init(this.currentElement,this.dataInterface);this.trackLoader.load();if(this.trackLoader.loaded)var a=this.trackLoader.getTrackEntry();else return;this.trackEntries.push(a);break;default:throw console.warn("TRACK BUG"),"Track entry not found";}this.currentElement=
-null}this.loaded=!0};a.prototype.loadTrackEntry=function(){this.tempEntry||(this.tempEntry=new e(this.currentElement,this.dataInterface))};var f=function(){this.end=this.size=this.offset=this.dataInterface=null;this.loading=this.loaded=!1;this.trackData={};this.trackData.trackNumber=null;this.trackData.trackType=null;this.trackData.name=null;this.trackData.codecName=null;this.trackData.defaultDuration=null;this.trackData.codecID=null;this.trackData.lacing=null;this.trackData.codecPrivate=null;this.trackData.codecDelay=
-null;this.minCache=this.tempTrack=this.trackData.seekPreRoll=null};f.prototype.init=function(a,c){this.dataInterface=c;this.offset=a.offset;this.size=a.size;this.end=a.end;this.loaded=!1;this.loading=!0;this.trackData.trackNumber=null;this.trackData.trackType=null;this.trackData.name=null;this.trackData.codecName=null;this.trackData.defaultDuration=null;this.trackData.codecID=null;this.trackData.lacing=null;this.trackData.codecPrivate=null;this.trackData.codecDelay=null;this.trackData.seekPreRoll=
-null;this.minCache=this.tempTrack=this.trackData.trackUID=null};f.prototype.load=function(){for(var a=this.end;this.dataInterface.offset<a;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 224:this.tempTrack||(this.tempTrack=new c(this.currentElement,this.dataInterface));this.tempTrack.load();if(!this.tempTrack.loaded)return;break;case 225:this.tempTrack||(this.tempTrack=new h(this.currentElement,
-this.dataInterface));this.tempTrack.load();if(!this.tempTrack.loaded)return;break;case 215:var b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.trackData.trackNumber=b;else return null;break;case 131:b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.trackData.trackType=b;else return null;break;case 21358:b=this.dataInterface.readString(this.currentElement.size);if(null!==b)this.trackData.name=b;else return null;break;case 2459272:b=this.dataInterface.readString(this.currentElement.size);
-if(null!==b)this.trackData.codecName=b;else return null;break;case 2274716:b=this.dataInterface.readString(this.currentElement.size);if(null!==b)this.trackData.language=b;else return null;break;case 2352003:b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.trackData.defaultDuration=b;else return null;break;case 134:b=this.dataInterface.readString(this.currentElement.size);if(null!==b)this.trackData.codecID=b;else return null;break;case 156:b=this.dataInterface.readUnsignedInt(this.currentElement.size);
-if(null!==b)this.trackData.lacing=b;else return null;break;case 25506:b=this.dataInterface.getBinary(this.currentElement.size);if(null!==b)this.trackData.codecPrivate=b;else return null;break;case 22186:b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.trackData.codecDelay=b;else return null;break;case 22203:b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.trackData.seekPreRoll=b;else return null;break;case 29637:b=this.dataInterface.readUnsignedInt(this.currentElement.size);
-if(null!==b)this.trackData.trackUID=b;else return null;break;case 28135:b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.trackData.minCache=b;else return null;break;default:console.warn("track data element not found, skipping : "+this.currentElement.id.toString(16))}this.currentElement=null}this.loaded=!0};f.prototype.getTrackEntry=function(){this.tempTrack.loadMeta(this.trackData);var a=this.tempTrack;this.tempTrack=null;this.loading=!1;return a};d=function(){};d.prototype.loadMeta=
-function(a){for(var c in a)this[c]=a[c]};var c=function(a,c){this.dataInterface=c;this.offset=a.offset;this.size=a.size;this.end=a.end;this.loaded=!1;this.displayHeight=this.displayWidth=this.height=this.width=null;this.displayUnit=0;this.frameRate=this.stereoMode=null;this.pixelCropRight=this.pixelCropLeft=this.pixelCropTop=this.pixelCropBottom=0};$jscomp.inherits(c,d);c.prototype.load=function(){for(;this.dataInterface.offset<this.end;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),
-null===this.currentElement))return null;switch(this.currentElement.id){case 176:var a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.width=a;else return null;break;case 186:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.height=a;else return null;break;case 21680:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.displayWidth=a;else return null;break;case 21690:a=this.dataInterface.readUnsignedInt(this.currentElement.size);
-if(null!==a)this.displayHeight=a;else return null;break;case 21682:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.displayUnit=a;else return null;break;case 21432:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.stereoMode=a;else return null;break;case 2327523:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.frameRate=a;else return null;break;case 21936:console.error("NO COLOR LOADING YET");default:console.warn("Info element not found, skipping: "+
-this.currentElement.id.toFixed(16))}this.currentElement=null}this.displayWidth||(this.displayWidth=this.width-this.pixelCropLeft);this.displayHeight||(this.displayHeight=this.height-this.pixelCropTop);this.loaded=!0};var h=function(a,c){this.dataInterface=c;this.offset=a.offset;this.size=a.size;this.end=a.end;this.loaded=!1;this.bitDepth=this.channel=this.rate=null};$jscomp.inherits(h,d);h.prototype.load=function(){for(;this.dataInterface.offset<this.end;){if(!this.currentElement&&(this.currentElement=
-this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 181:var a=this.dataInterface.readFloat(this.currentElement.size);if(null!==a)this.rate=a;else return null;break;case 159:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.channels=a;else return null;break;case 25188:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.bitDepth=a;else return null;break;default:console.warn("Ifno element not found, skipping")}this.currentElement=
-null}this.loaded=!0};b.exports=a},function(b,a,d){var e=d(4),f=d(11);a=function(a,b,d,l,m,k){this.demuxer=k;this.dataInterface=m;this.offset=a;this.size=b;this.end=d;this.dataOffset=l;this.loaded=!1;this.tempBlock=this.timeCode=this.currentElement=this.tempEntry=null;this.tempElementHeader=new e(-1,-1,-1,-1);this.tempElementHeader.reset();this.tempBlock=new f;return!0};a.prototype.init=function(){};a.prototype.reset=function(){};a.prototype.load=function(){for(;this.dataInterface.offset<this.end;){if(!this.tempElementHeader.status&&
-(this.dataInterface.peekAndSetElement(this.tempElementHeader),!this.tempElementHeader.status))return null;switch(this.tempElementHeader.id){case 231:var a=this.dataInterface.readUnsignedInt(this.tempElementHeader.size);if(null!==a)this.timeCode=a,console.warn("timecode seeked to:"+this.timeCode);else return null;break;case 163:this.tempBlock.status||this.tempBlock.init(this.tempElementHeader.offset,this.tempElementHeader.size,this.tempElementHeader.end,this.tempElementHeader.dataOffset,this.dataInterface,
-this);this.tempBlock.load();if(!this.tempBlock.loaded)return 0;this.tempBlock.reset();this.tempEntry=null;this.tempElementHeader.reset();if(this.dataInterface.offset!==this.end)return!0}this.tempEntry=null;this.tempElementHeader.reset()}this.loaded=!0;return!1};b.exports=a},function(b,a){a=function(){this.cluster;this.dataInterface;this.offset;this.dataOffset;this.size;this.end;this.loaded=!1;this.trackNumber=null;this.timeCode=-1;this.flags=null;this.invisible=this.keyframe=!1;this.lacing=0;this.discardable=
-!1;this.headerSize=this.lacedFrameCount=null;this.frameSizes=[];this.frameLength=this.track=this.tempFrame=this.tempCounter=null;this.isLaced=!1;this.stop=null;this.status=!1};a.prototype.init=function(a,b,f,c,h,g){this.cluster=g;this.dataInterface=h;this.offset=a;this.dataOffset=c;this.size=b;this.end=f;this.loaded=!1;this.flags=this.timeCode=this.trackNumber=null;this.invisible=this.keyframe=!1;this.lacing=0;this.discardable=!1;this.headerSize=this.lacedFrameCount=null;this.frameSizes=[];this.frameLength=
-this.track=this.tempFrame=this.tempCounter=null;this.isLaced=!1;this.stop=this.offset+this.size;this.status=!0;this.trackEntries=this.cluster.demuxer.tracks.trackEntries;this.videoPackets=this.cluster.demuxer.videoPackets;this.audioPackets=this.cluster.demuxer.audioPackets};a.prototype.reset=function(){this.status=!1};a.prototype.loadTrack=function(){this.track=this.trackEntries[this.trackNumber-1]};a.prototype.load=function(){var a=this.dataInterface;if(this.loaded)throw"ALREADY LOADED";if(null===
-this.trackNumber){this.trackNumber=a.readVint();if(null===this.trackNumber)return null;this.loadTrack()}if(null===this.timeCode&&(this.timeCode=a.readUnsignedInt(2),null===this.timeCode))return null;if(null===this.flags){this.flags=a.readUnsignedInt(1);if(null===this.flags)return null;this.keyframe=0===(this.flags>>7&1)?!1:!0;this.invisible=0===(this.flags>>2&1)?!1:!0;this.lacing=(this.flags&6)>>1;if(3<this.lacing||0>this.lacing)throw"INVALID LACING";}if(1===this.lacing||3===this.lacing){console.warn("DETECTING LACING");
-if(!this.lacedFrameCount){this.lacedFrameCount=a.readByte();if(null===this.lacedFrameCount)return null;this.lacedFrameCount++}this.tempCounter||(this.tempCounter=0);for(;this.tempCounter<this.lacedFrameCount;){var b=a.readByte();if(null===b)return null;this.frameSizes.push(b);this.tempCounter++}}this.headerSize||(this.headerSize=a.offset-this.dataOffset);switch(this.lacing){case 1:case 2:case 3:case 0:if(!this.frameLength&&(this.frameLength=this.size-this.headerSize,0>=this.frameLength))throw"INVALID FRAME LENGTH "+
-this.frameLength;b=a.getBinary(this.frameLength);if(null===b){if(!1===a.usingBufferedRead)throw"SHOULD BE BUFFERED READ";return null}if(!0===a.usingBufferedRead)throw"SHOULD NOT BE BUFFERED READ";if(b.byteLength!==this.frameLength)throw"INVALID FRAME";if(!0===a.usingBufferedRead)throw"SHOULD NOT BE BUFFERED READ";var f=(this.timeCode+this.cluster.timeCode)/1E3;if(0>f)throw"INVALID TIMESTAMP";1===this.track.trackType?this.videoPackets.push({data:b,timestamp:f,keyframeTimestamp:f,isKeyframe:!0}):2===
-this.track.trackType&&this.audioPackets.push({data:b,timestamp:f});break;default:throw console.log(this),console.warn("LACED ELEMENT FOUND"),"STOP HERE";}if(this.end!==a.offset)throw console.error(this),"INVALID BLOCK SIZE";this.loaded=!0;this.frameLength=this.tempCounter=this.tempFrame=this.headerSize=null};b.exports=a},function(b,a,d){var e=d(13);a=function(a,b,d){this.dataInterface=b;this.offset=a.offset;this.size=a.size;this.end=a.end;this.entries=[];this.loaded=!1;this.tempEntry=null;this.demuxer=
-d;this.currentElement=null};a.prototype.load=function(){for(var a=this.end;this.dataInterface.offset<a;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 187:this.tempEntry||(this.tempEntry=new f(this.currentElement,this.dataInterface));this.tempEntry.load();if(this.tempEntry.loaded)this.entries.push(this.tempEntry);else return;break;default:console.warn("Cue Head element not found")}this.currentElement=
-this.tempEntry=null}if(this.dataInterface.offset!==this.end)throw console.log(this),"INVALID CUE FORMATTING";this.loaded=!0};a.prototype.getCount=function(){return this.cuePoints.length};a.prototype.init=function(){};a.prototype.preloadCuePoint=function(){};a.prototype.find=function(){};a.prototype.getFirst=function(){};a.prototype.getLast=function(){};a.prototype.getNext=function(){};a.prototype.getBlock=function(){};a.prototype.findOrPreloadCluster=function(){};var f=function(a,b){this.dataInterface=
-b;this.offset=a.offset;this.size=a.size;this.end=a.end;this.loaded=!1;this.cueTrackPositions=this.cueTime=this.currentElement=this.tempElement=null};f.prototype.load=function(){for(var a=this.end;this.dataInterface.offset<a;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 183:this.cueTrackPositions||(this.cueTrackPositions=new e(this.currentElement,this.dataInterface));this.cueTrackPositions.load();
-if(!this.cueTrackPositions.loaded)return;break;case 179:var b=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==b)this.cueTime=b;else return null;break;default:console.warn("Cue Point not found, skipping")}this.currentElement=null}this.loaded=!0};b.exports=a},function(b,a){a=function(a,b){this.dataInterface=b;this.offset=a.offset;this.size=a.size;this.end=a.end;this.loaded=!1;this.cueTrack=this.currentElement=this.tempElement=null;this.cueRelativePosition=this.cueClusterPosition=
-0};a.prototype.load=function(){for(;this.dataInterface.offset<this.end;){if(!this.currentElement&&(this.currentElement=this.dataInterface.peekElement(),null===this.currentElement))return null;switch(this.currentElement.id){case 247:var a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.cueTrack=a;else return null;break;case 241:a=this.dataInterface.readUnsignedInt(this.currentElement.size);if(null!==a)this.cueClusterPosition=a;else return null;break;case 240:a=this.dataInterface.readUnsignedInt(this.currentElement.size);
-if(null!==a)this.cueRelativePosition=a;else return null;break;default:console.warn("Cue track positions not found! "+this.currentElement.id)}this.currentElement=null}this.dataInterface.offset!==this.end&&console.error("Invalid Seek Formatting");this.loaded=!0};b.exports=a}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(1);
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	/**
+	 * Interface Implementation for OGV.js
+	 * Abstracts away Demuxer logic away from ogv logic!
+	 * 
+	 */
+	var JsWebm = __webpack_require__(2);
+
+	var getTimestamp;
+	if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
+	    getTimestamp = Date.now;
+	} else {
+	    getTimestamp = performance.now.bind(performance);
+	}
+
+	class OGVDemuxerWebM extends JsWebm{
+
+	    constructor(){
+	        super();
+	    }
+	    
+	     /**
+	     * 
+	     * @param {function} callback
+	     */
+	    init(callback) {
+
+	        callback();
+	    }
+	    
+	     /**
+	     * Clear the current packet buffers and reset the pointers for new read position.
+	     * Should only need to do this once right before we send a seek request.
+	     * 
+	     * Needs to be cleaned up, Don't call so many times
+	     * @param {function} callback after flush complete
+	     */
+	    flush(callback) {
+	        //nop
+	        callback();
+	    }
+
+	    close() {
+	        //nothing for now
+	    }
+
+	    receiveInput(data, callback) {
+	        var ret = this.time(function () {
+	            //console.log("got input");
+	            //this.dataInterface.recieveInput(data);
+	            this.queueData(data);
+	        }.bind(this));
+	        callback();
+	    }
+
+	}
+
+	//Expose our new class to the window's global scope
+	if(window)
+	    window.OGVDemuxerWebM = OGVDemuxerWebM;
+
+	if(self)
+	    self.OGVDemuxerWebM = OGVDemuxerWebM;
+
+
+
+
+
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var DataInterface = __webpack_require__(3);
+	var SeekHead = __webpack_require__(6);
+	var SegmentInfo = __webpack_require__(8);
+	var Tracks = __webpack_require__(9);
+	var Cluster = __webpack_require__(10);
+	var Cues = __webpack_require__(12);
+	var ElementHeader = __webpack_require__(4);
+	var Tags = __webpack_require__(14);
+
+	//States
+	var STATE_INITIAL = 0;
+	var STATE_DECODING = 1;
+	var STATE_SEEKING = 2;
+	var META_LOADED = 3;
+	var STATE_FINISHED = 4;
+	var EXIT_OK = 666;
+
+
+	var getTimestamp;
+	if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
+	    getTimestamp = Date.now;
+	} else {
+	    getTimestamp = performance.now.bind(performance);
+	}
+
+	/**
+	 * @classdesc Wrapper class to handle webm demuxing
+	 */
+	class JsWebm {
+
+	    constructor() {
+	        this.shown = false; // for testin
+	        this.clusters = [];
+	        this.segmentInfo = [];
+	        this.state = STATE_INITIAL;
+	        this.videoPackets = [];
+	        this.audioPackets = [];
+	        this.loadedMetadata = false;
+	        this.seekable = true;//keep false until seek is finished
+	        this.dataInterface = new DataInterface();
+	        this.segment = null;
+	        this.currentElement = null; // placeholder for last element
+	        this.segmentIsLoaded = false; // have we found the segment position
+	        this.segmentDataOffset;
+	        this.headerIsLoaded = false;
+	        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
+	        this.tempElementHeader.reset();
+	        this.currentElement = null;
+	        this.segmentInfo = null; // assuming 1 for now
+	        this.tracks = null;
+	        this.currentCluster = null;
+	        this.cpuTime = 0;
+	        this.seekHead = null;
+	        this.cuesLoaded = false;
+	        this.isSeeking = false;
+	        this.tempSeekPosition = -1;
+	        this.loadingCues = false;
+	        this.seekCueTarget = null;
+	        this.eof = false;
+	        this.videoFormat = null;
+	        this.audioFormat = null;
+	        this.videoCodec = null;
+	        this.audioFormat = null;
+	        this.videoTrack = null;
+	        this.audioTrack = null;
+
+	        Object.defineProperty(this, 'duration', {
+	            get: function () {
+	                if (this.segmentInfo.duration < 0)
+	                    return -1;
+	                return this.segmentInfo.duration / 1000;// / 1000000000.0; ;
+	            }
+	        });
+
+	        Object.defineProperty(this, 'frameReady', {
+	            get: function () {
+	                return this.videoPackets.length > 0;
+	            }
+	        });
+
+	        Object.defineProperty(this, 'hasAudio', {
+	            get: function () {
+	                if (this.loadedMetadata && this.audioCodec) {
+	                    return true;
+	                } else {
+	                    return false;
+	                }
+	            }
+	        });
+
+	        Object.defineProperty(this, 'audioReady', {
+	            get: function () {
+	                return this.audioPackets.length > 0;
+	            }
+	        });
+
+	        Object.defineProperty(this, 'audioTimestamp', {
+	            get: function () {
+	                if (this.audioPackets.length > 0) {
+	                    return this.audioPackets[0].timestamp;
+	                } else {
+	                    return -1;
+	                }
+	            }
+	        });
+
+	        Object.defineProperty(this, 'frameTimestamp', {
+	            get: function () {
+	                if (this.videoPackets.length > 0) {
+	                    return this.videoPackets[0].timestamp;
+	                } else {
+	                    return -1;
+	                }
+	            }
+	        });
+
+	        Object.defineProperty(this, 'keyframeTimestamp', {
+	            get: function () {
+	                if (this.videoPackets.length > 0) {
+	                    return this.videoPackets[0].keyframeTimestamp;
+	                } else {
+	                    return -1;
+	                }
+	            }
+	        });
+
+	        Object.defineProperty(this, 'hasVideo', {
+	            get: function () {
+	                if (this.loadedMetadata && this.videoCodec) {
+	                    return true;
+	                } else {
+	                    return false;
+	                }
+	            }
+	        });
+
+	        Object.defineProperty(this, 'nextKeyframeTimestamp', {
+	            get: function () {
+	                throw "looking for kf timestamp";
+	            }
+	        });
+
+
+	        console.log('%c JSWEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
+	    }
+
+	    /**
+	     * Times a function call
+	     */
+	    time(func) {
+	        var start = getTimestamp(),
+	                ret;
+	        ret = func();
+	        var delta = (getTimestamp() - start);
+	        this.cpuTime += delta;
+	        //console.log('demux time ' + delta);
+	        return ret;
+	    }
+
+	    /**
+	     * 
+	     * Sets up the meta data validation after
+	     */
+	    validateMetadata() {
+	        var codecID;
+	        var channels;
+	        var rate;
+	        var tempTrack;
+	        //Multiple video tracks are allowed, for now just return the first one
+	        for (var i in this.tracks.trackEntries) {
+	            var trackEntry = this.tracks.trackEntries[i];
+	            if (trackEntry.trackType === 2) {
+	                tempTrack = trackEntry;
+	                codecID = trackEntry.codecID;
+	                channels = trackEntry.channels;
+	                rate = trackEntry.rate;
+	                break;
+	            }
+	        }
+	        this.audioTrack = tempTrack;
+	        var codecName;
+	        switch (codecID) {
+	            case "A_VORBIS":
+	                this.audioCodec = "vorbis";
+	                this.initVorbisHeaders(tempTrack);
+	                break;
+	            default:
+	                this.audioCodec = null;
+	                break;
+	        }
+
+
+	        for (var i in this.tracks.trackEntries) {
+	            var trackEntry = this.tracks.trackEntries[i];
+	            if (trackEntry.trackType === 1) { // video track
+	                tempTrack = trackEntry;
+	                codecID = trackEntry.codecID;
+	                break;
+	            }
+	        }
+
+	        switch (codecID) {
+	            case "V_VP8" :
+	                this.videoCodec = "vp8";
+	                break;
+	            default:
+	                this.videoCodec = null;
+	                break;
+	        }
+
+
+	        this.videoTrack = tempTrack;
+	        var fps = 0;//For now?
+	        this.videoFormat = {
+	            width: tempTrack.width,
+	            height: tempTrack.height,
+	            chromaWidth: tempTrack.width >> 1,
+	            chromaHeight: tempTrack.height >> 1,
+	            cropLeft: tempTrack.pixelCropLeft,
+	            cropTop: tempTrack.pixelCropTop,
+	            cropWidth: tempTrack.width - tempTrack.pixelCropLeft - tempTrack.pixelCropRight,
+	            cropHeight: tempTrack.height - tempTrack.pixelCropTop - tempTrack.pixelCropBottom,
+	            displayWidth: tempTrack.displayWidth,
+	            displayHeight: tempTrack.displayHeight,
+	            fps: fps
+	        };
+
+	        this.loadedMetadata = true;
+	    }
+
+	    initVorbisHeaders(trackEntry) {
+	        var headerParser = new DataView(trackEntry.codecPrivate);
+	        var packetCount = headerParser.getUint8(0);
+	        var firstLength = headerParser.getUint8(1);
+	        var secondLength = headerParser.getUint8(2);
+	        var thirdLength = headerParser.byteLength - firstLength - secondLength - 1;
+	        if (packetCount !== 2)
+	            throw "INVALID VORBIS HEADER";
+	        //throw "last length  = " + thirdLength;
+	        var start = 3;
+	        var end = start + firstLength;
+
+	        this.audioPackets.push({//This could be improved
+	            data: headerParser.buffer.slice(start, end),
+	            timestamp: -1
+	        });
+	        start = end;
+	        end = start + secondLength;
+
+	        this.audioPackets.push({//This could be improved
+	            data: headerParser.buffer.slice(start, end),
+	            timestamp: -1
+	        });
+	        start = end;
+	        end = start + thirdLength;
+	        this.audioPackets.push({//This could be improved
+	            data: headerParser.buffer.slice(start, end),
+	            timestamp: -1
+	        });
+
+	        //trackEntry.codecPrivate = null; //won't need it anymore
+	        this.audioTrack = trackEntry;
+	    }
+
+	    /**
+	     * This function ques up more data to the internal buffer
+	     * @param {arraybuffer} data
+	     * @returns {void}
+	     */
+	    queueData(data) {
+	        this.dataInterface.recieveInput(data);
+	    }
+
+	    demux() {
+	        var status = false;
+	        switch (this.state) {
+	            case STATE_INITIAL:
+	                this.initDemuxer();
+	                if (this.state !== STATE_DECODING)
+	                    break;
+	            case STATE_DECODING:
+	                status = this.load();
+	                //if (this.state !== STATE_FINISHED)
+	                break;
+	            case STATE_SEEKING:
+	                status = this.processSeeking();
+	                //if (this.state !== META_LOADED)
+	                break;
+	            default:
+	            //fill this out
+	        }
+
+	        return status;
+	    }
+
+	    process(callback) {
+
+	        var start = getTimestamp();
+	        var status = false;
+
+
+	        //this.processing = true;
+
+	        switch (this.state) {
+	            case STATE_INITIAL:
+	                this.initDemuxer();
+	                if (this.state !== STATE_DECODING)
+	                    break;
+	            case STATE_DECODING:
+	                status = this.load();
+	                //if (this.state !== STATE_FINISHED)
+	                break;
+	            case STATE_SEEKING:
+	                console.warn("Seek processing");
+	                status = this.processSeeking();
+	                //if (this.state !== META_LOADED)
+	                break;
+	            default:
+	                throw "state got wrecked";
+	                //fill this out
+	        }
+
+	        //this.processing = false;
+	        var delta = (getTimestamp() - start);
+	        this.cpuTime += delta;
+	        var result;
+	        //return status;
+	        if (status === 1 || status === true) {
+	            result = 1;
+	        } else {
+	            result = 0;
+	        }
+
+
+	        callback(!!result);
+	    }
+
+	    /**
+	     * General process loop, 
+	     * TODO, refactor this!!!!!
+	     */
+	    load() {
+	        var status = false;
+
+	        while (this.dataInterface.offset < this.segment.end) {
+	            if (!this.tempElementHeader.status) {
+	                this.dataInterface.peekAndSetElement(this.tempElementHeader);
+	                if (!this.tempElementHeader.status)
+	                    return null;
+	            }
+
+	            switch (this.tempElementHeader.id) {
+
+	                case 0x114D9B74: //Seek Head
+	                    if (!this.seekHead)
+	                        this.seekHead = new SeekHead(this.tempElementHeader.getData(), this.dataInterface);
+	                    this.seekHead.load();
+	                    if (!this.seekHead.loaded)
+	                        return false;
+	                    break;
+
+	                case 0xEC: //VOid
+	                    if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.tempElementHeader.size);
+	                    break;
+
+	                case 0x1549A966: //Info
+	                    if (!this.segmentInfo)
+	                        this.segmentInfo = new SegmentInfo(this.tempElementHeader.getData(), this.dataInterface);
+	                    this.segmentInfo.load();
+	                    if (!this.segmentInfo.loaded)
+	                        return false;
+	                    break;
+
+	                case 0x1654AE6B: //Tracks
+	                    if (!this.tracks)
+	                        this.tracks = new Tracks(this.tempElementHeader.getData(), this.dataInterface, this);
+	                    this.tracks.load();
+	                    if (!this.tracks.loaded)
+	                        return false;
+	                    break;
+
+	                case 0x1C53BB6B: //Cues
+	                    if (!this.cues)
+	                        this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
+	                    this.cues.load();
+	                    if (!this.cues.loaded)
+	                        return false;
+	                    this.cuesLoaded = true;
+	                    break;
+	                    
+	                case 0x1254c367: //Tags
+	                    if (!this.tags)
+	                        this.tags = new Tags(this.tempElementHeader.getData(), this.dataInterface, this);
+	                    this.tags.load();
+	                    if (!this.tags.loaded)
+	                        return false;
+	                    break;
+
+	                case 0x1F43B675: //Cluster
+	                    if (!this.loadedMetadata) {
+	                        this.validateMetadata();
+	                        return true;
+	                    }
+	                    if (!this.currentCluster) {
+	                        // var metaWasLoaded = this.loadedMetadata;
+	                        //console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
+	                        this.currentCluster = new Cluster(
+	                                this.tempElementHeader.offset,
+	                                this.tempElementHeader.size,
+	                                this.tempElementHeader.end,
+	                                this.tempElementHeader.dataOffset,
+	                                this.dataInterface,
+	                                this
+	                                );
+	                        //console.warn(this.currentCluster);
+	                        //if (this.loadedMetadata && !metaWasLoaded)
+	                        //  return true;
+	                        //console.warn(this.currentCluster);
+	                    }
+
+
+	                    status = this.currentCluster.load();
+	                    if (!this.currentCluster.loaded) {
+	                        return status;
+	                    }
+
+
+
+	                    this.currentCluster = null;
+	                    break;
+
+
+
+	                default:
+	                    this.state = META_LOADED;//testing
+	                    if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.tempElementHeader.size);
+
+	                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.tempElementHeader.reset();
+	        }
+
+	        this.eof = true;
+	        this.state = STATE_FINISHED;
+	        return status;
+	    }
+
+	    initDemuxer() {
+	        //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
+	        var dataInterface = this.dataInterface; //cache dataInterface reference
+
+	        if (!this.headerIsLoaded) {
+	            //only load it if we didnt already load it
+	            if (!this.elementEBML) {
+	                this.elementEBML = dataInterface.peekElement();
+	                if (!this.elementEBML)
+	                    return null;
+
+	                if (this.elementEBML.id !== 0x1A45DFA3) { //EBML 
+	                    //If the header has not loaded and the first element is not the header, do not continue
+	                    console.warn('INVALID PARSE, HEADER NOT LOCATED');
+	                }
+	            }
+
+	            var end = this.elementEBML.end;
+	            while (dataInterface.offset < end) {
+	                if (!this.tempElementHeader.status) {
+	                    dataInterface.peekAndSetElement(this.tempElementHeader);
+	                    if (!this.tempElementHeader.status)
+	                        return null;
+	                }
+
+	                switch (this.tempElementHeader.id) {
+
+	                    case 0x4286: //EBMLVersion
+	                        var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                        if (version !== null)
+	                            this.version = version;
+	                        else
+	                            return null;
+	                        break;
+
+	                    case 0x42F7: //EBMLReadVersion 
+	                        var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                        if (readVersion !== null)
+	                            this.readVersion = readVersion;
+	                        else
+	                            return null;
+	                        break;
+
+	                    case 0x42F2: //EBMLMaxIDLength
+	                        var maxIdLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                        if (maxIdLength !== null)
+	                            this.maxIdLength = maxIdLength;
+	                        else
+	                            return null;
+	                        break;
+
+	                    case 0x42F3: //EBMLMaxSizeLength
+	                        var maxSizeLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                        if (maxSizeLength !== null)
+	                            this.maxSizeLength = maxSizeLength;
+	                        else
+	                            return null;
+	                        break;
+
+	                    case 0x4282: //DocType
+	                        var docType = dataInterface.readString(this.tempElementHeader.size);
+	                        if (docType !== null)
+	                            this.docType = docType;
+	                        else
+	                            return null;
+	                        break;
+
+	                    case 0x4287: //DocTypeVersion //worked
+	                        var docTypeVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                        if (docTypeVersion !== null)
+	                            this.docTypeVersion = docTypeVersion;
+	                        else
+	                            return null;
+	                        break;
+
+	                    case 0x4285: //DocTypeReadVersion //worked
+	                        var docTypeReadVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                        if (docTypeReadVersion !== null)
+	                            this.docTypeReadVersion = docTypeReadVersion;
+	                        else
+	                            return null;
+	                        break;
+	                    default:
+	                        console.warn("Header element not found, skipping");
+	                        break;
+
+	                }
+
+	                this.tempElementHeader.reset();
+	            }
+
+	            this.headerIsLoaded = true;
+	        }
+
+	        //Now find segment offsets
+	        if (!this.currentElement)
+	            this.currentElement = this.dataInterface.peekElement();
+
+	        if (!this.currentElement)
+	            return null;
+
+
+	        switch (this.currentElement.id) {
+
+	            case 0x18538067: // Segment
+	                this.segment = this.currentElement;
+	                //this.segmentOffset = segmentOffset;
+	                break;
+	            case 0xEC: // void
+	                if (this.dataInterface.peekBytes(this.currentElement.size))
+	                    this.dataInterface.skipBytes();
+	                else
+	                    return null;
+	                break;
+	            default:
+	                console.warn("Global element not found, id: " + this.currentElement.id);
+	        }
+
+
+	        this.currentElement = null;
+	        this.segmentIsLoaded = true;
+	        this.state = STATE_DECODING;
+	    }
+
+	    dequeueAudioPacket(callback) {
+	        if (this.audioPackets.length) {
+	            var packet = this.audioPackets.shift().data;
+	            callback(packet);
+	        } else {
+	            callback(null);
+	        }
+	    }
+
+	    /**
+	     * Dequeue and return a packet off the video queue
+	     * @param {function} callback after packet removal complete
+	     */
+	    dequeueVideoPacket(callback) {
+	        if (this.videoPackets.length) {
+	            var packet = this.videoPackets.shift().data;
+	            //console.warn("dequeing packet size: " + packet.byteLength);
+	            callback(packet);
+	        } else {
+	            callback(null);
+	        }
+	    }
+
+	    _flush() {
+	        //console.log("flushing demuxer buffer private");
+	        this.audioPackets = [];
+	        this.videoPackets = [];
+	        this.dataInterface.flush();
+	        //this.tempElementHeader.reset();
+	        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
+	        this.tempElementHeader.reset();
+
+
+	        this.currentElement = null;
+	        this.currentCluster = null;
+	        this.eof = false;
+	        //Note: was wrapped in a time function but the callback doesnt seem to take that param
+	    }
+
+	    /**
+	     * Depreciated, don't use!
+	     * @param {number} timeSeconds
+	     * @param {function} callback
+	     */
+	    getKeypointOffset(timeSeconds, callback) {
+	        var offset = this.time(function () {
+
+	            return -1; // not used
+
+	        }.bind(this));
+
+	        callback(offset);
+	    }
+
+	    /*
+	     * @param {number} timeSeconds seconds to jump to
+	     * @param {function} callback 
+	     */
+	    seekToKeypoint(timeSeconds, callback) {
+
+	        this.state = STATE_SEEKING;
+	        console.warn("SEEK BEING CALLED");
+
+	        var ret = this.time(function () {
+
+	            var status;
+
+
+	            this.seekTime = timeSeconds * 1000000000;
+	            if (this.hasVideo) {
+	                this.seekTrack = this.videoTrack;
+	            } else if (this.hasAudio) {
+	                this.seekTrack = this.audioTrack;
+	            } else {
+	                return 0;
+	            }
+
+	            //this._flush();
+	            this.processSeeking();
+
+
+	            return 1;
+
+	        }.bind(this));
+
+	        this.audioPackets = [];
+	        this.videoPackets = [];
+	        callback(!!ret);
+
+	    }
+
+	    processSeeking() {
+	        console.warn("process seek");
+	        //Have to load cues if not available
+	        if (!this.cuesLoaded) {
+	            //throw "cues not loaded";
+	            if (!this.cuesOffset) {
+	                this.initCues();
+	                this._flush();
+	                this.dataInterface.offset = this.cuesOffset;
+	                this.onseek(this.cuesOffset);
+	                return 0;
+	            }
+
+	            if (!this.currentElement) {
+
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return 0;
+	            }
+
+	            if (!this.cues)
+	                this.cues = new Cues(this.currentElement, this.dataInterface, this);
+
+	            //processing cues
+	            this.cues.load();
+	            if (!this.cues.loaded)
+	                return 0;
+
+	            this.cuesLoaded = true;
+	            //console.warn(this.cues);
+	            return 0;
+	        }
+
+	        //now we can caluclate the pointer offset
+	        this.calculateKeypointOffset();
+	        //we should now have the cue point
+	        var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
+
+	        this._flush();
+	        this.dataInterface.offset = clusterOffset;
+	        this.onseek(clusterOffset);
+	        this.state = STATE_DECODING;
+
+	        return 0;
+	    }
+
+	    /**
+	     * Possibly use this to initialize cues if not loaded, can be called from onScrub or seekTo
+	     * Send seek request to cues, then make it keep reading bytes and waiting until cues are loaded
+	     * @returns {undefined}
+	     */
+	    initCues() {
+
+	        if (!this.cuesOffset) {
+
+	            var length = this.seekHead.entries.length;
+	            var entries = this.seekHead.entries;
+	            //console.warn(this.seekHead);
+	            var seekOffset;
+	            //Todo : make this less messy
+	            for (var i = 0; i < length; i++) {
+	                if (entries[i].seekId === 0x1C53BB6B) // cues
+	                    this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
+	            }
+	        }
+
+	    }
+
+	    /**
+	     * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
+	     */
+	    calculateKeypointOffset() {
+	        var r;
+	        var timecodeScale = this.segmentInfo.timecodeScale;
+	        this.seekTime;
+	        var cuesPoints = this.cues.entries; //cache for faster lookups;
+	        var length = this.cues.entries.length; // total number of cues;
+	        var scanPoint = cuesPoints[0];
+	        var tempPoint;
+
+
+	        //do linear search now
+	        //Todo, make binary search
+	        var i = 1;
+	        for (i; i < length; i++) {
+	            tempPoint = cuesPoints[i];
+	            if (tempPoint.cueTime * timecodeScale > this.seekTime)
+	                break;
+	            scanPoint = tempPoint;
+	        }
+
+	        this.seekCueTarget = scanPoint;
+	    }
+
+	}
+
+	module.exports = JsWebm;
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	/**
+	 * @classdesc This class keeps a queue of arraybuffers in order for demuxer to read continuously without having to overwrite anything
+	 * 
+	 */
+
+	var INITIAL_COUNTER = -1;
+
+	var ElementHeader = __webpack_require__(4);
+	var DateParser = __webpack_require__(5);
+
+	class DataInterface{
+	    
+	    constructor(){
+	        //this._dataView = new DataView();
+	        //console.warn(this._dataView);
+	        this.overallPointer = 0;
+	        this.internalPointer = 0;
+	        this.currentBuffer = null;
+	        this.markerPointer = 0;
+	        this.tempFloat64 = new DataView(new ArrayBuffer(8));
+	        this.tempFloat32 = new DataView(new ArrayBuffer(4));
+	        this.tempBinaryBuffer = null;
+	        this.seekTarget;
+	        this.dateParser = new DateParser();
+	        
+	        Object.defineProperty(this, 'offset' , {
+	            get: function(){
+	                return this.overallPointer;
+	            },
+	            
+	            set: function(offset){
+	                this.overallPointer = offset;
+	            }
+	        });
+	        
+	 
+	        this.tempElementOffset = null;
+	        this.tempElementDataOffset = null;
+	        this.tempSize = null;
+	        this.tempOctetWidth = null;
+	        this.tempOctet = null;
+	        this.tempByteBuffer = 0;
+	        this.tempByteCounter = 0;
+	        this.tempElementId = null;
+	        this.tempElementSize = null;
+	        this.tempVintWidth = null;
+	        this.tempResult = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        this.usingBufferedRead = false;
+	        
+	        /**
+	         * Returns the bytes left in the current buffer
+	         */
+	        Object.defineProperty(this, 'remainingBytes' , {
+
+	            get: function () {
+	                if (!this.currentBuffer)
+	                    return 0;
+	                else
+	                    return this.currentBuffer.byteLength - this.internalPointer;
+	            }
+	            
+	        });
+	        
+	        
+	    }
+	    
+	    flush(){
+	        this.currentBuffer = null;
+	        this.tempElementOffset = null;
+	        this.tempElementDataOffset = null;
+	        this.tempSize = null;
+	        this.tempOctetWidth = null;
+	        this.tempOctet = null;
+	        this.tempByteBuffer = 0;
+	        this.tempByteCounter = 0;
+	        this.tempElementId = null;
+	        this.tempElementSize = null;
+	        this.tempVintWidth = null;
+	        this.tempBinaryBuffer = null;
+	        this.tempResult = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        this.usingBufferedRead = false;
+	        this.overallPointer = 0;
+	        this.internalPointer = 0;
+	        this.tempFloat64 = new DataView(new ArrayBuffer(8));
+	        this.tempFloat32 = new DataView(new ArrayBuffer(4));
+	        
+	    }
+	    
+	    recieveInput(data){
+	        if(this.currentBuffer)
+	            throw "Buffer getting wrecked";
+	        this.currentBuffer = new DataView(data);
+	        this.internalPointer = 0;
+	    }
+	    
+	    popBuffer(){
+	        this.currentBuffer = null;
+	    }
+	    
+	    readDate(size){
+	        return this.readSignedInt(size);
+	    }
+	    
+	    readId(){
+	         if(!this.currentBuffer)
+	            return null; //Nothing to parse
+	 
+	        if (!this.tempOctet) {
+	            
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+	            
+	            this.tempElementOffset = this.overallPointer; // Save the element offset
+	            this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
+	            this.incrementPointers();
+	            this.tempOctetWidth = this.calculateOctetWidth();
+	            
+	                    
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null;       
+
+	        }
+	        
+	        //We will have at least one byte to read
+	        var tempByte;
+	        if(!this.tempByteCounter)
+	            this.tempByteCounter = 0;
+	        
+	        while (this.tempByteCounter < this.tempOctetWidth) {
+	            
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse 
+	            
+	            if (this.tempByteCounter === 0) {
+	                this.tempByteBuffer = this.tempOctet;
+	            } else {
+	                tempByte = this.readByte();
+	                this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
+	            }
+
+	            
+	            this.tempByteCounter++;
+	            
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            
+	        }
+	        
+	        var result = this.tempByteBuffer;
+	        
+	        
+	        this.tempOctet = null;
+	        this.tempByteCounter = null;
+	        this.tempByteBuffer = null;
+	        this.tempOctetWidth = null;
+	        
+	        return result;       
+	    }
+	    
+	    readVint() {
+
+	        if(!this.currentBuffer)
+	            return null; //Nothing to parse
+	  
+	        if (!this.tempOctet) {
+	            
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+	            
+	            this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
+	            this.incrementPointers();
+	            this.tempOctetWidth = this.calculateOctetWidth();
+	            
+	                    
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+
+	        }
+	        
+	        if(!this.tempByteCounter)
+	            this.tempByteCounter = 0;
+	        var tempByte;
+	        var tempOctetWidth = this.tempOctetWidth;
+	        while (this.tempByteCounter < tempOctetWidth) {
+	            
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+	            
+	            if (this.tempByteCounter === 0) {
+	                var mask = ((0xFF << tempOctetWidth) & 0xFF) >> tempOctetWidth;
+	                this.tempByteBuffer = this.tempOctet & mask;
+	            } else {
+	                tempByte = this.readByte();
+	                this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
+	            }
+	    
+	            
+	            this.tempByteCounter++;
+	            
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            
+	        }
+
+	        var result = this.tempByteBuffer;
+	        this.tempOctet = null;
+	        this.tempOctetWidth = null;
+	        this.tempByteCounter = null;
+	        this.tempByteBuffer = null;
+	        return result;
+	        
+	    }
+	    
+	    /**
+	     * Use this function to read a vint with more overhead by saving the state on each step
+	     * @returns {number | null}
+	     */
+	    bufferedReadVint(){
+	        
+	        //We will have at least one byte to read
+	        var tempByte;
+	        
+	        if(!this.tempByteCounter)
+	            this.tempByteCounter = 0;
+	        
+	        
+	        while (this.tempByteCounter < this.tempOctetWidth) {
+	            
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+	            
+	            if (this.tempByteCounter === 0) {
+	                var mask = ((0xFF << this.tempOctetWidth) & 0xFF) >> this.tempOctetWidth;
+	                this.tempByteBuffer = this.tempOctet & mask;
+	            } else {
+	                tempByte = this.readByte();
+	                this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
+	            }
+	    
+	            
+	            this.tempByteCounter++;
+	            
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            
+	        }
+	        
+	        var result = this.tempByteBuffer;
+	        
+	        
+	        this.tempByteCounter = null;
+	        this.tempByteBuffer = null;
+	        return result;
+	        
+	    }
+	    
+	    clearTemps() {
+	        this.tempId = null;
+	        this.tempSize = null;
+	        this.tempOctetMask = null;
+	        this.tempOctetWidth = null;
+	        this.tempOctet = null;
+	        this.tempByteBuffer = 0;
+	        this.tempByteCounter = 0;
+	        this.usingBufferedRead = false;
+	    }
+	    
+	    /**
+	     * Use this function to implement a more efficient vint reading if there are enough bytes in the buffer
+	     * @returns {Number|null} 
+	     */
+	    forceReadVint() {
+	        
+	        var result;
+	        switch (this.tempOctetWidth) {
+	            case 1:
+	                result = this.tempOctet & 0x7F;
+	                break;
+	            case 2:
+	                result = this.tempOctet & 0x3F;
+	                result = (result << 8) | this.currentBuffer.getUint8(this.internalPointer);
+	                this.incrementPointers();
+	                break;
+	            case 3:
+	                result = this.tempOctet & 0x1F;
+	                result = (result << 16) | this.currentBuffer.getUint16(this.internalPointer);
+	                this.incrementPointers(2);
+	                break;
+	            case 4:
+	                result = this.tempOctet & 0x0F;
+	                result = (result << 16) | this.currentBuffer.getUint16(this.internalPointer);
+	                this.incrementPointers(2);
+	                result = (result << 8) | this.currentBuffer.getUint8(this.internalPointer);
+	                this.incrementPointers();
+	                break;
+	            case 5:
+	                console.warn("finish this");
+	                break;
+	            case 6:
+	                /* fix this */
+	                console.warn("finish this");
+	                break;
+	            case 7:
+	                /* fix this */
+	                console.warn("finish this");
+	                break;
+	            case 8:
+	                result = this.tempOctet & 0x00;
+	                //Largest allowable integer in javascript is 2^53-1 so gonna have to use one less bit for now
+	                result = (result << 8) | this.currentBuffer.getUint8(this.internalPointer);
+	                this.incrementPointers();
+	                result = (result << 16) | this.currentBuffer.getUint16(this.internalPointer);
+	                this.incrementPointers(2);
+	                result = (result << 32) | this.currentBuffer.getUint32(this.internalPointer);
+	                this.incrementPointers(4);
+	                break;
+	        }
+
+	        if (this.remainingBytes === 0)
+	            this.currentBuffer = null; 
+
+	        this.tempOctetWidth = null;
+	        this.tempOctet = null;
+	        return result;
+	    }
+	    
+	    
+	    readByte(){
+	        if(!this.currentBuffer){
+	            console.error("READING OUT OF BOUNDS");
+	    
+	        }
+	            
+	        var byteToRead = this.currentBuffer.getUint8(this.internalPointer);
+	        this.incrementPointers();
+	        if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            
+	        return byteToRead;
+	    }
+	    
+	    readSignedByte(){
+	        if(!this.currentBuffer)
+	            console.error('READING OUT OF BOUNDS');
+	        var byteToRead = this.currentBuffer.getInt8(this.internalPointer);
+	        this.incrementPointers();
+	        if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            
+	        return byteToRead;
+	    }
+	    
+	    peekElement(){
+
+	        if(!this.currentBuffer)
+	            return null; //Nothing to parse
+	        
+	        //check if we return an id
+	        if (!this.tempElementId){
+	            this.tempElementId = this.readId();
+	            if(this.tempElementId === null)
+	                return null;
+	        }
+	        
+	        
+	        if (!this.tempElementSize) {
+	            this.tempElementSize = this.readVint();
+	            if (this.tempElementSize === null)
+	                return null;
+	        }
+	        
+	        var element = new ElementHeader(this.tempElementId , this.tempElementSize, this.tempElementOffset, this.overallPointer);
+	        
+	        //clear the temp holders
+	        this.tempElementId = null;
+	        this.tempElementSize = null;
+	        this.tempElementOffset = null;
+	        
+	        
+	        return element;
+	                
+	    }
+	    
+	    /**
+	     * sets the information on an existing element without creating a new objec
+	     */
+	    peekAndSetElement(element){
+
+	        if(!this.currentBuffer)
+	            return null; //Nothing to parse
+	        
+	        //check if we return an id
+	        if (!this.tempElementId){
+	            this.tempElementId = this.readId();
+	            if(this.tempElementId === null)
+	                return null;
+	        }
+	        
+	        
+	        if (!this.tempElementSize) {
+	            this.tempElementSize = this.readVint();
+	            if (this.tempElementSize === null)
+	                return null;
+	        }
+	        
+	        element.init(this.tempElementId , this.tempElementSize, this.tempElementOffset, this.overallPointer);
+	        
+	        //clear the temp holders
+	        this.tempElementId = null;
+	        this.tempElementSize = null;
+	        this.tempElementOffset = null;
+	                
+	    }
+	    
+	    /*
+	     * Check if we have enough bytes available in the buffer to read
+	     * @param {number} n test if we have this many bytes available to read
+	     * @returns {boolean} has enough bytes to read
+	     */
+	    peekBytes(n){
+	        if(!this.currentBuffer)
+	            return false;
+	        
+	        if((this.currentBuffer.byteLength - this.internalPointer - n) >= 0)
+	            return true;
+	        else 
+	            return false;
+	            
+	            /*
+	        if(!this.currentBuffer)
+	            return false; //No bytes
+	        //
+	        //First check if the first buffer has enough remaining bytes, don't need to loop if this is the case
+	        var currentBufferBytes = this.currentBuffer.byteLength - this.internalPointer - n;
+	        //If we have enough in this buffer just return true
+	        if(currentBufferBytes >= 0)
+	            return true;
+	        
+	        var totalBytes = this.getTotalBytes();
+	        if((totalBytes - this.internalPointer - n) >= 0)
+	            return true;
+	        else 
+	            return false;
+	                                            */
+	    }
+	    
+	    /**
+	     * Skips set amount of bytes
+	     * TODO: Make this more efficient with skipping over different buffers, add stricter checking
+	     * @param {number} bytesToSkip
+	     */
+	    skipBytes(bytesToSkip) {
+
+	        var chunkToErase = 0;
+	        var counter = 0;
+	        while (counter < bytesToSkip) {
+
+	            if (!this.currentBuffer)
+	                throw "Invalid Skip Length";
+
+
+	            if ((bytesToSkip - counter) > this.remainingBytes) {
+	                chunkToErase = this.remainingBytes;
+	            } else {
+	                chunkToErase = bytesToSkip - counter;
+	            }
+
+
+	            this.incrementPointers(chunkToErase);
+
+
+	            if (this.remainingBytes === 0) {
+	                this.currentBuffer = null; 
+	            }
+
+
+	            counter += chunkToErase;
+
+	        }
+
+	    }
+	    
+	    getRemainingBytes(){
+	        if (!this.currentBuffer)
+	            return 0;
+	        return this.currentBuffer.byteLength - this.internalPointer;
+	    }
+	     
+	    calculateOctetWidth(){
+	        var leadingZeroes = 0;
+	        var zeroMask = 0x80;
+	        do {
+	            if (this.tempOctet & zeroMask)
+	                break;
+
+	            zeroMask = zeroMask >> 1;
+	            leadingZeroes++;
+
+	        } while (leadingZeroes < 8);
+
+	        //Set the width of the octet
+	        return leadingZeroes + 1;
+	    }
+	    
+	    incrementPointers(n) {
+	        var bytesToAdd = n || 1;
+	        this.internalPointer += bytesToAdd;
+	        this.overallPointer += bytesToAdd;
+	    }
+
+	    readUnsignedInt(size) {
+
+	        if (!this.currentBuffer)// if we run out of data return null
+	            return null; //Nothing to parse
+
+	        //need to fix overflow for 64bit unsigned int
+	        if (size <= 0 || size > 8) {
+	            console.warn("invalid file size");
+	        }
+	        
+	        if (this.tempResult === null)
+	            this.tempResult = 0;
+
+	        if (this.tempCounter === INITIAL_COUNTER)
+	            this.tempCounter = 0;
+
+	        var b;
+
+	        while (this.tempCounter < size) {
+
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+
+	            b = this.readByte();
+
+	            if (this.tempCounter === 0 && b < 0) {
+	                console.warn("invalid integer value");
+	            }
+
+
+	            this.tempResult <<= 8;
+	            this.tempResult |= b;
+
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+
+	            this.tempCounter++;
+	        }
+
+	        //clear the temp resut
+	        var result = this.tempResult;
+	        this.tempResult = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        return result;
+	    }
+
+	    readSignedInt(size) {
+	        if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+	            
+	        //need to fix overflow for 64bit unsigned int
+	        if ( size <= 0 || size > 8) {
+	            console.warn("invalid file size");
+	        }
+	           
+	        if(this.tempResult === null)
+	            this.tempResult = 0;
+
+	        if (this.tempCounter === INITIAL_COUNTER)
+	            this.tempCounter = 0;
+
+	        var b;
+
+	        while (this.tempCounter < size) {
+
+	            if (!this.currentBuffer)// if we run out of data return null
+	                return null; //Nothing to parse
+
+	            
+
+	            if (this.tempCounter === 0)
+	                b = this.readByte();
+	            else
+	                b = this.readSignedByte();
+
+	            this.tempResult <<= 8;
+	            this.tempResult |= b;
+
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            
+	            this.tempCounter++;
+	        }
+
+	        //clear the temp resut
+	        var result = this.tempResult;
+	        this.tempResult = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        return result;
+	    }
+	    
+	    readString(size) {
+	        if (!this.tempString)
+	            this.tempString = '';
+	        
+	        if (this.tempCounter === INITIAL_COUNTER)
+	            this.tempCounter = 0;
+	        
+	        var tempString = '';
+	        while (this.tempCounter < size) {
+
+	            if (!this.currentBuffer){// if we run out of data return null
+	                //save progress
+	                this.tempString += tempString;
+	                return null; //Nothing to parse
+	            }
+
+	            //this.tempString += String.fromCharCode(this.readByte());
+	            tempString += String.fromCharCode(this.readByte());
+	            
+	            if (this.remainingBytes <= 0)
+	                this.currentBuffer = null; 
+
+	            this.tempCounter++;
+	        }
+	        
+	        //var tempString = this.tempString;
+	        
+	        this.tempString += tempString;
+	        var retString = this.tempString;
+	        this.tempString = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        return retString;
+	    }
+	    
+	    readFloat(size) {
+
+	        if (size === 8) {
+	            
+	            
+	            if (this.tempCounter === INITIAL_COUNTER)
+	                this.tempCounter = 0;
+
+	            if (this.tempResult === null){
+	                this.tempResult = 0;
+	                this.tempFloat64.setFloat64(0, 0);
+	            }
+	                
+
+	            var b;
+
+	            while (this.tempCounter < size) {
+
+	                if (!this.currentBuffer)// if we run out of data return null
+	                    return null; //Nothing to parse
+
+
+
+	                b = this.readByte();
+
+	                this.tempFloat64.setUint8(this.tempCounter, b);
+
+	                if (this.remainingBytes === 0)
+	                    this.currentBuffer = null; 
+
+	                this.tempCounter++;
+	            }
+	            
+	            this.tempResult = this.tempFloat64.getFloat64(0);
+
+
+	        } else if (size === 4) {
+	            
+	             if (this.tempCounter === INITIAL_COUNTER)
+	                this.tempCounter = 0;
+
+	            if (this.tempResult === null){
+	                this.tempResult = 0;
+	                this.tempFloat32.setFloat32(0, 0);
+	            }
+	                
+
+	            var b;
+
+	            while (this.tempCounter < size) {
+
+	                if (!this.currentBuffer)// if we run out of data return null
+	                    return null; //Nothing to parse
+
+
+
+	                b = this.readByte();
+
+	                this.tempFloat32.setUint8(this.tempCounter, b);
+
+	                if (this.remainingBytes === 0)
+	                    this.currentBuffer = null; 
+
+	                this.tempCounter++;
+	            }
+	            
+	            this.tempResult = this.tempFloat32.getFloat32(0);
+	            
+	        } else {
+	            throw "INVALID FLOAT LENGTH";
+	        }
+
+	        //clear the temp resut
+	        var result = this.tempResult;
+	        this.tempResult = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        return result;
+	    }
+	    
+	    /**
+	     * Returns a new buffer with the length of data starting at the current byte buffer
+	     * @param {number} length Length of bytes to read
+	     * @returns {ArrayBuffer} the read data
+	     */
+	    getBinary(length){
+	        if(this.usingBufferedRead && this.tempCounter === null){
+	            throw "COUNTER WAS ERASED";
+	        }
+	        //Entire element contained in 1 array
+	        if(this.remainingBytes >= length && !this.usingBufferedRead){
+	            
+	            var newBuffer = this.currentBuffer.buffer.slice(this.internalPointer, this.internalPointer + length);
+	            
+	            this.incrementPointers(length);
+	            if (this.remainingBytes === 0)
+	                this.currentBuffer = null; 
+	            return newBuffer;
+	            
+	        } 
+	        
+	        
+	        var test = this.offset;
+	        var tempRemainingBytes = this.remainingBytes;
+
+	        if (this.usingBufferedRead === false && this.tempCounter > 0)
+	            throw "INVALID BUFFERED READ";//at this point should be true
+	        
+	        //data is broken up across different arrays
+	        //TODO: VERY SLOW, FIX THIS!!!!!!!!!!
+	        this.usingBufferedRead = true;
+	        
+	        if (!this.tempBinaryBuffer)
+	            this.tempBinaryBuffer = new Uint8Array(length);
+	        
+	        if (this.tempCounter === INITIAL_COUNTER)
+	            this.tempCounter = 0;
+	        
+	        var bytesToCopy = 0;       
+	        var tempBuffer;
+	        while (this.tempCounter < length) {
+
+	            if (!this.currentBuffer) {
+	                if (this.usingBufferedRead === false)
+	                    throw "INVALID return  case";//at this point should be true
+	                return null; //Nothing to parse
+	            }
+
+	            if((length - this.tempCounter) > this.remainingBytes){
+	                bytesToCopy = this.remainingBytes;
+	            }else{
+	                bytesToCopy = length - this.tempCounter;
+	            }
+	           
+	            tempBuffer = new Uint8Array(this.currentBuffer.buffer , this.internalPointer, bytesToCopy);
+	            this.tempBinaryBuffer.set(tempBuffer , this.tempCounter);
+	            this.incrementPointers(bytesToCopy);
+	            //b = this.readByte();
+	            
+	            //this.tempBinaryBuffer.setUint8(this.tempCounter, b);
+
+
+
+	            if (this.remainingBytes === 0) {
+	                this.currentBuffer = null; 
+	            }
+
+
+	            this.tempCounter += bytesToCopy;
+	        }
+	        
+	        if(this.tempBinaryBuffer.byteLength !== length)
+	            console.warn("invalid read");
+	        var tempBinaryBuffer = this.tempBinaryBuffer;
+	        this.tempBinaryBuffer = null;
+	        this.tempCounter = INITIAL_COUNTER;
+	        this.usingBufferedRead = false;
+	        return tempBinaryBuffer.buffer;
+
+	        
+	    }
+	    
+	    
+	    
+	}
+
+
+
+
+	module.exports = DataInterface;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	/**
+	 * @classdesc A class to handle managment of matroska elements
+	 */
+	class ElementHeader{
+	    
+	    /**
+	     * 
+	     * @param {number} id the element id
+	     * @param {number} size the size of the payload
+	     * @param {number} offset the offset in the file
+	     * @param {number} dataOffset the offset of the payload
+	     */
+	    constructor(id, size , offset, dataOffset){
+	        this.id = id;
+	        this.size = size;
+	        //this.headerSize;
+	        this.offset = offset;
+	        this.dataOffset = dataOffset;
+	        this.end = dataOffset + size;
+	        this.status = true;
+	    }
+	    
+	    init(id, size , offset, dataOffset){
+	        this.id = id;
+	        this.size = size;
+	        //this.headerSize;
+	        this.offset = offset;
+	        this.dataOffset = dataOffset;
+	        this.end = dataOffset + size;
+	        this.status = true;
+	    }
+	    
+	    reset(){
+	        this.status = false;
+	    }
+	    
+	    getData(){
+	        return{
+	            id : this.id,
+	            size: this.size,
+	            offset : this.offset,
+	            dataOffset : this.dataOffset,
+	            end : this.end
+	        };
+	    }
+	    
+	}
+
+	module.exports = ElementHeader;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class DateParser{
+	    
+	    constructor(){
+	        
+	    }
+	    
+	}
+
+	module.exports = DateParser;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Seek = __webpack_require__(7);
+
+	class SeekHead {
+
+	    constructor(seekHeadHeader , dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = seekHeadHeader.offset;
+	        this.size = seekHeadHeader.size;
+	        this.end = seekHeadHeader.end;
+	        this.entries = [];
+	        this.entryCount = 0;
+	        this.voidElements = [];
+	        this.voidElementCount = 0;
+	        this.loaded = false;  
+	        this.tempEntry = null;
+	        this.currentElement = null;
+	    }
+	    
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0x4DBB: //Seek
+	                    if (!this.tempEntry)
+	                        this.tempEntry = new Seek(this.currentElement, this.dataInterface);
+	                    this.tempEntry.load();
+	                    if (!this.tempEntry.loaded)
+	                        return;
+	                    else 
+	                        this.entries.push(this.tempEntry);
+	                    break;
+	                    //TODO, ADD VOID
+	                default:
+	                    console.warn("Seek Head element not found");
+	                    break;
+
+	            }
+	            
+	            this.tempEntry = null;
+	            this.currentElement = null;
+	        }
+	        
+
+	        if (this.dataInterface.offset !== this.end){
+	            console.log(this);
+	            throw "INVALID SEEKHEAD FORMATTING"
+	        }
+	        
+
+	        this.loaded = true;
+	    }
+
+	}
+
+
+	module.exports = SeekHead;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class Seek{
+	    
+	    constructor(seekHeader, dataInterface) {
+	        this.size = seekHeader.size;
+	        this.offset = seekHeader.offset;
+	        this.end = seekHeader.end;
+	        this.dataInterface = dataInterface;
+	        this.loaded = false;
+	        this.currentElement = null;
+	        this.seekId = -1;
+	        this.seekPosition = -1;
+	    }
+	    
+	    load(){
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0x53AB: //SeekId
+	                    var seekId = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (seekId !== null)
+	                        this.seekId = seekId;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x53AC: //SeekPosition 
+	                    var seekPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (seekPosition !== null)
+	                        this.seekPosition = seekPosition;
+	                    else
+	                        return null;
+	                    break;
+	 
+	                default:
+	                    console.warn("Seek element not found, skipping : " + this.currentElement.id.toFixed(16));
+	                    break;
+
+	            }
+	            
+	            this.currentElement = null;
+	        }
+	        
+	        if(this.dataInterface.offset !== this.end)
+	            console.error("Invalid Seek Formatting");
+
+	        this.loaded = true;
+	    }
+	    
+	}
+
+
+	module.exports = Seek;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class SegmentInfo {
+
+	    constructor(infoHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = infoHeader.offset;
+	        this.size = infoHeader.size;
+	        this.end = infoHeader.end;
+	        this.muxingApp = null;
+	        this.writingApp = null;
+	        this.title = null;
+	        this.dataOffset = null;
+	        this.timecodeScale = 1000000;
+	        this.duration = -1;
+	        this.loaded = false;
+	        this.segmentUID = null;
+	        this.duration = null;
+	        this.dateUTC;
+
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+
+	            
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                //TODO add duration and title
+	                case 0x2AD7B1: //TimeCodeScale
+	                    var timecodeScale = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (timecodeScale !== null)
+	                        this.timecodeScale = timecodeScale;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x4D80: //Muxing App 
+	                    var muxingApp = this.dataInterface.readString(this.currentElement.size);
+	                    if (muxingApp !== null)
+	                        this.muxingApp = muxingApp;
+	                    else
+	                        return null;
+	                    break;
+	                case 0x5741: //writing App 
+	                    var writingApp = this.dataInterface.readString(this.currentElement.size);
+	                    if (writingApp !== null)
+	                        this.writingApp = writingApp;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x7BA9: //title
+	                    var title = this.dataInterface.readString(this.currentElement.size);
+	                    if (title !== null)
+	                        this.title = title;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                case 0x73A4: //segmentUID
+	                    //TODO, LOAD THIS AS A BINARY ARRAY, SHOULD BE 128 BIT UNIQUE ID
+	                    var segmentUID = this.dataInterface.readString(this.currentElement.size);
+	                    if (segmentUID !== null)
+	                        this.segmentUID = segmentUID;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                case 0x4489: //duration
+	                    var duration = this.dataInterface.readFloat(this.currentElement.size);
+	                    if (duration !== null)
+	                        this.duration = duration;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                case 0x4461 : //DateUTC
+	                    var dateUTC = this.dataInterface.readDate(this.currentElement.size);
+	                    if (dateUTC !== null)
+	                        this.dateUTC = dateUTC;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                default:
+	                    console.error("Ifno element not found, skipping : " + this.currentElement.id.toString(16));
+	                    break; 
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        if(this.dataInterface.offset !== this.end)
+	            console.error("Invalid SegmentInfo Formatting");
+	            
+
+	        this.loaded = true;
+	    }
+
+	}
+
+	module.exports = SegmentInfo;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var Seek = __webpack_require__(7);
+	class Tracks {
+
+	    constructor(seekHeadHeader, dataInterface, demuxer) {
+	        this.demuxer = demuxer;
+	        this.dataInterface = dataInterface;
+	        this.offset = seekHeadHeader.offset;
+	        this.size = seekHeadHeader.size;
+	        this.end = seekHeadHeader.end;
+	        this.trackEntries = [];
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.currentElement = null;
+	        this.trackLoader = new TrackLoader();
+	    }
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0xAE: //Track Entry
+	                    if (!this.trackLoader.loading)
+	                        this.trackLoader.init(this.currentElement, this.dataInterface);
+	                    this.trackLoader.load();
+	                    if (!this.trackLoader.loaded)
+	                        return;
+	                    else
+	                        var trackEntry = this.trackLoader.getTrackEntry();
+	                        this.trackEntries.push(trackEntry);
+	                      
+	                    break;
+	                    
+	                default:
+	                    console.warn("TRACK BUG");
+	                    throw "Track entry not found";
+	                    break;
+
+	            }
+
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	    loadTrackEntry() {
+	        if (!this.tempEntry)
+	            this.tempEntry = new Seek(this.currentElement, this.dataInterface);
+	    }
+	    
+	}
+
+	/**
+	 * @classdesc The TrackLoader class is a helper class to load the Track subelement types. Since the layout
+	 * of the Track entries is a little odd, it needs to parse the current 
+	 * level data plus the track container which can be either audio video, content encodings, and maybe subtitles.
+	 */
+	class TrackLoader {
+
+	    constructor() {
+	        this.dataInterface = null;
+	        this.offset = null;
+	        this.size = null;
+	        this.end = null;
+	        this.loaded = false;
+	        this.loading = false;
+	        this.trackData = {};
+	        this.trackData.trackNumber = null;
+	        this.trackData.trackType = null;
+	        this.trackData.name = null;
+	        this.trackData.codecName = null;
+	        this.trackData.defaultDuration = null;
+	        this.trackData.codecID = null;
+	        this.trackData.lacing = null;
+	        this.trackData.codecPrivate = null;
+	        this.trackData.codecDelay = null;
+	        this.trackData.seekPreRoll = null;
+	        this.tempTrack = null;
+	        this.minCache = null;
+	    }
+
+	    init(trackheader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = trackheader.offset;
+	        this.size = trackheader.size;
+	        this.end = trackheader.end;
+	        this.loaded = false;
+	        this.loading = true;
+	        this.trackData.trackNumber = null;
+	        this.trackData.trackType = null;
+	        this.trackData.name = null;
+	        this.trackData.codecName = null;
+	        this.trackData.defaultDuration = null;
+	        this.trackData.codecID = null;
+	        this.trackData.lacing = null;
+	        this.trackData.codecPrivate = null;
+	        this.trackData.codecDelay = null;
+	        this.trackData.seekPreRoll = null;
+	        this.trackData.trackUID = null;
+	        this.tempTrack = null;
+	        this.minCache = null;
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                //TODO support content encodings
+	                case 0xE0: //Video Track
+	                    if (!this.tempTrack)
+	                        this.tempTrack = new VideoTrack(this.currentElement, this.dataInterface);
+	                    this.tempTrack.load();
+	                    if (!this.tempTrack.loaded)
+	                        return;
+	                    break;
+
+	                case 0xE1: //Audio Number
+	                    if (!this.tempTrack)
+	                        this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
+	                    this.tempTrack.load();
+	                    if (!this.tempTrack.loaded)
+	                        return;
+	                    break;
+
+	                case 0xD7: //Track Number
+	                    var trackNumber = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (trackNumber !== null)
+	                        this.trackData.trackNumber = trackNumber;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x83: //TrackType 
+	                    var trackType = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (trackType !== null)
+	                        this.trackData.trackType = trackType;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x536E: //Name
+	                    var name = this.dataInterface.readString(this.currentElement.size);
+	                    if (name !== null)
+	                        this.trackData.name = name;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x258688: //CodecName
+	                    var codecName = this.dataInterface.readString(this.currentElement.size);
+	                    if (codecName !== null)
+	                        this.trackData.codecName = codecName;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x22B59C: //Language
+	                    var language = this.dataInterface.readString(this.currentElement.size);
+	                    if (language !== null)
+	                        this.trackData.language = language;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x23E383: //DefaultDuration 
+	                    var defaultDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (defaultDuration !== null)
+	                        this.trackData.defaultDuration = defaultDuration;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x86: //CodecId
+	                    var codecID = this.dataInterface.readString(this.currentElement.size);
+	                    if (codecID !== null)
+	                        this.trackData.codecID = codecID;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x9C: //FlagLacing 
+	                    var lacing = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (lacing !== null)
+	                        this.trackData.lacing = lacing;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x63A2: //Codec Private 
+	                    var codecPrivate = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (codecPrivate !== null){
+	                        this.trackData.codecPrivate = codecPrivate;
+	                        //this must be pushed onto the queue!
+	                        
+	                    }else{
+	                        return null;
+	                    }
+	                    break;
+
+	                case 0x56AA: //Codec Delay 
+	                    var codecDelay = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (codecDelay !== null)
+	                        this.trackData.codecDelay = codecDelay;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x56BB: //Pre Seek Roll 
+	                    var seekPreRoll = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (seekPreRoll !== null)
+	                        this.trackData.seekPreRoll = seekPreRoll;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x73C5: //Track UID
+	                    var trackUID = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (trackUID !== null)
+	                        this.trackData.trackUID = trackUID;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x6DE7: //MinCache
+	                    var minCache = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (minCache !== null)
+	                        this.trackData.minCache = minCache;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                default:
+	                    console.warn("track data element not found, skipping : " + this.currentElement.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	    getTrackEntry() {
+	        this.tempTrack.loadMeta(this.trackData);
+	        var tempTrack = this.tempTrack;
+	        this.tempTrack = null;
+	        this.loading = false;
+	        
+	        
+	        return tempTrack;
+	    }
+
+	}
+
+	class Track {
+	    
+	    loadMeta(meta) {
+	        for (var key in meta) {
+	            this[key] = meta[key];
+	        }
+	    }
+	    
+	}
+
+	class VideoTrack extends Track{
+	    
+	    constructor(trackHeader, dataInterface) {
+	        super();
+	        this.dataInterface = dataInterface;
+	        this.offset = trackHeader.offset;
+	        this.size = trackHeader.size;
+	        this.end = trackHeader.end;
+	        this.loaded = false;
+	        this.width = null;
+	        this.height = null;
+	        this.displayWidth = null;
+	        this.displayHeight = null;
+	        this.displayUnit = 0;
+	        this.stereoMode = null;
+	        this.frameRate = null;
+	        this.pixelCropBottom = 0;
+	        this.pixelCropTop = 0;
+	        this.pixelCropLeft = 0;
+	        this.pixelCropRight = 0;
+	    }
+
+	    load() {
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                //TODO add color
+	                case 0xB0: //Pixel width
+	                    var width = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (width !== null)
+	                        this.width = width;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0xBA: //Pixel Height 
+	                    var height = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (height !== null)
+	                        this.height = height;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x54B0: //Display width
+	                    var displayWidth = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (displayWidth !== null)
+	                        this.displayWidth = displayWidth;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x54BA: //Display height
+	                    var displayHeight = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (displayHeight !== null)
+	                        this.displayHeight = displayHeight;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x54B2: //Display unit
+	                    var displayUnit = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (displayUnit !== null)
+	                        this.displayUnit = displayUnit;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x53B8: //Stereo mode
+	                    var stereoMode = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (stereoMode !== null)
+	                        this.stereoMode = stereoMode;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x2383E3: //FRAME RATE //NEEDS TO BE FLOAT
+	                    var frameRate = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (frameRate !== null)
+	                        this.frameRate = frameRate;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x55B0: //Color
+	                    console.error("NO COLOR LOADING YET");
+	                default:
+	                    console.warn("Info element not found, skipping: " + this.currentElement.id.toFixed(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+	        
+	        
+	        if(!this.displayWidth)
+	            this.displayWidth = this.width - this.pixelCropLeft;// - Math.PI;
+	        
+	        if(!this.displayHeight)
+	            this.displayHeight = this.height - this.pixelCropTop;// - Math.PI;
+	            
+	        this.loaded = true;
+	    }
+
+	}
+
+	class AudioTrack extends Track{
+	    
+	    constructor(trackHeader, dataInterface) {
+	        super();
+	        this.dataInterface = dataInterface;
+	        this.offset = trackHeader.offset;
+	        this.size = trackHeader.size;
+	        this.end = trackHeader.end;
+	        this.loaded = false;
+	        this.rate = null;
+	        this.channel = null;
+	        this.bitDepth = null;
+	    }
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                //TODO add duration and title
+	                case 0xB5: //Sample Frequency //TODO: MAKE FLOAT
+	                    var rate = this.dataInterface.readFloat(this.currentElement.size);
+	                    if (rate !== null)
+	                        this.rate = rate;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x9F: //Channels 
+	                    var channels = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (channels !== null)
+	                        this.channels = channels;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x6264: //bitDepth 
+	                    var bitDepth = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (bitDepth !== null)
+	                        this.bitDepth = bitDepth;
+	                    else
+	                        return null;
+	                    break;
+
+	                default:
+	                    console.warn("Ifno element not found, skipping");
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	}
+
+	class TrackSettings {
+	    constructor() {
+	        this.offset = -1;
+	        this.size = -1;
+	    }
+	}
+
+	module.exports = Tracks;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var UNSET = -1;
+	var ElementHeader = __webpack_require__(4);
+	var SimpleBlock = __webpack_require__(11);
+	class Cluster {
+
+	    constructor(offset, size, end, dataOffset, dataInterface, demuxer) {
+	        this.demuxer = demuxer; // reference to parent demuxer for passing data
+	        this.dataInterface = dataInterface;
+	        this.offset = offset;
+	        this.size = size;
+	        //if (end !== -1){
+	            this.end = end;
+	        //} 
+	        //else{
+	          //  this.end = Number.MAX_VALUE;
+	        //}
+	        this.dataOffset = dataOffset;
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.currentElement = null;
+	        this.timeCode = null;
+	        this.tempBlock = null;
+
+	        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
+	        this.tempElementHeader.reset();
+	        this.tempBlock = new SimpleBlock();
+
+
+	        //this should go somewhere else!!
+	        //this.demuxer.loadedMetadata = true; // Testing only
+	        return true;
+	    }
+	    
+	    init(){
+	        
+	    }
+	    
+	    reset(){
+	       
+	    }
+	    
+	    load() {
+	        var status = false;
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.tempElementHeader.status) {
+	                this.dataInterface.peekAndSetElement(this.tempElementHeader);
+	                if (!this.tempElementHeader.status)
+	                    return null;
+	            }
+
+
+	            switch (this.tempElementHeader.id) {
+
+	                case 0xE7: //TimeCode
+	                    var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (timeCode !== null){
+	                        this.timeCode = timeCode;
+	                        //console.warn("timecode seeked to:" + this.timeCode);
+	                    }else{
+	                        return null;
+	                    }
+	                    break;
+
+	                case 0xA3: //Simple Block
+	                    if (!this.tempBlock.status)
+	                        this.tempBlock.init(
+	                                this.tempElementHeader.offset,
+	                                this.tempElementHeader.size,
+	                                this.tempElementHeader.end,
+	                                this.tempElementHeader.dataOffset,
+	                                this.dataInterface,
+	                                this
+	                                );
+	                    this.tempBlock.load();
+	                    if (!this.tempBlock.loaded)
+	                        return 0;
+	                    //else
+	                    //  this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
+	                    this.tempBlock.reset();
+
+	                    this.tempEntry = null;
+	                    this.tempElementHeader.reset();
+	                    if(this.dataInterface.offset !== this.end)
+	                        return true;
+	                    break;
+
+	                    //TODO, ADD VOID
+	                default:
+
+	                    //This means we probably are out of the cluster now, double check bounds when end not available
+	                    break;
+
+	            }
+
+	            this.tempEntry = null;
+	            this.tempElementHeader.reset();
+	            
+	            //return 1;
+	        }
+
+
+	        //if (this.dataInterface.offset !== this.end){
+	        //  console.log(this);
+	        //throw "INVALID CLUSTER FORMATTING";
+	        //}
+
+
+	        this.loaded = true;
+	        return status;
+	    }
+	}
+
+	module.exports = Cluster;
+
+
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var NO_LACING = 0;
+	var XIPH_LACING = 1;
+	var FIXED_LACING = 2;
+	var EBML_LACING = 3;
+
+	class SimpleBlock {
+
+	    constructor() {
+	        this.cluster;// = cluster;
+	        this.dataInterface;// = dataInterface;
+	        this.offset;// = blockHeader.offset;
+	        this.dataOffset;// = blockHeader.dataOffset;
+	        this.size;// = blockHeader.size;
+	        this.end;// = blockHeader.end;
+	        this.loaded = false;
+	        this.trackNumber = null;
+	        this.timeCode = -1;
+	        this.flags = null;
+	        this.keyframe = false;
+	        this.invisible = false;
+	        this.lacing = NO_LACING;
+	        this.discardable = false;
+	        this.lacedFrameCount = null;
+	        this.headerSize = null;
+	        this.frameSizes = [];
+	        this.tempCounter = null;
+	        this.tempFrame = null;
+	        this.track = null;
+	        this.frameLength = null;
+	        this.isLaced = false;
+	        this.stop = null;// = this.offset + this.size;
+	        this.status = false;
+	    }
+
+	    init(offset, size, end, dataOffset, dataInterface, cluster) {
+	        this.cluster = cluster;
+	        this.dataInterface = dataInterface;
+	        this.offset = offset;
+	        this.dataOffset = dataOffset;
+	        this.size = size;
+	        this.end = end;
+	        this.loaded = false;
+	        this.trackNumber = null;
+	        this.timeCode = null;
+	        this.flags = null;
+	        this.keyframe = false;
+	        this.invisible = false;
+	        this.lacing = NO_LACING;
+	        this.discardable = false;
+	        this.lacedFrameCount = null;
+	        this.headerSize = null;
+	        this.frameSizes = [];
+	        this.tempCounter = null;
+	        this.tempFrame = null;
+	        this.track = null;
+	        this.frameLength = null;
+	        this.isLaced = false;
+	        this.stop = this.offset + this.size;
+	        this.status = true;
+	        this.trackEntries = this.cluster.demuxer.tracks.trackEntries;
+	        this.videoPackets = this.cluster.demuxer.videoPackets;
+	        this.audioPackets = this.cluster.demuxer.audioPackets;
+	    }
+
+	    reset() {
+	        this.status = false;
+	    }
+
+	    loadTrack() {
+	        //could be cleaner
+	        this.track = this.trackEntries[this.trackNumber - 1];
+	    }
+
+	    load() {
+	        //6323
+	        var dataInterface = this.dataInterface;
+	        if (this.loaded)
+	            throw "ALREADY LOADED";
+
+
+	        if (this.trackNumber === null) {
+	            this.trackNumber = dataInterface.readVint();
+	            if (this.trackNumber === null)
+	                return null;
+	            this.loadTrack();
+	        }
+
+	        if (this.timeCode === null) {
+	            this.timeCode = dataInterface.readUnsignedInt(2);//Be signed for some reason?
+	            if (this.timeCode === null)
+	                return null;
+	        }
+
+	        if (this.flags === null) {/// FIX THIS
+	            this.flags = dataInterface.readUnsignedInt(1);
+	            if (this.flags === null)
+	                return null;
+
+	            this.keyframe = (((this.flags >> 7) & 0x01) === 0) ? false : true;
+	            this.invisible = (((this.flags >> 2) & 0x01) === 0) ? false : true;
+	            this.lacing = ((this.flags & 0x06) >> 1);
+	            if (this.lacing > 3 || this.lacing < 0)
+	                throw "INVALID LACING";
+	        }
+
+	        if (this.lacing === XIPH_LACING || this.lacing === EBML_LACING) {
+	            console.warn("DETECTING LACING");
+	            if (!this.lacedFrameCount) {
+	                this.lacedFrameCount = dataInterface.readByte();
+	                if (this.lacedFrameCount === null)
+	                    return null;
+
+	                this.lacedFrameCount++;
+	            }
+
+	            if (!this.tempCounter)
+	                this.tempCounter = 0;
+
+	            while (this.tempCounter < this.lacedFrameCount) {
+	                var frameSize = dataInterface.readByte();
+	                if (frameSize === null)
+	                    return null;
+	                this.frameSizes.push(frameSize);
+	                this.tempCounter++;
+	            }
+	        }
+
+	        //console.warn(this);
+	        if (!this.headerSize)
+	            this.headerSize = dataInterface.offset - this.dataOffset;
+
+
+	        switch (this.lacing) {
+
+
+	            case XIPH_LACING:
+	            case FIXED_LACING:
+	            case EBML_LACING:
+	            case NO_LACING:
+	                /*
+	                 if(this.lacing === FIXED_LACING){
+	                 console.warn("FIXED_LACING");
+	                 }
+	                 if(this.lacing === EBML_LACING){
+	                 console.warn("EBML_LACING");
+	                 }
+	                 if(this.lacing === XIPH_LACING){
+	                 console.warn("XIPH_LACING");
+	                 }
+	                 if(this.lacing === NO_LACING){
+	                 console.warn("NO_LACING");
+	                 }
+	                 */
+
+	                if (!this.frameLength) {
+	                    this.frameLength = this.size - this.headerSize;
+	                    if (this.frameLength <= 0)
+	                        throw "INVALID FRAME LENGTH " + this.frameLength;
+	                }
+
+
+	                var tempFrame = dataInterface.getBinary(this.frameLength);
+
+	                if (tempFrame === null) {
+	                    if (dataInterface.usingBufferedRead === false)
+	                        throw "SHOULD BE BUFFERED READ";
+	                    //console.warn("frame has been split");
+	                    return null;
+	                } else {
+	                    if (dataInterface.usingBufferedRead === true)
+	                        throw "SHOULD NOT BE BUFFERED READ";
+
+	                    if (tempFrame.byteLength !== this.frameLength)
+	                        throw "INVALID FRAME";
+	                }
+
+
+	                if (dataInterface.usingBufferedRead === true)
+	                    throw "SHOULD NOT BE BUFFERED READ";
+
+	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+	                //var fullTimeCode = this.cluster.timeCode;
+	                var timeStamp = fullTimeCode / 1000;
+	                if (timeStamp < 0) {
+	                    throw "INVALID TIMESTAMP";
+	                }
+
+
+	                if (this.track.trackType === 1) {
+	                    this.videoPackets.push({//This could be improved
+	                        data: tempFrame,
+	                        timestamp: timeStamp,
+	                        keyframeTimestamp: timeStamp,
+	                        isKeyframe : true
+	                    });
+	                } else if (this.track.trackType === 2) {
+	                    this.audioPackets.push({//This could be improved
+	                        data: tempFrame,
+	                        timestamp: timeStamp
+	                    });
+	                }
+
+	                tempFrame = null;
+
+	                break;
+	            default:
+	                console.log(this);
+	                console.warn("LACED ELEMENT FOUND");
+	                throw "STOP HERE";
+	        }
+
+	        if (this.end !== dataInterface.offset) {
+
+	            console.error(this);
+	            throw "INVALID BLOCK SIZE";
+	        }
+
+
+	        this.loaded = true;
+	        this.headerSize = null;
+	        this.tempFrame = null;
+	        this.tempCounter = null;
+	        this.frameLength = null;
+	    }
+
+	}
+
+	module.exports = SimpleBlock;
+
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var CueTrackPositions = __webpack_require__(13);
+
+	/**
+	 * @classdesc This class keeps track of keyframes for seeking
+	 * 76514630 - 43 - 8
+	 */
+
+	class Cues {
+
+	    constructor(cuesHeader, dataInterface, demuxer) {
+	        this.dataInterface = dataInterface;
+	        this.offset = cuesHeader.offset;
+	        this.size = cuesHeader.size;
+	        this.end = cuesHeader.end;
+	        this.entries = [];
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.demuxer = demuxer;
+	        this.currentElement = null;
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0xBB: //CuePoint
+	                    if (!this.tempEntry)
+	                        this.tempEntry = new CuePoint(this.currentElement, this.dataInterface);
+	                    this.tempEntry.load();
+	                    if (!this.tempEntry.loaded)
+	                        return;
+	                    else
+	                        this.entries.push(this.tempEntry);
+	                    break;
+	                    //TODO, ADD VOID
+	                default:
+	                    console.warn("Cue Head element not found"); // probably bad
+	                    break;
+
+	            }
+
+	            this.tempEntry = null;
+	            this.currentElement = null;
+	            //this.cueTrackPositions = this.tempEntry;
+	            //this.tempEntry = null;
+	        }
+
+
+	        if (this.dataInterface.offset !== this.end) {
+	            console.log(this);
+	            throw "INVALID CUE FORMATTING";
+	        }
+
+	        this.loaded = true;
+	        //console.warn(this);
+	    }
+
+	    getCount() {
+	        return this.cuePoints.length;
+	    }
+
+	    init() {
+
+	    }
+
+	    preloadCuePoint() {
+
+	    }
+
+	    find() {
+
+	    }
+
+	    getFirst() {
+
+	    }
+
+	    getLast() {
+
+	    }
+
+	    getNext() {
+
+	    }
+
+	    getBlock() {
+
+	    }
+
+	    findOrPreloadCluster() {
+
+	    }
+
+	}
+
+	class CuePoint {
+
+	    constructor(cuesPointHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = cuesPointHeader.offset;
+	        this.size = cuesPointHeader.size;
+	        this.end = cuesPointHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+	        this.cueTime = null;
+	        this.cueTrackPositions = null;
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                case 0xB7: //Cue Track Positions
+	                    if (!this.cueTrackPositions)
+	                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
+	                    this.cueTrackPositions.load();
+	                    if (!this.cueTrackPositions.loaded)
+	                        return;
+	                    break;
+
+	                case 0xB3: //Cue Time 
+	                    var cueTime = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (cueTime !== null)
+	                        this.cueTime = cueTime;
+	                    else
+	                        return null;
+	                    break;
+
+
+
+	                default:
+	                    console.warn("Cue Point not found, skipping");
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	}
+
+
+
+	module.exports = Cues;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+
+	class CueTrackPositions {
+
+	    constructor(cuesPointHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = cuesPointHeader.offset;
+	        this.size = cuesPointHeader.size;
+	        this.end = cuesPointHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+	        this.cueTrack = null;
+	        this.cueClusterPosition = 0;
+	        this.cueRelativePosition = 0;
+	    }
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0xF7: //CueTrack
+	                    var cueTrack = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (cueTrack !== null)
+	                        this.cueTrack = cueTrack;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0xF1: //Cue ClusterPosition 
+	                    var cueClusterPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (cueClusterPosition !== null)
+	                        this.cueClusterPosition = cueClusterPosition;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0xF0: //CueRelativePosition
+	                    var cueRelativePosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (cueRelativePosition !== null)
+	                        this.cueRelativePosition = cueRelativePosition;
+	                    else
+	                        return null;
+	                    break;
+
+	                default:
+	                    console.warn("Cue track positions not found! " + this.currentElement.id);
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        if (this.dataInterface.offset !== this.end)
+	            console.error("Invalid Seek Formatting");
+
+	        this.loaded = true;
+	    }
+
+	}
+
+	module.exports = CueTrackPositions;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Tag = __webpack_require__(15);
+
+	class Tags {
+
+	    constructor(tagsHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = tagsHeader.offset;
+	        this.size = tagsHeader.size;
+	        this.end = tagsHeader.end;
+	        this.entries = [];
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.currentElement = null;
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                case 0xB7: //Cue Track Positions
+	                    if (!this.cueTrackPositions)
+	                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
+	                    this.cueTrackPositions.load();
+	                    if (!this.cueTrackPositions.loaded)
+	                        return;
+	                    break;
+
+
+
+
+	                default:
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+
+	                    console.warn("tag Point not found, skipping" + this.currentElement.id.toString(16) );
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	}
+
+	module.exports = Tags;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class Tag{
+	    
+	    constructor(){
+	        
+	    }
+	    
+	}
+
+	module.exports = Tag;
+
+/***/ }
+/******/ ]);

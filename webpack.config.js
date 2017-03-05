@@ -19,7 +19,7 @@ var OGVMin = {
     path: path.join(__dirname, 'build'),
     filename: 'ogv-demuxer-webm.js'
   },
-  
+  /*
   plugins: [
     new ClosureCompiler({
       options: {
@@ -28,7 +28,7 @@ var OGVMin = {
       }
     })
   ]
-  
+  */
 };
 
 

@@ -74,6 +74,7 @@
 	var Cluster = __webpack_require__(10);
 	var Cues = __webpack_require__(12);
 	var ElementHeader = __webpack_require__(4);
+	var Tags = __webpack_require__(14);
 
 	//States
 	var STATE_INITIAL = 0;
@@ -458,6 +459,14 @@
 	                        return false;
 	                    this.cuesLoaded = true;
 	                    break;
+	                    
+	                case 0x1254c367: //Tags
+	                    if (!this.tags)
+	                        this.tags = new Tags(this.tempElementHeader.getData(), this.dataInterface, this);
+	                    this.tags.load();
+	                    if (!this.tags.loaded)
+	                        return false;
+	                    break;
 
 	                case 0x1F43B675: //Cluster
 	                    if (!this.loadedMetadata) {
@@ -501,7 +510,7 @@
 	                    else
 	                        this.dataInterface.skipBytes(this.tempElementHeader.size);
 
-	                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING");
+	                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
 	                    break;
 
 	            }
@@ -2500,7 +2509,7 @@
 	                    var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
 	                    if (timeCode !== null){
 	                        this.timeCode = timeCode;
-	                        console.warn("timecode seeked to:" + this.timeCode);
+	                        //console.warn("timecode seeked to:" + this.timeCode);
 	                    }else{
 	                        return null;
 	                    }
@@ -3040,6 +3049,87 @@
 	}
 
 	module.exports = CueTrackPositions;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Tag = __webpack_require__(15);
+
+	class Tags {
+
+	    constructor(tagsHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = tagsHeader.offset;
+	        this.size = tagsHeader.size;
+	        this.end = tagsHeader.end;
+	        this.entries = [];
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.currentElement = null;
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+	                case 0xB7: //Cue Track Positions
+	                    if (!this.cueTrackPositions)
+	                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
+	                    this.cueTrackPositions.load();
+	                    if (!this.cueTrackPositions.loaded)
+	                        return;
+	                    break;
+
+
+
+
+	                default:
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+
+	                    console.warn("tag Point not found, skipping" + this.currentElement.id.toString(16) );
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	}
+
+	module.exports = Tags;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class Tag{
+	    
+	    constructor(){
+	        
+	    }
+	    
+	}
+
+	module.exports = Tag;
 
 /***/ }
 /******/ ]);

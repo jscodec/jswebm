@@ -7,6 +7,7 @@ var Tracks = require('./Tracks.js');
 var Cluster = require('./Cluster.js');
 var Cues = require('./Cues.js');
 var ElementHeader = require('./ElementHeader.js');
+var Tags = require('./Tags.js');
 
 //States
 var STATE_INITIAL = 0;
@@ -391,6 +392,14 @@ class JsWebm {
                         return false;
                     this.cuesLoaded = true;
                     break;
+                    
+                case 0x1254c367: //Tags
+                    if (!this.tags)
+                        this.tags = new Tags(this.tempElementHeader.getData(), this.dataInterface, this);
+                    this.tags.load();
+                    if (!this.tags.loaded)
+                        return false;
+                    break;
 
                 case 0x1F43B675: //Cluster
                     if (!this.loadedMetadata) {
@@ -434,7 +443,7 @@ class JsWebm {
                     else
                         this.dataInterface.skipBytes(this.tempElementHeader.size);
 
-                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING");
+                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
                     break;
 
             }

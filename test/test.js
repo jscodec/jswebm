@@ -20,6 +20,10 @@ oReq.send(null);
 function runTest(buffer){
     var demuxer = new jswebm();
     demuxer.queueData(buffer);
-    demuxer.demux();
+    
+    while(!demuxer.eof){
+       demuxer.demux(); 
+    }
     console.log(demuxer);
+    
 }
