@@ -798,7 +798,7 @@
 	    }
 
 	    processSeeking() {
-	        console.warn("process seek");
+	        //console.warn("process seek");
 	        //Have to load cues if not available
 	        if (!this.cuesLoaded) {
 	            //throw "cues not loaded";
@@ -2738,27 +2738,6 @@
 	                throw "INVALID LACING";
 	        }
 
-	        if (this.lacing === XIPH_LACING || this.lacing === EBML_LACING) {
-	            console.warn("DETECTING LACING");
-	            if (!this.lacedFrameCount) {
-	                this.lacedFrameCount = dataInterface.readByte();
-	                if (this.lacedFrameCount === null)
-	                    return null;
-
-	                this.lacedFrameCount++;
-	            }
-
-	            if (!this.tempCounter)
-	                this.tempCounter = 0;
-
-	            while (this.tempCounter < this.lacedFrameCount) {
-	                var frameSize = dataInterface.readByte();
-	                if (frameSize === null)
-	                    return null;
-	                this.frameSizes.push(frameSize);
-	                this.tempCounter++;
-	            }
-	        }
 
 	        //console.warn(this);
 	        if (!this.headerSize)
@@ -2768,24 +2747,80 @@
 	        switch (this.lacing) {
 
 
-	            case XIPH_LACING:
+
 	            case FIXED_LACING:
+
+	                if (!this.frameLength) {
+	                    this.frameLength = this.size - this.headerSize;
+	                    if (this.frameLength <= 0)
+	                        throw "INVALID FRAME LENGTH " + this.frameLength;
+	                }
+	                
+	                if (!this.lacedFrameCount) {
+	                    this.lacedFrameCount = dataInterface.readUnsignedInt(1);
+	                    if (this.lacedFrameCount === null)
+	                        return null;
+
+	                    this.lacedFrameCount++;
+	                }
+
+	                var tempFrame = dataInterface.getBinary(this.frameLength - 1);
+	                
+	                if (tempFrame === null) {
+	                    if (dataInterface.usingBufferedRead === false)
+	                        throw "SHOULD BE BUFFERED READ";
+	                    //console.warn("frame has been split");
+	                    return null;
+	                }
+	                
+	                for (var i = 0; i < this.lacedFrameCount; i++) {
+	                    if (this.track.trackType === 1) {
+	                        this.videoPackets.push({//This could be improved
+	                            data: tempFrame.slice(i * this.fixedFrameLength, i * this.fixedFrameLength + this.fixedFrameLength),
+	                            timestamp: timeStamp,
+	                            keyframeTimestamp: timeStamp,
+	                            isKeyframe: this.keyFrame
+	                        });
+	                    } else if (this.track.trackType === 2) {
+	                        this.audioPackets.push({//This could be improved
+	                            data: tempFrame.slice(i * this.fixedFrameLength, i * this.fixedFrameLength + this.fixedFrameLength),
+	                            timestamp: timeStamp
+	                        });
+	                    }
+	                }
+	                
+	                
+	                this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
+	              
+
+
+	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+	                //var fullTimeCode = this.cluster.timeCode;
+	                var timeStamp = fullTimeCode / 1000;
+	                if (timeStamp < 0) {
+	                    throw "INVALID TIMESTAMP";
+	                }
+	                
+	                
+	                
+	                tempFrame = null;
+	                break;
+
+
 	            case EBML_LACING:
+
+	            case XIPH_LACING:
+	                
 	            case NO_LACING:
-	                /*
-	                 if(this.lacing === FIXED_LACING){
-	                 console.warn("FIXED_LACING");
-	                 }
+	                
 	                 if(this.lacing === EBML_LACING){
 	                 console.warn("EBML_LACING");
 	                 }
 	                 if(this.lacing === XIPH_LACING){
 	                 console.warn("XIPH_LACING");
 	                 }
-	                 if(this.lacing === NO_LACING){
-	                 console.warn("NO_LACING");
-	                 }
-	                 */
+	          
+	                 
 
 	                if (!this.frameLength) {
 	                    this.frameLength = this.size - this.headerSize;
@@ -2793,9 +2828,11 @@
 	                        throw "INVALID FRAME LENGTH " + this.frameLength;
 	                }
 
+	               
 
 	                var tempFrame = dataInterface.getBinary(this.frameLength);
 
+	 
 	                if (tempFrame === null) {
 	                    if (dataInterface.usingBufferedRead === false)
 	                        throw "SHOULD BE BUFFERED READ";
@@ -2809,9 +2846,6 @@
 	                        throw "INVALID FRAME";
 	                }
 
-
-	                if (dataInterface.usingBufferedRead === true)
-	                    throw "SHOULD NOT BE BUFFERED READ";
 
 	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
 	                //var fullTimeCode = this.cluster.timeCode;

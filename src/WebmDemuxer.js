@@ -672,7 +672,7 @@ class JsWebm {
     }
 
     processSeeking() {
-        console.warn("process seek");
+        //console.warn("process seek");
         //Have to load cues if not available
         if (!this.cuesLoaded) {
             //throw "cues not loaded";
