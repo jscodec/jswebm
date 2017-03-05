@@ -32,6 +32,9 @@ class SimpleBlock {
         this.isLaced = false;
         this.stop = null;// = this.offset + this.size;
         this.status = false;
+        this.ebmlLacedSizes = [];
+        this.ebmlParsedSizes = [];
+        this.ebmlLacedSizesParsed = false;
     }
 
     init(offset, size, end, dataOffset, dataInterface, cluster) {
@@ -62,6 +65,14 @@ class SimpleBlock {
         this.trackEntries = this.cluster.demuxer.tracks.trackEntries;
         this.videoPackets = this.cluster.demuxer.videoPackets;
         this.audioPackets = this.cluster.demuxer.audioPackets;
+        this.laceFrameHelper = null;
+        this.lacedFrameHeaderSize = null;
+        this.ebmlLacedSizes = [];
+        this.lacedFrameDataSize = null;
+        this.fixedFrameLength = null;
+        this.firstLacedFrameSize = null;
+        this.ebmlParsedSizes = [];
+        this.ebmlLacedSizesParsed = false;
     }
 
     reset() {
@@ -175,6 +186,117 @@ class SimpleBlock {
 
 
             case EBML_LACING:
+
+                if (!this.frameLength) {
+                    this.frameLength = this.size - this.headerSize;
+                    if (this.frameLength <= 0)
+                        throw "INVALID FRAME LENGTH " + this.frameLength;
+                }
+                
+           
+                if (!this.lacedFrameCount) {
+                    this.lacedFrameCount = dataInterface.readUnsignedInt(1);
+                    if (this.lacedFrameCount === null)
+                        return null;
+
+                    this.lacedFrameCount++;
+                }
+                
+                if (!this.firstLacedFrameSize) {
+                    var firstLacedFrameSize = this.dataInterface.readVint();
+                    if (firstLacedFrameSize !== null){
+                        this.firstLacedFrameSize = firstLacedFrameSize;
+                        this.ebmlLacedSizes.push(this.firstLacedFrameSize);
+                    } else {
+                        return null;
+                    }
+                }
+
+
+                if (!this.tempCounter) {
+                    this.tempCounter = 0;
+                }
+                
+                while (this.tempCounter < this.lacedFrameCount - 1) {
+                    var frameSize = dataInterface.readLacingSize();
+                    if (frameSize === null)
+                        return null;
+                    this.ebmlLacedSizes.push(frameSize);
+                    this.tempCounter++;
+                }
+
+                //Now parse the frame sizes
+                
+                if (!this.ebmlLacedSizesParsed) {
+                    this.ebmlParsedSizes[0] =  this.ebmlLacedSizes[0];
+                    var total = this.ebmlParsedSizes[0];
+                    for (var i = 1; i < this.lacedFrameCount - 1; i++) {
+                        this.ebmlParsedSizes[i] = this.ebmlLacedSizes[i] + this.ebmlParsedSizes[i - 1];
+                        total += this.ebmlParsedSizes[i];
+                    }
+                    if (!this.lacedFrameDataSize)
+                        this.lacedFrameDataSize = this.end - dataInterface.offset;
+                    
+                    var lastSize = this.lacedFrameDataSize - total;
+                    this.ebmlParsedSizes.push(lastSize);
+                    
+              
+                    this.ebmlLacedSizesParsed = true;
+                    this.ebmlTotalSize = total + lastSize;
+                }
+
+                
+                
+                
+                //console.warn(this.lacedFrameDataSize + ":" + this.ebmlTotalSize);
+                
+                var tempFrame = dataInterface.getBinary(this.lacedFrameDataSize);
+
+                if (tempFrame === null) {
+                    return null;
+                }
+
+                var start = 0;
+                var end = this.ebmlParsedSizes[0];
+                for (var i = 0; i < this.lacedFrameCount; i++) {
+            
+                    if (this.track.trackType === 1) {
+                        this.videoPackets.push({//This could be improved
+                            data: tempFrame.slice(start, end),
+                            timestamp: timeStamp,
+                            keyframeTimestamp: timeStamp,
+                            isKeyframe: this.keyFrame
+                        });
+                    } else if (this.track.trackType === 2) {
+                        this.audioPackets.push({//This could be improved
+                            data: tempFrame.slice(start, end),
+                            timestamp: timeStamp
+                        });
+                    }
+                    
+                    start += this.ebmlParsedSizes[i];
+                    end += this.ebmlParsedSizes[i];
+                    if( i === this.lacedFrameCount - 1){
+                        end = null;
+                    }
+                }
+                
+
+
+
+
+                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+                //var fullTimeCode = this.cluster.timeCode;
+                var timeStamp = fullTimeCode / 1000;
+                if (timeStamp < 0) {
+                    throw "INVALID TIMESTAMP";
+                }
+
+
+                this.tempCounter = null;
+                tempFrame = null;
+                break;
+
 
             case XIPH_LACING:
                 

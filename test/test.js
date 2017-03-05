@@ -2,19 +2,19 @@
 
 var testFolder = '../matroska-test-files/test_files/';
 
-var oReq = new XMLHttpRequest();
-oReq.open("GET", testFolder + "test1.mkv", true);
-oReq.responseType = "arraybuffer";
+var fileRequest = new XMLHttpRequest();
+fileRequest.open("GET", testFolder + "test1.mkv", true);
+fileRequest.responseType = "arraybuffer";
 
-oReq.onload = function (oEvent) {
-  var arrayBuffer = oReq.response; // Note: not oReq.responseText
+fileRequest.onload = function (oEvent) {
+  var arrayBuffer = fileRequest.response; // Note: not oReq.responseText
   if (arrayBuffer) {
     //var byteArray = new Arra(arrayBuffer);
     runTest(arrayBuffer);
   }
 };
 
-oReq.send(null);
+fileRequest.send(null);
 
 
 function runTest(buffer){
@@ -25,5 +25,7 @@ function runTest(buffer){
        demuxer.demux(); 
     }
     console.log(demuxer);
-    
+    var output = document.getElementById('output');
+   
 }
+
