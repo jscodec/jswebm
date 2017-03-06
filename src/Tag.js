@@ -16,6 +16,7 @@ class Tag {
         this.demuxer = demuxer;
         this.currentElement = null;
         this.targets = [];
+        this.simpleTags = [];
     }
 
     load() {
@@ -38,9 +39,18 @@ class Tag {
                         return null;
 
                     this.targets.push(this.tempEntry);
+                    this.tempEntry = null;                    
+                    break;
+
+                case 0x67C8: //SimpleTag
+                    if (!this.tempEntry)
+                        this.tempEntry = new SimpleTag(this.currentElement, this.dataInterface);
+                    this.tempEntry.load();
+                    if (!this.tempEntry.loaded)
+                        return null;
+
+                    this.simpleTags.push(this.tempEntry);
                     this.tempEntry = null;
-                    
-                    
                     break;
 
 

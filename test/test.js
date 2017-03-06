@@ -1,5 +1,6 @@
 
 
+
 var testFolder = '../matroska-test-files/test_files/';
 
 var fileRequest = new XMLHttpRequest();
@@ -26,6 +27,21 @@ function runTest(buffer){
     }
     console.log(demuxer);
     var output = document.getElementById('output');
-   
+    //JSON.stringify(demuxer, null, 4);
+
+    var cache = [];
+    output.innerHTML =  JSON.stringify(demuxer, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                // Circular reference found, discard key
+                return;
+            }
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+    } , ' ');
+    cache = null; // Enable garbage collection
+
 }
 

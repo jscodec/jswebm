@@ -3,6 +3,13 @@ A javascript implementation of the Webm Demuxer (matroska).
 
 Building for the OGV.js project.
 
+## Change Log
+* V0.0.3
+    * Working on ogv.js 1.3.1 
+    * Added basic support for Matroska Files
+    * Added support for Tags Element
+    * Added Support for Fixed size, and EBML laced elements
+
 ## Algorithm Overview
 The demuxer holds a queue of arrayBuffers which are sent in from the main player controller.
  The difficulty lies in the way the buffers come in. In order to achieve progressive downloading, we must parse the data

@@ -151,6 +151,17 @@ class SimpleBlock {
                     return null;
                 }
                 
+                this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
+              
+
+
+                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+                //var fullTimeCode = this.cluster.timeCode;
+                var timeStamp = fullTimeCode / 1000;
+                if (timeStamp < 0) {
+                    throw "INVALID TIMESTAMP";
+                }
+                
                 for (var i = 0; i < this.lacedFrameCount; i++) {
                     if (this.track.trackType === 1) {
                         this.videoPackets.push({//This could be improved
@@ -168,16 +179,7 @@ class SimpleBlock {
                 }
                 
                 
-                this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
-              
-
-
-                var fullTimeCode = this.timeCode + this.cluster.timeCode;
-                //var fullTimeCode = this.cluster.timeCode;
-                var timeStamp = fullTimeCode / 1000;
-                if (timeStamp < 0) {
-                    throw "INVALID TIMESTAMP";
-                }
+                
                 
                 
                 
@@ -255,6 +257,14 @@ class SimpleBlock {
                 if (tempFrame === null) {
                     return null;
                 }
+                
+                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+                //var fullTimeCode = this.cluster.timeCode;
+                var timeStamp = fullTimeCode / 1000;
+                if (timeStamp < 0) {
+                    throw "INVALID TIMESTAMP";
+                }
+
 
                 var start = 0;
                 var end = this.ebmlParsedSizes[0];
@@ -285,13 +295,7 @@ class SimpleBlock {
 
 
 
-                var fullTimeCode = this.timeCode + this.cluster.timeCode;
-                //var fullTimeCode = this.cluster.timeCode;
-                var timeStamp = fullTimeCode / 1000;
-                if (timeStamp < 0) {
-                    throw "INVALID TIMESTAMP";
-                }
-
+                
 
                 this.tempCounter = null;
                 tempFrame = null;

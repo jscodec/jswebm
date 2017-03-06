@@ -2747,6 +2747,17 @@
 	                    return null;
 	                }
 	                
+	                this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
+	              
+
+
+	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+	                //var fullTimeCode = this.cluster.timeCode;
+	                var timeStamp = fullTimeCode / 1000;
+	                if (timeStamp < 0) {
+	                    throw "INVALID TIMESTAMP";
+	                }
+	                
 	                for (var i = 0; i < this.lacedFrameCount; i++) {
 	                    if (this.track.trackType === 1) {
 	                        this.videoPackets.push({//This could be improved
@@ -2764,16 +2775,7 @@
 	                }
 	                
 	                
-	                this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
-	              
-
-
-	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
-	                //var fullTimeCode = this.cluster.timeCode;
-	                var timeStamp = fullTimeCode / 1000;
-	                if (timeStamp < 0) {
-	                    throw "INVALID TIMESTAMP";
-	                }
+	                
 	                
 	                
 	                
@@ -2851,6 +2853,14 @@
 	                if (tempFrame === null) {
 	                    return null;
 	                }
+	                
+	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+	                //var fullTimeCode = this.cluster.timeCode;
+	                var timeStamp = fullTimeCode / 1000;
+	                if (timeStamp < 0) {
+	                    throw "INVALID TIMESTAMP";
+	                }
+
 
 	                var start = 0;
 	                var end = this.ebmlParsedSizes[0];
@@ -2881,13 +2891,7 @@
 
 
 
-	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
-	                //var fullTimeCode = this.cluster.timeCode;
-	                var timeStamp = fullTimeCode / 1000;
-	                if (timeStamp < 0) {
-	                    throw "INVALID TIMESTAMP";
-	                }
-
+	                
 
 	                this.tempCounter = null;
 	                tempFrame = null;
@@ -3319,6 +3323,7 @@
 	        this.demuxer = demuxer;
 	        this.currentElement = null;
 	        this.targets = [];
+	        this.simpleTags = [];
 	    }
 
 	    load() {
@@ -3341,9 +3346,18 @@
 	                        return null;
 
 	                    this.targets.push(this.tempEntry);
+	                    this.tempEntry = null;                    
+	                    break;
+
+	                case 0x67C8: //SimpleTag
+	                    if (!this.tempEntry)
+	                        this.tempEntry = new SimpleTag(this.currentElement, this.dataInterface);
+	                    this.tempEntry.load();
+	                    if (!this.tempEntry.loaded)
+	                        return null;
+
+	                    this.simpleTags.push(this.tempEntry);
 	                    this.tempEntry = null;
-	                    
-	                    
 	                    break;
 
 
@@ -3354,7 +3368,7 @@
 	                    else
 	                        this.dataInterface.skipBytes(this.currentElement.size);
 
-	                    console.warn("tag Head element not found: " + this.currentElement.id.toString(16)); // probably bad
+	                    console.warn("tag element not found: " + this.currentElement.id.toString(16)); // probably bad
 	                    break;
 
 	            }
@@ -3412,15 +3426,6 @@
 
 	            switch (this.currentElement.id) {
 
-	                case 0xF7: //CueTrack
-	                    var cueTrack = this.dataInterface.readUnsignedInt(this.currentElement.size);
-	                    if (cueTrack !== null)
-	                        this.cueTrack = cueTrack;
-	                    else
-	                        return null;
-	                    break;
-
-
 	                default:
 
 	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
@@ -3452,12 +3457,72 @@
 
 	'use strict';
 
-	class SimpleTag{
-	    
-	    constructor(){
-	        
+	class SimpleTag {
+
+	    constructor(simpleTagHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = simpleTagHeader.offset;
+	        this.size = simpleTagHeader.size;
+	        this.end = simpleTagHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+	        this.cueTrack = null;
+	        this.cueClusterPosition = 0;
+	        this.cueRelativePosition = 0;
+	        this.tagName = null;
+	        this.tagString = null;
 	    }
-	    
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0x45A3: //TagName
+	                    var tagName = this.dataInterface.readString(this.currentElement.size);
+	                    if (tagName !== null)
+	                        this.tagName = tagName;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                case 0x4487: //TagString
+	                    var tagString = this.dataInterface.readString(this.currentElement.size);
+	                    if (tagString !== null)
+	                        this.tagString = tagString;
+	                    else
+	                        return null;
+	                    break;    
+	                    
+	                default:
+
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+	                    console.warn("simple tag element not found ! : " + this.currentElement.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        if (this.dataInterface.offset !== this.end)
+	            console.error("Invalid Targets Formatting");
+
+	        this.loaded = true;
+	    }
+
 	}
 
 	module.exports = SimpleTag;
