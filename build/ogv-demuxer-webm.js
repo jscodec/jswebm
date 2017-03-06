@@ -533,8 +533,6 @@
 	                        return true;
 	                    }
 	                    if (!this.currentCluster) {
-	                        // var metaWasLoaded = this.loadedMetadata;
-	                        //console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
 	                        this.currentCluster = new Cluster(
 	                                this.tempElementHeader.offset,
 	                                this.tempElementHeader.size,
@@ -543,10 +541,7 @@
 	                                this.dataInterface,
 	                                this
 	                                );
-	                        //console.warn(this.currentCluster);
-	                        //if (this.loadedMetadata && !metaWasLoaded)
-	                        //  return true;
-	                        //console.warn(this.currentCluster);
+
 	                    }
 
 
@@ -3311,6 +3306,8 @@
 	        this.loaded = false;
 	        this.tempEntry = null;
 	        this.currentElement = null;
+	        this.currentTag = null;
+	        this.tags = [];
 	    }
 
 	    load() {
@@ -3324,14 +3321,16 @@
 
 
 	            switch (this.currentElement.id) {
-	                case 0xB7: //Cue Track Positions
-	                    if (!this.cueTrackPositions)
-	                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
-	                    this.cueTrackPositions.load();
-	                    if (!this.cueTrackPositions.loaded)
-	                        return;
+	                case 0x7373: //Tag
+	                    if (!this.currentTag)
+	                        this.currentTag = new Tag(this.currentElement.getData(), this.dataInterface);
+	                    this.currentTag.load();
+	                    if (!this.currentTag.loaded)
+	                        return false;
+	                    
+	                    this.tags.push(this.currentTag);
+	                    this.currentTag = null;
 	                    break;
-
 
 
 
@@ -3342,7 +3341,7 @@
 	                        this.dataInterface.skipBytes(this.currentElement.size);
 
 
-	                    console.warn("tag Point not found, skipping" + this.currentElement.id.toString(16) );
+	                    console.warn("tags element not found, skipping" + this.currentElement.id.toString(16) );
 	                    break;
 
 	            }
@@ -3359,11 +3358,160 @@
 
 /***/ },
 /* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Targets = __webpack_require__(16);
+	var SimpleTag = __webpack_require__(17);
+
+	class Tag {
+
+	    constructor(tagHeader, dataInterface, demuxer) {
+	        this.dataInterface = dataInterface;
+	        this.offset = tagHeader.offset;
+	        this.size = tagHeader.size;
+	        this.end = tagHeader.end;
+	        this.entries = [];
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.demuxer = demuxer;
+	        this.currentElement = null;
+	        this.targets = [];
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0x63C0: //Targets
+	                    if (!this.tempEntry)
+	                        this.tempEntry = new Targets(this.currentElement, this.dataInterface);
+	                    this.tempEntry.load();
+	                    if (!this.tempEntry.loaded)
+	                        return null;
+
+	                    this.targets.push(this.tempEntry);
+	                    this.tempEntry = null;
+	                    
+	                    
+	                    break;
+
+
+	                default:
+
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+	                    console.warn("tag Head element not found: " + this.currentElement.id.toString(16)); // probably bad
+	                    break;
+
+	            }
+
+	            this.tempEntry = null;
+	            this.currentElement = null;
+	            //this.cueTrackPositions = this.tempEntry;
+	            //this.tempEntry = null;
+	        }
+
+
+	        if (this.dataInterface.offset !== this.end) {
+	            console.log(this);
+	            throw "INVALID CUE FORMATTING";
+	        }
+
+	        this.loaded = true;
+	        //console.warn(this);
+	    }
+
+	}
+
+	module.exports = Tag;
+
+/***/ },
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
 
-	class Tag{
+	class Targets{
+	    
+	    constructor(targetsHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = targetsHeader.offset;
+	        this.size = targetsHeader.size;
+	        this.end = targetsHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+	        this.cueTrack = null;
+	        this.cueClusterPosition = 0;
+	        this.cueRelativePosition = 0;
+	    }
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0xF7: //CueTrack
+	                    var cueTrack = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (cueTrack !== null)
+	                        this.cueTrack = cueTrack;
+	                    else
+	                        return null;
+	                    break;
+
+
+	                default:
+
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+	                    console.warn("targets element not found ! : " + this.currentElement.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        if (this.dataInterface.offset !== this.end)
+	            console.error("Invalid Targets Formatting");
+
+	        this.loaded = true;
+	    }
+	    
+	}
+
+	module.exports = Targets;
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class SimpleTag{
 	    
 	    constructor(){
 	        
@@ -3371,7 +3519,7 @@
 	    
 	}
 
-	module.exports = Tag;
+	module.exports = SimpleTag;
 
 /***/ }
 /******/ ]);
