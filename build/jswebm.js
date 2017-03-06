@@ -474,8 +474,6 @@
 	                        return true;
 	                    }
 	                    if (!this.currentCluster) {
-	                        // var metaWasLoaded = this.loadedMetadata;
-	                        //console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
 	                        this.currentCluster = new Cluster(
 	                                this.tempElementHeader.offset,
 	                                this.tempElementHeader.size,
@@ -484,10 +482,7 @@
 	                                this.dataInterface,
 	                                this
 	                                );
-	                        //console.warn(this.currentCluster);
-	                        //if (this.loadedMetadata && !metaWasLoaded)
-	                        //  return true;
-	                        //console.warn(this.currentCluster);
+
 	                    }
 
 
@@ -739,7 +734,7 @@
 	    }
 
 	    processSeeking() {
-	        console.warn("process seek");
+	        //console.warn("process seek");
 	        //Have to load cues if not available
 	        if (!this.cuesLoaded) {
 	            //throw "cues not loaded";
@@ -946,6 +941,7 @@
 	    readDate(size){
 	        return this.readSignedInt(size);
 	    }
+
 	    
 	    readId(){
 	         if(!this.currentBuffer)
@@ -1003,6 +999,30 @@
 	        return result;       
 	    }
 	    
+	    readLacingSize() {
+	        var vint = this.readVint();
+	        if (vint === null) {
+	            return null;
+	        } else {
+	            switch (this.lastOctetWidth) {
+	                case 1:
+	                    vint -= 63;
+	                    break;
+	                case 2:
+	                    vint -= 8191;
+	                    break;
+	                case 3:
+	                    vint -= 1048575;
+	                    break;
+	                case 4:
+	                    vint -= 134217727;
+	                    break;
+	            }
+	        }
+	        
+	        return vint;
+	    }
+	    
 	    readVint() {
 
 	        if(!this.currentBuffer)
@@ -1050,6 +1070,8 @@
 
 	        var result = this.tempByteBuffer;
 	        this.tempOctet = null;
+	        
+	        this.lastOctetWidth = this.tempOctetWidth;
 	        this.tempOctetWidth = null;
 	        this.tempByteCounter = null;
 	        this.tempByteBuffer = null;
@@ -2606,6 +2628,9 @@
 	        this.isLaced = false;
 	        this.stop = null;// = this.offset + this.size;
 	        this.status = false;
+	        this.ebmlLacedSizes = [];
+	        this.ebmlParsedSizes = [];
+	        this.ebmlLacedSizesParsed = false;
 	    }
 
 	    init(offset, size, end, dataOffset, dataInterface, cluster) {
@@ -2636,6 +2661,14 @@
 	        this.trackEntries = this.cluster.demuxer.tracks.trackEntries;
 	        this.videoPackets = this.cluster.demuxer.videoPackets;
 	        this.audioPackets = this.cluster.demuxer.audioPackets;
+	        this.laceFrameHelper = null;
+	        this.lacedFrameHeaderSize = null;
+	        this.ebmlLacedSizes = [];
+	        this.lacedFrameDataSize = null;
+	        this.fixedFrameLength = null;
+	        this.firstLacedFrameSize = null;
+	        this.ebmlParsedSizes = [];
+	        this.ebmlLacedSizesParsed = false;
 	    }
 
 	    reset() {
@@ -2679,27 +2712,6 @@
 	                throw "INVALID LACING";
 	        }
 
-	        if (this.lacing === XIPH_LACING || this.lacing === EBML_LACING) {
-	            console.warn("DETECTING LACING");
-	            if (!this.lacedFrameCount) {
-	                this.lacedFrameCount = dataInterface.readByte();
-	                if (this.lacedFrameCount === null)
-	                    return null;
-
-	                this.lacedFrameCount++;
-	            }
-
-	            if (!this.tempCounter)
-	                this.tempCounter = 0;
-
-	            while (this.tempCounter < this.lacedFrameCount) {
-	                var frameSize = dataInterface.readByte();
-	                if (frameSize === null)
-	                    return null;
-	                this.frameSizes.push(frameSize);
-	                this.tempCounter++;
-	            }
-	        }
 
 	        //console.warn(this);
 	        if (!this.headerSize)
@@ -2709,24 +2721,195 @@
 	        switch (this.lacing) {
 
 
-	            case XIPH_LACING:
+
 	            case FIXED_LACING:
+
+	                if (!this.frameLength) {
+	                    this.frameLength = this.size - this.headerSize;
+	                    if (this.frameLength <= 0)
+	                        throw "INVALID FRAME LENGTH " + this.frameLength;
+	                }
+	                
+	                if (!this.lacedFrameCount) {
+	                    this.lacedFrameCount = dataInterface.readUnsignedInt(1);
+	                    if (this.lacedFrameCount === null)
+	                        return null;
+
+	                    this.lacedFrameCount++;
+	                }
+
+	                var tempFrame = dataInterface.getBinary(this.frameLength - 1);
+	                
+	                if (tempFrame === null) {
+	                    if (dataInterface.usingBufferedRead === false)
+	                        throw "SHOULD BE BUFFERED READ";
+	                    //console.warn("frame has been split");
+	                    return null;
+	                }
+	                
+	                this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
+	              
+
+
+	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+	                //var fullTimeCode = this.cluster.timeCode;
+	                var timeStamp = fullTimeCode / 1000;
+	                if (timeStamp < 0) {
+	                    throw "INVALID TIMESTAMP";
+	                }
+	                
+	                for (var i = 0; i < this.lacedFrameCount; i++) {
+	                    if (this.track.trackType === 1) {
+	                        this.videoPackets.push({//This could be improved
+	                            data: tempFrame.slice(i * this.fixedFrameLength, i * this.fixedFrameLength + this.fixedFrameLength),
+	                            timestamp: timeStamp,
+	                            keyframeTimestamp: timeStamp,
+	                            isKeyframe: this.keyFrame
+	                        });
+	                    } else if (this.track.trackType === 2) {
+	                        this.audioPackets.push({//This could be improved
+	                            data: tempFrame.slice(i * this.fixedFrameLength, i * this.fixedFrameLength + this.fixedFrameLength),
+	                            timestamp: timeStamp
+	                        });
+	                    }
+	                }
+	                
+	                
+	                
+	                
+	                
+	                
+	                tempFrame = null;
+	                break;
+
+
 	            case EBML_LACING:
+
+	                if (!this.frameLength) {
+	                    this.frameLength = this.size - this.headerSize;
+	                    if (this.frameLength <= 0)
+	                        throw "INVALID FRAME LENGTH " + this.frameLength;
+	                }
+	                
+	           
+	                if (!this.lacedFrameCount) {
+	                    this.lacedFrameCount = dataInterface.readUnsignedInt(1);
+	                    if (this.lacedFrameCount === null)
+	                        return null;
+
+	                    this.lacedFrameCount++;
+	                }
+	                
+	                if (!this.firstLacedFrameSize) {
+	                    var firstLacedFrameSize = this.dataInterface.readVint();
+	                    if (firstLacedFrameSize !== null){
+	                        this.firstLacedFrameSize = firstLacedFrameSize;
+	                        this.ebmlLacedSizes.push(this.firstLacedFrameSize);
+	                    } else {
+	                        return null;
+	                    }
+	                }
+
+
+	                if (!this.tempCounter) {
+	                    this.tempCounter = 0;
+	                }
+	                
+	                while (this.tempCounter < this.lacedFrameCount - 1) {
+	                    var frameSize = dataInterface.readLacingSize();
+	                    if (frameSize === null)
+	                        return null;
+	                    this.ebmlLacedSizes.push(frameSize);
+	                    this.tempCounter++;
+	                }
+
+	                //Now parse the frame sizes
+	                
+	                if (!this.ebmlLacedSizesParsed) {
+	                    this.ebmlParsedSizes[0] =  this.ebmlLacedSizes[0];
+	                    var total = this.ebmlParsedSizes[0];
+	                    for (var i = 1; i < this.lacedFrameCount - 1; i++) {
+	                        this.ebmlParsedSizes[i] = this.ebmlLacedSizes[i] + this.ebmlParsedSizes[i - 1];
+	                        total += this.ebmlParsedSizes[i];
+	                    }
+	                    if (!this.lacedFrameDataSize)
+	                        this.lacedFrameDataSize = this.end - dataInterface.offset;
+	                    
+	                    var lastSize = this.lacedFrameDataSize - total;
+	                    this.ebmlParsedSizes.push(lastSize);
+	                    
+	              
+	                    this.ebmlLacedSizesParsed = true;
+	                    this.ebmlTotalSize = total + lastSize;
+	                }
+
+	                
+	                
+	                
+	                //console.warn(this.lacedFrameDataSize + ":" + this.ebmlTotalSize);
+	                
+	                var tempFrame = dataInterface.getBinary(this.lacedFrameDataSize);
+
+	                if (tempFrame === null) {
+	                    return null;
+	                }
+	                
+	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
+	                //var fullTimeCode = this.cluster.timeCode;
+	                var timeStamp = fullTimeCode / 1000;
+	                if (timeStamp < 0) {
+	                    throw "INVALID TIMESTAMP";
+	                }
+
+
+	                var start = 0;
+	                var end = this.ebmlParsedSizes[0];
+	                for (var i = 0; i < this.lacedFrameCount; i++) {
+	            
+	                    if (this.track.trackType === 1) {
+	                        this.videoPackets.push({//This could be improved
+	                            data: tempFrame.slice(start, end),
+	                            timestamp: timeStamp,
+	                            keyframeTimestamp: timeStamp,
+	                            isKeyframe: this.keyFrame
+	                        });
+	                    } else if (this.track.trackType === 2) {
+	                        this.audioPackets.push({//This could be improved
+	                            data: tempFrame.slice(start, end),
+	                            timestamp: timeStamp
+	                        });
+	                    }
+	                    
+	                    start += this.ebmlParsedSizes[i];
+	                    end += this.ebmlParsedSizes[i];
+	                    if( i === this.lacedFrameCount - 1){
+	                        end = null;
+	                    }
+	                }
+	                
+
+
+
+
+	                
+
+	                this.tempCounter = null;
+	                tempFrame = null;
+	                break;
+
+
+	            case XIPH_LACING:
+	                
 	            case NO_LACING:
-	                /*
-	                 if(this.lacing === FIXED_LACING){
-	                 console.warn("FIXED_LACING");
-	                 }
+	                
 	                 if(this.lacing === EBML_LACING){
 	                 console.warn("EBML_LACING");
 	                 }
 	                 if(this.lacing === XIPH_LACING){
 	                 console.warn("XIPH_LACING");
 	                 }
-	                 if(this.lacing === NO_LACING){
-	                 console.warn("NO_LACING");
-	                 }
-	                 */
+	          
+	                 
 
 	                if (!this.frameLength) {
 	                    this.frameLength = this.size - this.headerSize;
@@ -2734,9 +2917,11 @@
 	                        throw "INVALID FRAME LENGTH " + this.frameLength;
 	                }
 
+	               
 
 	                var tempFrame = dataInterface.getBinary(this.frameLength);
 
+	 
 	                if (tempFrame === null) {
 	                    if (dataInterface.usingBufferedRead === false)
 	                        throw "SHOULD BE BUFFERED READ";
@@ -2750,9 +2935,6 @@
 	                        throw "INVALID FRAME";
 	                }
 
-
-	                if (dataInterface.usingBufferedRead === true)
-	                    throw "SHOULD NOT BE BUFFERED READ";
 
 	                var fullTimeCode = this.timeCode + this.cluster.timeCode;
 	                //var fullTimeCode = this.cluster.timeCode;
@@ -3069,6 +3251,8 @@
 	        this.loaded = false;
 	        this.tempEntry = null;
 	        this.currentElement = null;
+	        this.currentTag = null;
+	        this.tags = [];
 	    }
 
 	    load() {
@@ -3082,14 +3266,16 @@
 
 
 	            switch (this.currentElement.id) {
-	                case 0xB7: //Cue Track Positions
-	                    if (!this.cueTrackPositions)
-	                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
-	                    this.cueTrackPositions.load();
-	                    if (!this.cueTrackPositions.loaded)
-	                        return;
+	                case 0x7373: //Tag
+	                    if (!this.currentTag)
+	                        this.currentTag = new Tag(this.currentElement.getData(), this.dataInterface);
+	                    this.currentTag.load();
+	                    if (!this.currentTag.loaded)
+	                        return false;
+	                    
+	                    this.tags.push(this.currentTag);
+	                    this.currentTag = null;
 	                    break;
-
 
 
 
@@ -3100,7 +3286,7 @@
 	                        this.dataInterface.skipBytes(this.currentElement.size);
 
 
-	                    console.warn("tag Point not found, skipping" + this.currentElement.id.toString(16) );
+	                    console.warn("tags element not found, skipping" + this.currentElement.id.toString(16) );
 	                    break;
 
 	            }
@@ -3117,19 +3303,229 @@
 
 /***/ },
 /* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Targets = __webpack_require__(16);
+	var SimpleTag = __webpack_require__(17);
+
+	class Tag {
+
+	    constructor(tagHeader, dataInterface, demuxer) {
+	        this.dataInterface = dataInterface;
+	        this.offset = tagHeader.offset;
+	        this.size = tagHeader.size;
+	        this.end = tagHeader.end;
+	        this.entries = [];
+	        this.loaded = false;
+	        this.tempEntry = null;
+	        this.demuxer = demuxer;
+	        this.currentElement = null;
+	        this.targets = [];
+	        this.simpleTags = [];
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0x63C0: //Targets
+	                    if (!this.tempEntry)
+	                        this.tempEntry = new Targets(this.currentElement, this.dataInterface);
+	                    this.tempEntry.load();
+	                    if (!this.tempEntry.loaded)
+	                        return null;
+
+	                    this.targets.push(this.tempEntry);
+	                    this.tempEntry = null;                    
+	                    break;
+
+	                case 0x67C8: //SimpleTag
+	                    if (!this.tempEntry)
+	                        this.tempEntry = new SimpleTag(this.currentElement, this.dataInterface);
+	                    this.tempEntry.load();
+	                    if (!this.tempEntry.loaded)
+	                        return null;
+
+	                    this.simpleTags.push(this.tempEntry);
+	                    this.tempEntry = null;
+	                    break;
+
+
+	                default:
+
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+	                    console.warn("tag element not found: " + this.currentElement.id.toString(16)); // probably bad
+	                    break;
+
+	            }
+
+	            this.tempEntry = null;
+	            this.currentElement = null;
+	            //this.cueTrackPositions = this.tempEntry;
+	            //this.tempEntry = null;
+	        }
+
+
+	        if (this.dataInterface.offset !== this.end) {
+	            console.log(this);
+	            throw "INVALID CUE FORMATTING";
+	        }
+
+	        this.loaded = true;
+	        //console.warn(this);
+	    }
+
+	}
+
+	module.exports = Tag;
+
+/***/ },
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
 
-	class Tag{
+	class Targets{
 	    
-	    constructor(){
-	        
+	    constructor(targetsHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = targetsHeader.offset;
+	        this.size = targetsHeader.size;
+	        this.end = targetsHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+	        this.cueTrack = null;
+	        this.cueClusterPosition = 0;
+	        this.cueRelativePosition = 0;
+	    }
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                default:
+
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+	                    console.warn("targets element not found ! : " + this.currentElement.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        if (this.dataInterface.offset !== this.end)
+	            console.error("Invalid Targets Formatting");
+
+	        this.loaded = true;
 	    }
 	    
 	}
 
-	module.exports = Tag;
+	module.exports = Targets;
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	class SimpleTag {
+
+	    constructor(simpleTagHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = simpleTagHeader.offset;
+	        this.size = simpleTagHeader.size;
+	        this.end = simpleTagHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+	        this.cueTrack = null;
+	        this.cueClusterPosition = 0;
+	        this.cueRelativePosition = 0;
+	        this.tagName = null;
+	        this.tagString = null;
+	    }
+
+	    load() {
+
+	        while (this.dataInterface.offset < this.end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0x45A3: //TagName
+	                    var tagName = this.dataInterface.readString(this.currentElement.size);
+	                    if (tagName !== null)
+	                        this.tagName = tagName;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                case 0x4487: //TagString
+	                    var tagString = this.dataInterface.readString(this.currentElement.size);
+	                    if (tagString !== null)
+	                        this.tagString = tagString;
+	                    else
+	                        return null;
+	                    break;    
+	                    
+	                default:
+
+	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
+	                        return false;
+	                    else
+	                        this.dataInterface.skipBytes(this.currentElement.size);
+
+	                    console.warn("simple tag element not found ! : " + this.currentElement.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        if (this.dataInterface.offset !== this.end)
+	            console.error("Invalid Targets Formatting");
+
+	        this.loaded = true;
+	    }
+
+	}
+
+	module.exports = SimpleTag;
 
 /***/ }
 /******/ ]);

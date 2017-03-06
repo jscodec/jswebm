@@ -407,8 +407,6 @@ class JsWebm {
                         return true;
                     }
                     if (!this.currentCluster) {
-                        // var metaWasLoaded = this.loadedMetadata;
-                        //console.warn("CLUSTER AT: " + this.tempElementHeader.dataOffset);
                         this.currentCluster = new Cluster(
                                 this.tempElementHeader.offset,
                                 this.tempElementHeader.size,
@@ -417,10 +415,7 @@ class JsWebm {
                                 this.dataInterface,
                                 this
                                 );
-                        //console.warn(this.currentCluster);
-                        //if (this.loadedMetadata && !metaWasLoaded)
-                        //  return true;
-                        //console.warn(this.currentCluster);
+
                     }
 
 
@@ -672,7 +667,7 @@ class JsWebm {
     }
 
     processSeeking() {
-        console.warn("process seek");
+        //console.warn("process seek");
         //Have to load cues if not available
         if (!this.cuesLoaded) {
             //throw "cues not loaded";

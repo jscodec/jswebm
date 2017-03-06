@@ -13,6 +13,8 @@ class Tags {
         this.loaded = false;
         this.tempEntry = null;
         this.currentElement = null;
+        this.currentTag = null;
+        this.tags = [];
     }
 
     load() {
@@ -26,14 +28,16 @@ class Tags {
 
 
             switch (this.currentElement.id) {
-                case 0xB7: //Cue Track Positions
-                    if (!this.cueTrackPositions)
-                        this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
-                    this.cueTrackPositions.load();
-                    if (!this.cueTrackPositions.loaded)
-                        return;
+                case 0x7373: //Tag
+                    if (!this.currentTag)
+                        this.currentTag = new Tag(this.currentElement.getData(), this.dataInterface);
+                    this.currentTag.load();
+                    if (!this.currentTag.loaded)
+                        return false;
+                    
+                    this.tags.push(this.currentTag);
+                    this.currentTag = null;
                     break;
-
 
 
 
@@ -44,7 +48,7 @@ class Tags {
                         this.dataInterface.skipBytes(this.currentElement.size);
 
 
-                    console.warn("tag Point not found, skipping" + this.currentElement.id.toString(16) );
+                    console.warn("tags element not found, skipping" + this.currentElement.id.toString(16) );
                     break;
 
             }

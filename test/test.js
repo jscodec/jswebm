@@ -1,20 +1,21 @@
 
 
+
 var testFolder = '../matroska-test-files/test_files/';
 
-var oReq = new XMLHttpRequest();
-oReq.open("GET", testFolder + "test1.mkv", true);
-oReq.responseType = "arraybuffer";
+var fileRequest = new XMLHttpRequest();
+fileRequest.open("GET", testFolder + "test1.mkv", true);
+fileRequest.responseType = "arraybuffer";
 
-oReq.onload = function (oEvent) {
-  var arrayBuffer = oReq.response; // Note: not oReq.responseText
+fileRequest.onload = function (oEvent) {
+  var arrayBuffer = fileRequest.response; // Note: not oReq.responseText
   if (arrayBuffer) {
     //var byteArray = new Arra(arrayBuffer);
     runTest(arrayBuffer);
   }
 };
 
-oReq.send(null);
+fileRequest.send(null);
 
 
 function runTest(buffer){
@@ -25,5 +26,22 @@ function runTest(buffer){
        demuxer.demux(); 
     }
     console.log(demuxer);
-    
+    var output = document.getElementById('output');
+    //JSON.stringify(demuxer, null, 4);
+
+    var cache = [];
+    output.innerHTML =  JSON.stringify(demuxer, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                // Circular reference found, discard key
+                return;
+            }
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+    } , ' ');
+    cache = null; // Enable garbage collection
+
 }
+

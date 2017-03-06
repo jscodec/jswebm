@@ -103,6 +103,7 @@ class DataInterface{
     readDate(size){
         return this.readSignedInt(size);
     }
+
     
     readId(){
          if(!this.currentBuffer)
@@ -160,6 +161,30 @@ class DataInterface{
         return result;       
     }
     
+    readLacingSize() {
+        var vint = this.readVint();
+        if (vint === null) {
+            return null;
+        } else {
+            switch (this.lastOctetWidth) {
+                case 1:
+                    vint -= 63;
+                    break;
+                case 2:
+                    vint -= 8191;
+                    break;
+                case 3:
+                    vint -= 1048575;
+                    break;
+                case 4:
+                    vint -= 134217727;
+                    break;
+            }
+        }
+        
+        return vint;
+    }
+    
     readVint() {
 
         if(!this.currentBuffer)
@@ -207,6 +232,8 @@ class DataInterface{
 
         var result = this.tempByteBuffer;
         this.tempOctet = null;
+        
+        this.lastOctetWidth = this.tempOctetWidth;
         this.tempOctetWidth = null;
         this.tempByteCounter = null;
         this.tempByteBuffer = null;
