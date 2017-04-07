@@ -90,6 +90,15 @@ class SegmentInfo {
                         return null;
                     break;
                     
+                case 0xbf: //CRC-32
+                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+                    if (crc !== null)
+                        crc;
+                    //this.docTypeReadVersion = docTypeReadVersion;
+                    else
+                        return null;
+                    break;
+                    
                 default:
                     console.error("Ifno element not found, skipping : " + this.currentElement.id.toString(16));
                     break; 

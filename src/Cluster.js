@@ -2,6 +2,8 @@
 var UNSET = -1;
 var ElementHeader = require('./ElementHeader.js');
 var SimpleBlock = require('./SimpleBlock.js');
+var BlockGroup = require('./BlockGroup.js');
+
 class Cluster {
 
     constructor(offset, size, end, dataOffset, dataInterface, demuxer) {
@@ -10,10 +12,10 @@ class Cluster {
         this.offset = offset;
         this.size = size;
         //if (end !== -1){
-            this.end = end;
+        this.end = end;
         //} 
         //else{
-          //  this.end = Number.MAX_VALUE;
+        //  this.end = Number.MAX_VALUE;
         //}
         this.dataOffset = dataOffset;
         this.loaded = false;
@@ -21,25 +23,26 @@ class Cluster {
         this.currentElement = null;
         this.timeCode = null;
         this.tempBlock = null;
+        this.position = null;
 
         this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
         this.tempElementHeader.reset();
         this.tempBlock = new SimpleBlock();
 
-
+        this.blockGroups = [];
         //this should go somewhere else!!
         //this.demuxer.loadedMetadata = true; // Testing only
         return true;
     }
-    
-    init(){
-        
+
+    init() {
+
     }
-    
-    reset(){
-       
+
+    reset() {
+
     }
-    
+
     load() {
         var status = false;
 
@@ -55,10 +58,10 @@ class Cluster {
 
                 case 0xE7: //TimeCode
                     var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
-                    if (timeCode !== null){
+                    if (timeCode !== null) {
                         this.timeCode = timeCode;
                         //console.warn("timecode seeked to:" + this.timeCode);
-                    }else{
+                    } else {
                         return null;
                     }
                     break;
@@ -82,13 +85,43 @@ class Cluster {
 
                     this.tempEntry = null;
                     this.tempElementHeader.reset();
-                    if(this.dataInterface.offset !== this.end)
+                    if (this.dataInterface.offset !== this.end)
                         return true;
                     break;
 
+                case 0xA7: //Position
+                    var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    if (timeCode !== null) {
+                        this.timeCode = timeCode;
+                        //console.warn("timecode seeked to:" + this.timeCode);
+                    } else {
+                        return null;
+                    }
+                    break;
+
+                case 0xA0: //Block Group
+                    if (!this.currentBlockGroup)
+                        this.currentBlockGroup = new BlockGroup(this.tempElementHeader.getData(), this.dataInterface);
+                    this.currentBlockGroup.load();
+                    if (!this.currentBlockGroup.loaded)
+                        return false;
+
+                    this.blockGroups.push(this.currentTag);
+                    this.currentBlockGroup = null;
+                    break;
+
+                case 0xAB: //PrevSize
+                    var prevSize = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+                    if (prevSize !== null)
+                        this.prevSize = prevSize;
+                    else
+                        return null;
+                    break;
+                    
                     //TODO, ADD VOID
                 default:
-
+                    console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
+                    throw "cluster";
                     //This means we probably are out of the cluster now, double check bounds when end not available
                     break;
 
@@ -96,7 +129,7 @@ class Cluster {
 
             this.tempEntry = null;
             this.tempElementHeader.reset();
-            
+
             //return 1;
         }
 

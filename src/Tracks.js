@@ -39,9 +39,17 @@ class Tracks {
                       
                     break;
                     
+                case 0xbf: //CRC-32
+                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+                    if (crc !== null)
+                        crc;
+                    //this.docTypeReadVersion = docTypeReadVersion;
+                    else
+                        return null;
+                    break;
+                    
                 default:
-                    console.warn("TRACK BUG");
-                    throw "Track entry not found";
+                    console.warn("track element not found, skipping : " + this.currentElement.id.toString(16));
                     break;
 
             }
@@ -242,6 +250,15 @@ class TrackLoader {
                     var minCache = this.dataInterface.readUnsignedInt(this.currentElement.size);
                     if (minCache !== null)
                         this.trackData.minCache = minCache;
+                    else
+                        return null;
+                    break;
+                    
+                case 0xbf: //CRC-32
+                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+                    if (crc !== null)
+                        crc;
+                    //this.docTypeReadVersion = docTypeReadVersion;
                     else
                         return null;
                     break;

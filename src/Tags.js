@@ -40,7 +40,15 @@ class Tags {
                     break;
 
 
-
+                case 0xbf: //CRC-32
+                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+                    if (crc !== null)
+                        crc;
+                    //this.docTypeReadVersion = docTypeReadVersion;
+                    else
+                        return null;
+                    break;
+                    
                 default:
                     if (!this.dataInterface.peekBytes(this.currentElement.size))
                         return false;

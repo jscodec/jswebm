@@ -39,9 +39,19 @@ class SeekHead {
                     else 
                         this.entries.push(this.tempEntry);
                     break;
+                    
+                case 0xbf: //CRC-32
+                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+                    if (crc !== null)
+                        crc;
+                    //this.docTypeReadVersion = docTypeReadVersion;
+                    else
+                        return null;
+                    break;
+                    
                     //TODO, ADD VOID
                 default:
-                    console.warn("Seek Head element not found");
+                    console.warn("Seek head element not found, skipping : " + this.currentElement.id.toString(16));
                     break;
 
             }

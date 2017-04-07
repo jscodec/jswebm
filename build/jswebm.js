@@ -72,9 +72,9 @@
 	var SegmentInfo = __webpack_require__(8);
 	var Tracks = __webpack_require__(9);
 	var Cluster = __webpack_require__(10);
-	var Cues = __webpack_require__(12);
+	var Cues = __webpack_require__(13);
 	var ElementHeader = __webpack_require__(4);
-	var Tags = __webpack_require__(14);
+	var Tags = __webpack_require__(15);
 
 	//States
 	var STATE_INITIAL = 0;
@@ -600,8 +600,19 @@
 	                        else
 	                            return null;
 	                        break;
+	                        
+	                    case 0xbf: //CRC-32
+	                        var crc = dataInterface.getBinary(this.tempElementHeader.size);
+	                        if (crc !== null)
+	                            crc;
+	                            //this.docTypeReadVersion = docTypeReadVersion;
+	                        else
+	                            return null;
+	                        break;
+	                        
 	                    default:
-	                        console.warn("Header element not found, skipping");
+	                        console.warn("UNSUPORTED HEADER ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
+	                        //console.warn("Header element not found, skipping");
 	                        break;
 
 	                }
@@ -1788,9 +1799,19 @@
 	                    else 
 	                        this.entries.push(this.tempEntry);
 	                    break;
+	                    
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+	                    
 	                    //TODO, ADD VOID
 	                default:
-	                    console.warn("Seek Head element not found");
+	                    console.warn("Seek head element not found, skipping : " + this.currentElement.id.toString(16));
 	                    break;
 
 	            }
@@ -1860,9 +1881,18 @@
 	                    else
 	                        return null;
 	                    break;
+
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
 	 
 	                default:
-	                    console.warn("Seek element not found, skipping : " + this.currentElement.id.toFixed(16));
+	                    console.warn("Seek element not found, skipping : " + this.currentElement.id.toString(16));
 	                    break;
 
 	            }
@@ -1977,6 +2007,15 @@
 	                        return null;
 	                    break;
 	                    
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+	                    
 	                default:
 	                    console.error("Ifno element not found, skipping : " + this.currentElement.id.toString(16));
 	                    break; 
@@ -2042,9 +2081,17 @@
 	                      
 	                    break;
 	                    
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+	                    
 	                default:
-	                    console.warn("TRACK BUG");
-	                    throw "Track entry not found";
+	                    console.warn("track element not found, skipping : " + this.currentElement.id.toString(16));
 	                    break;
 
 	            }
@@ -2245,6 +2292,15 @@
 	                    var minCache = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	                    if (minCache !== null)
 	                        this.trackData.minCache = minCache;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
 	                    else
 	                        return null;
 	                    break;
@@ -2476,6 +2532,8 @@
 	var UNSET = -1;
 	var ElementHeader = __webpack_require__(4);
 	var SimpleBlock = __webpack_require__(11);
+	var BlockGroup = __webpack_require__(12);
+
 	class Cluster {
 
 	    constructor(offset, size, end, dataOffset, dataInterface, demuxer) {
@@ -2484,10 +2542,10 @@
 	        this.offset = offset;
 	        this.size = size;
 	        //if (end !== -1){
-	            this.end = end;
+	        this.end = end;
 	        //} 
 	        //else{
-	          //  this.end = Number.MAX_VALUE;
+	        //  this.end = Number.MAX_VALUE;
 	        //}
 	        this.dataOffset = dataOffset;
 	        this.loaded = false;
@@ -2495,25 +2553,26 @@
 	        this.currentElement = null;
 	        this.timeCode = null;
 	        this.tempBlock = null;
+	        this.position = null;
 
 	        this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
 	        this.tempElementHeader.reset();
 	        this.tempBlock = new SimpleBlock();
 
-
+	        this.blockGroups = [];
 	        //this should go somewhere else!!
 	        //this.demuxer.loadedMetadata = true; // Testing only
 	        return true;
 	    }
-	    
-	    init(){
-	        
+
+	    init() {
+
 	    }
-	    
-	    reset(){
-	       
+
+	    reset() {
+
 	    }
-	    
+
 	    load() {
 	        var status = false;
 
@@ -2529,10 +2588,10 @@
 
 	                case 0xE7: //TimeCode
 	                    var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                    if (timeCode !== null){
+	                    if (timeCode !== null) {
 	                        this.timeCode = timeCode;
 	                        //console.warn("timecode seeked to:" + this.timeCode);
-	                    }else{
+	                    } else {
 	                        return null;
 	                    }
 	                    break;
@@ -2556,13 +2615,43 @@
 
 	                    this.tempEntry = null;
 	                    this.tempElementHeader.reset();
-	                    if(this.dataInterface.offset !== this.end)
+	                    if (this.dataInterface.offset !== this.end)
 	                        return true;
 	                    break;
 
+	                case 0xA7: //Position
+	                    var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (timeCode !== null) {
+	                        this.timeCode = timeCode;
+	                        //console.warn("timecode seeked to:" + this.timeCode);
+	                    } else {
+	                        return null;
+	                    }
+	                    break;
+
+	                case 0xA0: //Block Group
+	                    if (!this.currentBlockGroup)
+	                        this.currentBlockGroup = new BlockGroup(this.tempElementHeader.getData(), this.dataInterface);
+	                    this.currentBlockGroup.load();
+	                    if (!this.currentBlockGroup.loaded)
+	                        return false;
+
+	                    this.blockGroups.push(this.currentTag);
+	                    this.currentBlockGroup = null;
+	                    break;
+
+	                case 0xAB: //PrevSize
+	                    var prevSize = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (prevSize !== null)
+	                        this.prevSize = prevSize;
+	                    else
+	                        return null;
+	                    break;
+	                    
 	                    //TODO, ADD VOID
 	                default:
-
+	                    console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
+	                    throw "cluster";
 	                    //This means we probably are out of the cluster now, double check bounds when end not available
 	                    break;
 
@@ -2570,7 +2659,7 @@
 
 	            this.tempEntry = null;
 	            this.tempElementHeader.reset();
-	            
+
 	            //return 1;
 	        }
 
@@ -2988,10 +3077,85 @@
 
 /***/ },
 /* 12 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+
+	class BlockGroup {
+
+	    constructor(blockGroupHeader, dataInterface) {
+	        this.dataInterface = dataInterface;
+	        this.offset = blockGroupHeader.offset;
+	        this.size = blockGroupHeader.size;
+	        this.end = blockGroupHeader.end;
+	        this.loaded = false;
+	        this.tempElement = null;
+	        this.currentElement = null;
+
+	    }
+
+	    load() {
+	        var end = this.end;
+	        while (this.dataInterface.offset < end) {
+	            if (!this.currentElement) {
+	                this.currentElement = this.dataInterface.peekElement();
+	                if (this.currentElement === null)
+	                    return null;
+	            }
+
+
+	            switch (this.currentElement.id) {
+
+	                case 0xA1: //Block
+	                    var block = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (block !== null)
+	                        block;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+
+	                case 0x9b: //BlockDuration
+	                    var blockDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                    if (blockDuration !== null)
+	                        this.blockDuration = blockDuration;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                    case 0xFB: //ReferenceBlock
+	                    var referenceBlock = this.dataInterface.readSignedInt(this.currentElement.size);
+	                    if (referenceBlock !== null)
+	                        this.referenceBlock = referenceBlock;
+	                    else
+	                        return null;
+	                    break;
+	                    
+	                default:
+	                    console.warn("block group element not found, skipping "  + this.currentElement.id.toString(16));
+	                    break;
+
+	            }
+
+	            this.currentElement = null;
+	        }
+
+	        this.loaded = true;
+	    }
+
+	}
+
+
+
+	module.exports = BlockGroup;
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var CueTrackPositions = __webpack_require__(13);
+	var CueTrackPositions = __webpack_require__(14);
 
 	/**
 	 * @classdesc This class keeps track of keyframes for seeking
@@ -3033,9 +3197,22 @@
 	                    else
 	                        this.entries.push(this.tempEntry);
 	                    break;
+
+
+
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+
+	                    
 	                    //TODO, ADD VOID
 	                default:
-	                    console.warn("Cue Head element not found"); // probably bad
+	                    console.warn("Cue Head element not found "  + this.currentElement.id.toString(16)); // probably bad
 	                    break;
 
 	            }
@@ -3156,7 +3333,7 @@
 	module.exports = Cues;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3233,12 +3410,12 @@
 	module.exports = CueTrackPositions;
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Tag = __webpack_require__(15);
+	var Tag = __webpack_require__(16);
 
 	class Tags {
 
@@ -3278,7 +3455,15 @@
 	                    break;
 
 
-
+	                case 0xbf: //CRC-32
+	                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (crc !== null)
+	                        crc;
+	                    //this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+	                    
 	                default:
 	                    if (!this.dataInterface.peekBytes(this.currentElement.size))
 	                        return false;
@@ -3302,13 +3487,13 @@
 	module.exports = Tags;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Targets = __webpack_require__(16);
-	var SimpleTag = __webpack_require__(17);
+	var Targets = __webpack_require__(17);
+	var SimpleTag = __webpack_require__(18);
 
 	class Tag {
 
@@ -3394,7 +3579,7 @@
 	module.exports = Tag;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3452,7 +3637,7 @@
 	module.exports = Targets;
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports) {
 
 	'use strict';

@@ -533,8 +533,19 @@ class JsWebm {
                         else
                             return null;
                         break;
+                        
+                    case 0xbf: //CRC-32
+                        var crc = dataInterface.getBinary(this.tempElementHeader.size);
+                        if (crc !== null)
+                            crc;
+                            //this.docTypeReadVersion = docTypeReadVersion;
+                        else
+                            return null;
+                        break;
+                        
                     default:
-                        console.warn("Header element not found, skipping");
+                        console.warn("UNSUPORTED HEADER ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
+                        //console.warn("Header element not found, skipping");
                         break;
 
                 }

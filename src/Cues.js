@@ -41,9 +41,22 @@ class Cues {
                     else
                         this.entries.push(this.tempEntry);
                     break;
+
+
+
+                case 0xbf: //CRC-32
+                    var crc = this.dataInterface.getBinary(this.currentElement.size);
+                    if (crc !== null)
+                        crc;
+                    //this.docTypeReadVersion = docTypeReadVersion;
+                    else
+                        return null;
+                    break;
+
+                    
                     //TODO, ADD VOID
                 default:
-                    console.warn("Cue Head element not found"); // probably bad
+                    console.warn("Cue Head element not found "  + this.currentElement.id.toString(16)); // probably bad
                     break;
 
             }
