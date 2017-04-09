@@ -149,7 +149,7 @@ class JsWebm {
                     }
                 }*/
                 //console.warn(this);
-                
+                console.warn("getting timestamp");
                 return -1;
             }
         });
@@ -323,12 +323,12 @@ class JsWebm {
     process(callback) {
         var result;
         //console.warn("Processing at : " + this.dataInterface.offset);
-        if (this.dataInterface.currentBuffer === null) {
+        if (this.dataInterface.currentBuffer === null && this.state !== STATE_SEEKING) {
             
             console.error("wrong " + this.dataInterface.offset);
             //throw("wrong " + this.dataInterface.offset);
-            result = 0;
-            console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
+            result = 1;
+            console.warn(!!result);
             callback(!!result);
             return;
         }
@@ -369,10 +369,15 @@ class JsWebm {
         } else {
             result = 0;
         }
+        
+        if(!this.dataInterface.currentBuffer)
+            result = 0;
+
 
         // + ":" + this.audioPackets.length + ":" + this.videoPackets.length
         //console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
         //console.warn(this.dataInterface.remainingBytes);
+        //console.warn(!!result);
         callback(!!result);
     }
 

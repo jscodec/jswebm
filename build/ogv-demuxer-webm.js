@@ -275,7 +275,7 @@
 	                    }
 	                }*/
 	                //console.warn(this);
-	                
+	                console.warn("getting timestamp");
 	                return -1;
 	            }
 	        });
@@ -449,12 +449,12 @@
 	    process(callback) {
 	        var result;
 	        //console.warn("Processing at : " + this.dataInterface.offset);
-	        if (this.dataInterface.currentBuffer === null) {
+	        if (this.dataInterface.currentBuffer === null && this.state !== STATE_SEEKING) {
 	            
 	            console.error("wrong " + this.dataInterface.offset);
 	            //throw("wrong " + this.dataInterface.offset);
-	            result = 0;
-	            console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
+	            result = 1;
+	            console.warn(!!result);
 	            callback(!!result);
 	            return;
 	        }
@@ -495,10 +495,15 @@
 	        } else {
 	            result = 0;
 	        }
+	        
+	        if(!this.dataInterface.currentBuffer)
+	            result = 0;
+
 
 	        // + ":" + this.audioPackets.length + ":" + this.videoPackets.length
 	        //console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
 	        //console.warn(this.dataInterface.remainingBytes);
+	        //console.warn(!!result);
 	        callback(!!result);
 	    }
 
@@ -1039,9 +1044,9 @@
 	    }
 	    
 	    recieveInput(data){
-	        if(this.currentBuffer != null)
+	        if(this.currentBuffer !== null)
 	            throw "Buffer getting wrecked +" + this.overallPointer;
-	        console.warn("getting buffer size " + data.byteLength);
+	        //console.warn("getting buffer size " + data.byteLength);
 	        this.currentBuffer = new DataView(data);
 	        this.internalPointer = 0;
 	    }
@@ -1050,7 +1055,7 @@
 	        
 	        if (this.remainingBytes === 0){
 	            this.currentBuffer = null;
-	            console.error("popping buffer : " + this.demuxer.videoPackets.length + ":" + this.demuxer.audioPackets.length );
+	            //console.error("popping buffer : " );
 	        }
 	    }
 	    
@@ -1695,6 +1700,7 @@
 	     */
 	    getBinary(length){
 	        
+	        
 	        if (!this.currentBuffer)// if we run out of data return null
 	                return null; //Nothing to parse
 	            //
@@ -1728,7 +1734,7 @@
 	        //TODO: VERY SLOW, FIX THIS!!!!!!!!!!
 	        this.usingBufferedRead = true;
 	        
-	        console.error("USING BUFFERED READ");
+	        //console.error("USING BUFFERED READ");
 	        
 	        if (!this.tempBinaryBuffer)
 	            this.tempBinaryBuffer = new Uint8Array(length);
@@ -1740,8 +1746,11 @@
 	        var tempBuffer;
 	        while (this.tempCounter < length) {
 
-	            if (!this.currentBuffer)// if we run out of data return null
+	            if (!this.currentBuffer){// if we run out of data return null{
+	                if (this.usingBufferedRead === false)
+	                    throw "HELLA WRONG";
 	                return null; //Nothing to parse
+	            }
 
 	            
 	            if((length - this.tempCounter) >= this.remainingBytes){
@@ -1765,7 +1774,8 @@
 	            this.tempCounter += bytesToCopy;
 	        }
 	        
-	        if(this.tempBinaryBuffer.byteLength !== length)
+	        
+	        if(this.tempCounter !== length)
 	            console.warn("invalid read");
 	        var tempBinaryBuffer = this.tempBinaryBuffer;
 	        this.tempBinaryBuffer = null;
@@ -1773,6 +1783,9 @@
 	        this.usingBufferedRead = false;
 	        
 	        //console.warn("reading binary");
+	        if(tempBinaryBuffer.buffer === null){
+	            throw "Missing buffer";
+	        }
 	        return tempBinaryBuffer.buffer;
 
 	        
@@ -3147,7 +3160,7 @@
 	 
 	                if (tempFrame === null) {
 	                    if (dataInterface.usingBufferedRead === false)
-	                        throw "SHOULD BE BUFFERED READ";
+	                        throw "SHOULD BE BUFFERED READ " + dataInterface.offset;
 	                    //console.warn("frame has been split");
 	                    return null;
 	                } else {

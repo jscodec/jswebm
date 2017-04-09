@@ -328,7 +328,7 @@ class SimpleBlock {
  
                 if (tempFrame === null) {
                     if (dataInterface.usingBufferedRead === false)
-                        throw "SHOULD BE BUFFERED READ";
+                        throw "SHOULD BE BUFFERED READ " + dataInterface.offset;
                     //console.warn("frame has been split");
                     return null;
                 } else {

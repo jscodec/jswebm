@@ -91,9 +91,9 @@ class DataInterface{
     }
     
     recieveInput(data){
-        if(this.currentBuffer != null)
+        if(this.currentBuffer !== null)
             throw "Buffer getting wrecked +" + this.overallPointer;
-        console.warn("getting buffer size " + data.byteLength);
+        //console.warn("getting buffer size " + data.byteLength);
         this.currentBuffer = new DataView(data);
         this.internalPointer = 0;
     }
@@ -102,7 +102,7 @@ class DataInterface{
         
         if (this.remainingBytes === 0){
             this.currentBuffer = null;
-            console.error("popping buffer : " + this.demuxer.videoPackets.length + ":" + this.demuxer.audioPackets.length );
+            //console.error("popping buffer : " );
         }
     }
     
@@ -747,6 +747,7 @@ console.warn("start read  float");
      */
     getBinary(length){
         
+        
         if (!this.currentBuffer)// if we run out of data return null
                 return null; //Nothing to parse
             //
@@ -780,7 +781,7 @@ console.warn("start read  float");
         //TODO: VERY SLOW, FIX THIS!!!!!!!!!!
         this.usingBufferedRead = true;
         
-        console.error("USING BUFFERED READ");
+        //console.error("USING BUFFERED READ");
         
         if (!this.tempBinaryBuffer)
             this.tempBinaryBuffer = new Uint8Array(length);
@@ -792,8 +793,11 @@ console.warn("start read  float");
         var tempBuffer;
         while (this.tempCounter < length) {
 
-            if (!this.currentBuffer)// if we run out of data return null
+            if (!this.currentBuffer){// if we run out of data return null{
+                if (this.usingBufferedRead === false)
+                    throw "HELLA WRONG";
                 return null; //Nothing to parse
+            }
 
             
             if((length - this.tempCounter) >= this.remainingBytes){
@@ -817,7 +821,8 @@ console.warn("start read  float");
             this.tempCounter += bytesToCopy;
         }
         
-        if(this.tempBinaryBuffer.byteLength !== length)
+        
+        if(this.tempCounter !== length)
             console.warn("invalid read");
         var tempBinaryBuffer = this.tempBinaryBuffer;
         this.tempBinaryBuffer = null;
@@ -825,6 +830,9 @@ console.warn("start read  float");
         this.usingBufferedRead = false;
         
         //console.warn("reading binary");
+        if(tempBinaryBuffer.buffer === null){
+            throw "Missing buffer";
+        }
         return tempBinaryBuffer.buffer;
 
         
