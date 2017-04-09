@@ -78,8 +78,8 @@ class Cluster {
                                 );
                     this.tempBlock.load();
                     
-                    if(!this.dataInterface.currentBuffer)
-                            return false;
+                    //if(!this.dataInterface.currentBuffer)
+                      //      return false;
                         
                     if (!this.tempBlock.loaded)
                         return 0;

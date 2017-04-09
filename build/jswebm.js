@@ -389,7 +389,7 @@
 
 	    process(callback) {
 	        var result;
-	        console.warn("Processing at : " + this.dataInterface.offset);
+	        //console.warn("Processing at : " + this.dataInterface.offset);
 	        if (this.dataInterface.currentBuffer === null) {
 	            
 	            console.error("wrong " + this.dataInterface.offset);
@@ -438,7 +438,7 @@
 	        }
 
 	        // + ":" + this.audioPackets.length + ":" + this.videoPackets.length
-	        console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
+	        //console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
 	        //console.warn(this.dataInterface.remainingBytes);
 	        callback(!!result);
 	    }
@@ -2672,8 +2672,8 @@
 	                                );
 	                    this.tempBlock.load();
 	                    
-	                    if(!this.dataInterface.currentBuffer)
-	                            return false;
+	                    //if(!this.dataInterface.currentBuffer)
+	                      //      return false;
 	                        
 	                    if (!this.tempBlock.loaded)
 	                        return 0;
