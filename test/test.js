@@ -8,6 +8,7 @@ var testFolder = '../matroska-test-files/test_files/';
 function loadTest(n) {
     var fileRequest = new XMLHttpRequest();
     fileRequest.open("GET", testFolder + "test" + n + ".mkv", true);
+    //fileRequest.open("GET", "/Wiki_Makes_Video_Intro_4_26.webm.720p.webm", true);
     fileRequest.responseType = "arraybuffer";
 
     fileRequest.onload = function (oEvent) {
@@ -22,11 +23,28 @@ function loadTest(n) {
 }
 
 function runTest(buffer){
-    var demuxer = new jswebm();
-    demuxer.queueData(buffer);
+    var increment =  32768;
+    window.demuxer = new OGVDemuxerWebM();
+    var pointer = 0;
+    var start = pointer;
+    pointer += increment;
+    var end = pointer;
+    //console.log(start + ":" + end);
+    demuxer.receiveInput(buffer.slice(start, end), function(){});
     
     while(!demuxer.eof){
-       demuxer.demux(); 
+        
+       demuxer.process(function(status){
+           if(status === false) {
+                //give more data
+                start = pointer;
+                pointer += increment;
+                end = pointer;
+                //console.log(start + ":" + end);
+                demuxer.receiveInput(buffer.slice(start, end), function () {});
+            }
+        }); 
+       
     }
     console.log(demuxer);
     /*
@@ -49,4 +67,4 @@ function runTest(buffer){
     */
 }
 
-loadTest(2);
+loadTest(1);

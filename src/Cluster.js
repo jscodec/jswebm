@@ -77,6 +77,10 @@ class Cluster {
                                 this
                                 );
                     this.tempBlock.load();
+                    
+                    if(!this.dataInterface.currentBuffer)
+                            return false;
+                        
                     if (!this.tempBlock.loaded)
                         return 0;
                     //else
@@ -85,8 +89,15 @@ class Cluster {
 
                     this.tempEntry = null;
                     this.tempElementHeader.reset();
-                    if (this.dataInterface.offset !== this.end)
-                        return true;
+                    
+                    if (this.dataInterface.offset !== this.end){
+                        if(!this.dataInterface.currentBuffer)
+                            return false;
+                        return true; //true?
+                    }
+                    
+                    
+                        
                     break;
 
                 case 0xA7: //Position

@@ -42,8 +42,8 @@ class BlockGroup {
                     else
                         return null;
                     break;
-                    
-                    case 0xFB: //ReferenceBlock
+
+                case 0xFB: //ReferenceBlock
                     var referenceBlock = this.dataInterface.readSignedInt(this.currentElement.size);
                     if (referenceBlock !== null)
                         this.referenceBlock = referenceBlock;
@@ -51,8 +51,16 @@ class BlockGroup {
                         return null;
                     break;
                     
+                case 0x75A2: //DiscardPadding
+                    var discardPadding = this.dataInterface.readSignedInt(this.currentElement.size);
+                    if (discardPadding !== null)
+                        this.discardPadding = discardPadding;
+                    else
+                        return null;
+                    break;
+
                 default:
-                    console.warn("block group element not found, skipping "  + this.currentElement.id.toString(16));
+                    console.warn("block group element not found, skipping " + this.currentElement.id.toString(16));
                     break;
 
             }

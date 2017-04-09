@@ -11,9 +11,10 @@ var DateParser = require('./DateParser.js');
 
 class DataInterface{
     
-    constructor(){
+    constructor(demuxer){
         //this._dataView = new DataView();
         //console.warn(this._dataView);
+        this.demuxer = demuxer;
         this.overallPointer = 0;
         this.internalPointer = 0;
         this.currentBuffer = null;
@@ -90,17 +91,23 @@ class DataInterface{
     }
     
     recieveInput(data){
-        if(this.currentBuffer)
-            throw "Buffer getting wrecked";
+        if(this.currentBuffer != null)
+            throw "Buffer getting wrecked +" + this.overallPointer;
+        console.warn("getting buffer size " + data.byteLength);
         this.currentBuffer = new DataView(data);
         this.internalPointer = 0;
     }
-    
-    popBuffer(){
-        this.currentBuffer = null;
+
+    popBuffer() {
+        
+        if (this.remainingBytes === 0){
+            this.currentBuffer = null;
+            console.error("popping buffer : " + this.demuxer.videoPackets.length + ":" + this.demuxer.audioPackets.length );
+        }
     }
     
     readDate(size){
+        
         return this.readSignedInt(size);
     }
 
@@ -116,12 +123,11 @@ class DataInterface{
             
             this.tempElementOffset = this.overallPointer; // Save the element offset
             this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
-            this.incrementPointers();
+            this.incrementPointers(1);
             this.tempOctetWidth = this.calculateOctetWidth();
             
                     
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null;       
+            this.popBuffer();       
 
         }
         
@@ -145,8 +151,7 @@ class DataInterface{
             
             this.tempByteCounter++;
             
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer();
             
         }
         
@@ -157,7 +162,7 @@ class DataInterface{
         this.tempByteCounter = null;
         this.tempByteBuffer = null;
         this.tempOctetWidth = null;
-        
+        //console.warn("Read id");
         return result;       
     }
     
@@ -196,12 +201,11 @@ class DataInterface{
                 return null; //Nothing to parse
             
             this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
-            this.incrementPointers();
+            this.incrementPointers(1);
             this.tempOctetWidth = this.calculateOctetWidth();
             
                     
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
 
         }
         
@@ -225,8 +229,7 @@ class DataInterface{
             
             this.tempByteCounter++;
             
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
             
         }
 
@@ -237,6 +240,7 @@ class DataInterface{
         this.tempOctetWidth = null;
         this.tempByteCounter = null;
         this.tempByteBuffer = null;
+        //console.warn("read vint");
         return result;
         
     }
@@ -270,8 +274,7 @@ class DataInterface{
             
             this.tempByteCounter++;
             
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
             
         }
         
@@ -280,6 +283,7 @@ class DataInterface{
         
         this.tempByteCounter = null;
         this.tempByteBuffer = null;
+        console.warn("buffered vint");
         return result;
         
     }
@@ -309,7 +313,7 @@ class DataInterface{
             case 2:
                 result = this.tempOctet & 0x3F;
                 result = (result << 8) | this.currentBuffer.getUint8(this.internalPointer);
-                this.incrementPointers();
+                this.incrementPointers(1);
                 break;
             case 3:
                 result = this.tempOctet & 0x1F;
@@ -321,7 +325,7 @@ class DataInterface{
                 result = (result << 16) | this.currentBuffer.getUint16(this.internalPointer);
                 this.incrementPointers(2);
                 result = (result << 8) | this.currentBuffer.getUint8(this.internalPointer);
-                this.incrementPointers();
+                this.incrementPointers(1);
                 break;
             case 5:
                 console.warn("finish this");
@@ -338,7 +342,7 @@ class DataInterface{
                 result = this.tempOctet & 0x00;
                 //Largest allowable integer in javascript is 2^53-1 so gonna have to use one less bit for now
                 result = (result << 8) | this.currentBuffer.getUint8(this.internalPointer);
-                this.incrementPointers();
+                this.incrementPointers(1);
                 result = (result << 16) | this.currentBuffer.getUint16(this.internalPointer);
                 this.incrementPointers(2);
                 result = (result << 32) | this.currentBuffer.getUint32(this.internalPointer);
@@ -346,8 +350,7 @@ class DataInterface{
                 break;
         }
 
-        if (this.remainingBytes === 0)
-            this.currentBuffer = null; 
+        this.popBuffer(); 
 
         this.tempOctetWidth = null;
         this.tempOctet = null;
@@ -356,27 +359,27 @@ class DataInterface{
     
     
     readByte(){
+
         if(!this.currentBuffer){
             console.error("READING OUT OF BOUNDS");
     
         }
             
         var byteToRead = this.currentBuffer.getUint8(this.internalPointer);
-        this.incrementPointers();
-        if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
-            
+        this.incrementPointers(1);
+        this.popBuffer(); 
+        //console.warn("read byte");
         return byteToRead;
     }
     
     readSignedByte(){
+        console.warn("start read signed byte");
         if(!this.currentBuffer)
             console.error('READING OUT OF BOUNDS');
         var byteToRead = this.currentBuffer.getInt8(this.internalPointer);
-        this.incrementPointers();
-        if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
-            
+        this.incrementPointers(1);
+        this.popBuffer(); 
+            //console.warn("read signed byte");
         return byteToRead;
     }
     
@@ -447,70 +450,62 @@ class DataInterface{
      * @param {number} n test if we have this many bytes available to read
      * @returns {boolean} has enough bytes to read
      */
-    peekBytes(n){
-        if(!this.currentBuffer)
-            return false;
-        
-        if((this.currentBuffer.byteLength - this.internalPointer - n) >= 0)
+    peekBytes(n) {
+
+
+        if ((this.remainingBytes  - n) >= 0)
             return true;
-        else 
-            return false;
-            
-            /*
-        if(!this.currentBuffer)
-            return false; //No bytes
-        //
-        //First check if the first buffer has enough remaining bytes, don't need to loop if this is the case
-        var currentBufferBytes = this.currentBuffer.byteLength - this.internalPointer - n;
-        //If we have enough in this buffer just return true
-        if(currentBufferBytes >= 0)
-            return true;
-        
-        var totalBytes = this.getTotalBytes();
-        if((totalBytes - this.internalPointer - n) >= 0)
-            return true;
-        else 
-            return false;
-                                            */
+
+        console.error("peeked bytes");
+        return false;
     }
-    
+
     /**
      * Skips set amount of bytes
      * TODO: Make this more efficient with skipping over different buffers, add stricter checking
      * @param {number} bytesToSkip
      */
     skipBytes(bytesToSkip) {
-
+        console.warn("skipping bytes");
         var chunkToErase = 0;
         var counter = 0;
-        while (counter < bytesToSkip) {
+        
+        if (this.tempCounter === INITIAL_COUNTER)
+            this.tempCounter = 0;
+        
+        while (this.tempCounter < bytesToSkip) {
+
+            
 
             if (!this.currentBuffer)
-                throw "Invalid Skip Length";
+                return false;
 
 
-            if ((bytesToSkip - counter) > this.remainingBytes) {
+            if ((bytesToSkip - this.tempCounter) > this.remainingBytes) {
                 chunkToErase = this.remainingBytes;
             } else {
-                chunkToErase = bytesToSkip - counter;
+                chunkToErase = bytesToSkip - this.tempCounter;
             }
 
 
             this.incrementPointers(chunkToErase);
 
 
-            if (this.remainingBytes === 0) {
-                this.currentBuffer = null; 
-            }
+            this.popBuffer();
 
 
-            counter += chunkToErase;
+            this.tempCounter += chunkToErase;
 
         }
-
+        
+        this.tempCounter = INITIAL_COUNTER;
+        console.warn("Skipped bytes");
+        return true;
+        
     }
     
     getRemainingBytes(){
+         console.warn("getting remaining bytes");
         if (!this.currentBuffer)
             return 0;
         return this.currentBuffer.byteLength - this.internalPointer;
@@ -536,10 +531,11 @@ class DataInterface{
         var bytesToAdd = n || 1;
         this.internalPointer += bytesToAdd;
         this.overallPointer += bytesToAdd;
+        //this.popBuffer();
     }
 
     readUnsignedInt(size) {
-
+        
         if (!this.currentBuffer)// if we run out of data return null
             return null; //Nothing to parse
 
@@ -571,8 +567,7 @@ class DataInterface{
             this.tempResult <<= 8;
             this.tempResult |= b;
 
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
 
             this.tempCounter++;
         }
@@ -581,10 +576,13 @@ class DataInterface{
         var result = this.tempResult;
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
+        
+        //console.warn("read u int");
         return result;
     }
 
     readSignedInt(size) {
+        console.warn("reading s int start");
         if (!this.currentBuffer)// if we run out of data return null
                 return null; //Nothing to parse
             
@@ -616,8 +614,7 @@ class DataInterface{
             this.tempResult <<= 8;
             this.tempResult |= b;
 
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
             
             this.tempCounter++;
         }
@@ -626,10 +623,12 @@ class DataInterface{
         var result = this.tempResult;
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
+        //console.warn("read s int");
         return result;
     }
     
     readString(size) {
+        //console.log("reading string");
         if (!this.tempString)
             this.tempString = '';
         
@@ -648,8 +647,7 @@ class DataInterface{
             //this.tempString += String.fromCharCode(this.readByte());
             tempString += String.fromCharCode(this.readByte());
             
-            if (this.remainingBytes <= 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
 
             this.tempCounter++;
         }
@@ -660,11 +658,12 @@ class DataInterface{
         var retString = this.tempString;
         this.tempString = null;
         this.tempCounter = INITIAL_COUNTER;
+        console.warn("read string");
         return retString;
     }
     
     readFloat(size) {
-
+console.warn("start read  float");
         if (size === 8) {
             
             
@@ -690,8 +689,7 @@ class DataInterface{
 
                 this.tempFloat64.setUint8(this.tempCounter, b);
 
-                if (this.remainingBytes === 0)
-                    this.currentBuffer = null; 
+                this.popBuffer(); 
 
                 this.tempCounter++;
             }
@@ -723,8 +721,7 @@ class DataInterface{
 
                 this.tempFloat32.setUint8(this.tempCounter, b);
 
-                if (this.remainingBytes === 0)
-                    this.currentBuffer = null; 
+                this.popBuffer();
 
                 this.tempCounter++;
             }
@@ -739,6 +736,7 @@ class DataInterface{
         var result = this.tempResult;
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
+        console.warn("reading float");
         return result;
     }
     
@@ -748,17 +746,25 @@ class DataInterface{
      * @returns {ArrayBuffer} the read data
      */
     getBinary(length){
+        
+        if (!this.currentBuffer)// if we run out of data return null
+                return null; //Nothing to parse
+            //
+        //console.warn("start binary");
         if(this.usingBufferedRead && this.tempCounter === null){
             throw "COUNTER WAS ERASED";
         }
+        
         //Entire element contained in 1 array
         if(this.remainingBytes >= length && !this.usingBufferedRead){
+            
+            if (!this.currentBuffer)// if we run out of data return null
+                return null; //Nothing to parse
             
             var newBuffer = this.currentBuffer.buffer.slice(this.internalPointer, this.internalPointer + length);
             
             this.incrementPointers(length);
-            if (this.remainingBytes === 0)
-                this.currentBuffer = null; 
+            this.popBuffer(); 
             return newBuffer;
             
         } 
@@ -774,6 +780,8 @@ class DataInterface{
         //TODO: VERY SLOW, FIX THIS!!!!!!!!!!
         this.usingBufferedRead = true;
         
+        console.error("USING BUFFERED READ");
+        
         if (!this.tempBinaryBuffer)
             this.tempBinaryBuffer = new Uint8Array(length);
         
@@ -784,13 +792,11 @@ class DataInterface{
         var tempBuffer;
         while (this.tempCounter < length) {
 
-            if (!this.currentBuffer) {
-                if (this.usingBufferedRead === false)
-                    throw "INVALID return  case";//at this point should be true
+            if (!this.currentBuffer)// if we run out of data return null
                 return null; //Nothing to parse
-            }
 
-            if((length - this.tempCounter) > this.remainingBytes){
+            
+            if((length - this.tempCounter) >= this.remainingBytes){
                 bytesToCopy = this.remainingBytes;
             }else{
                 bytesToCopy = length - this.tempCounter;
@@ -805,9 +811,7 @@ class DataInterface{
 
 
 
-            if (this.remainingBytes === 0) {
-                this.currentBuffer = null; 
-            }
+            this.popBuffer();
 
 
             this.tempCounter += bytesToCopy;
@@ -819,6 +823,8 @@ class DataInterface{
         this.tempBinaryBuffer = null;
         this.tempCounter = INITIAL_COUNTER;
         this.usingBufferedRead = false;
+        
+        //console.warn("reading binary");
         return tempBinaryBuffer.buffer;
 
         

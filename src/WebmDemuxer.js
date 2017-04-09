@@ -39,7 +39,7 @@ class JsWebm {
         this.audioPackets = [];
         this.loadedMetadata = false;
         this.seekable = true;//keep false until seek is finished
-        this.dataInterface = new DataInterface();
+        this.dataInterface = new DataInterface(this);
         this.segment = null;
         this.currentElement = null; // placeholder for last element
         this.segmentIsLoaded = false; // have we found the segment position
@@ -65,6 +65,7 @@ class JsWebm {
         this.audioFormat = null;
         this.videoTrack = null;
         this.audioTrack = null;
+        this.processing = false;
 
         Object.defineProperty(this, 'duration', {
             get: function () {
@@ -138,7 +139,18 @@ class JsWebm {
 
         Object.defineProperty(this, 'nextKeyframeTimestamp', {
             get: function () {
-                throw "looking for kf timestamp";
+                
+                /*
+                for (var i = 0; i < this.videoPackets.length; i++) {
+                    var packet = this.videoPackets[i];
+                    if (packet.isKeyframe) {
+                        console.warn(packet.timestamp);
+                        return packet.timestamp;
+                    }
+                }*/
+                //console.warn(this);
+                
+                return -1;
             }
         });
 
@@ -186,6 +198,10 @@ class JsWebm {
                 this.audioCodec = "vorbis";
                 this.initVorbisHeaders(tempTrack);
                 break;
+            case "A_OPUS":
+                this.audioCodec = "opus";
+                this.initOpusHeaders(tempTrack);
+                break;
             default:
                 this.audioCodec = null;
                 break;
@@ -204,6 +220,9 @@ class JsWebm {
         switch (codecID) {
             case "V_VP8" :
                 this.videoCodec = "vp8";
+                break;
+            case "V_VP8" :
+                this.videoCodec = "vp9";
                 break;
             default:
                 this.videoCodec = null;
@@ -228,8 +247,14 @@ class JsWebm {
         };
 
         this.loadedMetadata = true;
+        
+        console.log(this);
     }
 
+    initOpusHeaders(trackEntry){
+        this.audioTrack = trackEntry;
+    }
+    
     initVorbisHeaders(trackEntry) {
         var headerParser = new DataView(trackEntry.codecPrivate);
         var packetCount = headerParser.getUint8(0);
@@ -296,7 +321,19 @@ class JsWebm {
     }
 
     process(callback) {
-
+        var result;
+        console.warn("Processing at : " + this.dataInterface.offset);
+        if (this.dataInterface.currentBuffer === null) {
+            
+            console.error("wrong " + this.dataInterface.offset);
+            //throw("wrong " + this.dataInterface.offset);
+            result = 0;
+            console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
+            callback(!!result);
+            return;
+        }
+            
+        //console.warn("Process called");
         var start = getTimestamp();
         var status = false;
 
@@ -325,7 +362,7 @@ class JsWebm {
         //this.processing = false;
         var delta = (getTimestamp() - start);
         this.cpuTime += delta;
-        var result;
+        
         //return status;
         if (status === 1 || status === true) {
             result = 1;
@@ -333,7 +370,9 @@ class JsWebm {
             result = 0;
         }
 
-
+        // + ":" + this.audioPackets.length + ":" + this.videoPackets.length
+        console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
+        //console.warn(this.dataInterface.remainingBytes);
         callback(!!result);
     }
 
@@ -345,6 +384,9 @@ class JsWebm {
         var status = false;
 
         while (this.dataInterface.offset < this.segment.end) {
+            
+            
+            
             if (!this.tempElementHeader.status) {
                 this.dataInterface.peekAndSetElement(this.tempElementHeader);
                 if (!this.tempElementHeader.status)
@@ -362,10 +404,10 @@ class JsWebm {
                     break;
 
                 case 0xEC: //VOid
-                    if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
-                        return false;
-                    else
-                        this.dataInterface.skipBytes(this.tempElementHeader.size);
+                    var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
+                    if (skipped === false)
+                        return;
+
                     break;
 
                 case 0x1549A966: //Info
@@ -433,10 +475,9 @@ class JsWebm {
 
                 default:
                     this.state = META_LOADED;//testing
-                    if (!this.dataInterface.peekBytes(this.tempElementHeader.size))
-                        return false;
-                    else
-                        this.dataInterface.skipBytes(this.tempElementHeader.size);
+                    var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
+                    if (skipped === false)
+                        return;
 
                     console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
                     break;
@@ -571,10 +612,9 @@ class JsWebm {
                 //this.segmentOffset = segmentOffset;
                 break;
             case 0xEC: // void
-                if (this.dataInterface.peekBytes(this.currentElement.size))
-                    this.dataInterface.skipBytes();
-                else
-                    return null;
+                var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
+                    if (skipped === false)
+                        return null;
                 break;
             default:
                 console.warn("Global element not found, id: " + this.currentElement.id);
@@ -587,7 +627,7 @@ class JsWebm {
     }
 
     dequeueAudioPacket(callback) {
-        if (this.audioPackets.length) {
+        if (this.audioPackets.length > 0) {
             var packet = this.audioPackets.shift().data;
             callback(packet);
         } else {
@@ -600,7 +640,7 @@ class JsWebm {
      * @param {function} callback after packet removal complete
      */
     dequeueVideoPacket(callback) {
-        if (this.videoPackets.length) {
+        if (this.videoPackets.length > 0) {
             var packet = this.videoPackets.shift().data;
             //console.warn("dequeing packet size: " + packet.byteLength);
             callback(packet);
