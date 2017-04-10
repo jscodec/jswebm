@@ -325,10 +325,10 @@ class JsWebm {
         //console.warn("Processing at : " + this.dataInterface.offset);
         if (this.dataInterface.currentBuffer === null && this.state !== STATE_SEEKING) {
             
-            console.error("wrong " + this.dataInterface.offset);
+            //console.error("wrong " + this.dataInterface.offset);
             //throw("wrong " + this.dataInterface.offset);
-            result = 1;
-            console.warn(!!result);
+            result = 0;
+            //console.warn(!!result);
             callback(!!result);
             return;
         }
