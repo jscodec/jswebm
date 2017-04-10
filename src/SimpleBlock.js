@@ -145,8 +145,8 @@ class SimpleBlock {
                 var tempFrame = dataInterface.getBinary(this.frameLength - 1);
                 
                 if (tempFrame === null) {
-                    if (dataInterface.usingBufferedRead === false)
-                        throw "SHOULD BE BUFFERED READ";
+                    //if (dataInterface.usingBufferedRead === false)
+                    //    throw "SHOULD BE BUFFERED READ";
                     //console.warn("frame has been split");
                     return null;
                 }
