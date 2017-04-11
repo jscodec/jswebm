@@ -3,12 +3,20 @@
 
 var testFolder = '../matroska-test-files/test_files/';
 
-
+var testflipFlop = true;
+function flipFlop(){
+    if(testflipFlop){
+        testflipFlop = false;
+    }else{
+        testflipFlop = true;
+    }
+    return testflipFlop;
+}
 
 function loadTest(n) {
     var fileRequest = new XMLHttpRequest();
-    //fileRequest.open("GET", testFolder + "test" + n + ".mkv", true);
-    fileRequest.open("GET", "/Wiki_Makes_Video_Intro_4_26.webm.720p.webm", true);
+    fileRequest.open("GET", testFolder + "test" + n + ".mkv", true);
+    //fileRequest.open("GET", "/Wiki_Makes_Video_Intro_4_26.webm.720p.webm", true);
     fileRequest.responseType = "arraybuffer";
 
     fileRequest.onload = function (oEvent) {
@@ -35,7 +43,7 @@ function runTest(buffer){
     while(!demuxer.eof){
         
        demuxer.process(function(status){
-           if(status === false) {
+           if(status === false && flipFlop()) {
                 //give more data
                 start = pointer;
                 pointer += increment;

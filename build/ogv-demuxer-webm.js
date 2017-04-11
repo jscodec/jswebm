@@ -451,7 +451,7 @@
 	        //console.warn("Processing at : " + this.dataInterface.offset);
 	        if (this.dataInterface.currentBuffer === null && this.state !== STATE_SEEKING) {
 	            
-	            //console.error("wrong " + this.dataInterface.offset);
+	            console.error("Read with no Buffer " + this.dataInterface.offset);
 	            //throw("wrong " + this.dataInterface.offset);
 	            result = 0;
 	            //console.warn(!!result);
