@@ -31,7 +31,7 @@ function loadTest(n) {
 }
 
 function runTest(buffer){
-    var increment =  1201;//4477;
+    var increment =  1;//4477;
     window.demuxer = new OGVDemuxerWebM();
     var pointer = 0;
     var start = pointer;
@@ -43,13 +43,17 @@ function runTest(buffer){
     while(!demuxer.eof){
         
        demuxer.process(function(status){
-           if(status === false && flipFlop()) {
+           if(status === false /* && flipFlop() */) {
                 //give more data
                 start = pointer;
                 pointer += increment;
                 end = pointer;
-                //console.log(start + ":" + end);
                 demuxer.receiveInput(buffer.slice(start, end), function () {});
+                
+                start = pointer;
+                pointer += increment;
+                end = pointer;
+                demuxer.receiveInput(buffer.slice(start, end), function() {});
             }
         }); 
        
@@ -75,4 +79,4 @@ function runTest(buffer){
     */
 }
 
-loadTest(2);
+loadTest(1);

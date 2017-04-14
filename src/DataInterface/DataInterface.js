@@ -49,6 +49,7 @@ class DataInterface{
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
         this.usingBufferedRead = false;
+        this.dataBuffers = [];
         
         /**
          * Returns the bytes left in the current buffer
@@ -91,18 +92,26 @@ class DataInterface{
     }
     
     recieveInput(data){
-        if(this.currentBuffer !== null)
-            throw "Buffer getting wrecked +" + this.overallPointer;
-        //console.warn("getting buffer size " + data.byteLength);
-        this.currentBuffer = new DataView(data);
-        this.internalPointer = 0;
+
+        if(this.currentBuffer === null){
+            this.currentBuffer = new DataView(data);
+            this.internalPointer = 0;
+        }else{
+            //queue it for later
+            this.dataBuffers.push(new DataView(data));
+        }
+        
     }
 
     popBuffer() {
-        
         if (this.remainingBytes === 0){
-            this.currentBuffer = null;
-            //console.error("popping buffer : " );
+
+            if(this.dataBuffers.length > 0){
+                this.currentBuffer = this.dataBuffers.shift();
+            }else{   
+                this.currentBuffer = null;
+            }
+            this.internalPointer = 0;         
         }
     }
     
