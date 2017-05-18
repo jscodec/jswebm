@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "build": "webpack",
-    "test": "node test/test.js"
+    "test": "node test/test.js",
+    "lint" : "eslint src/WebmDemuxer.js"
   },
   "author": "Brian Parra",
   "contributors": [],
@@ -20,6 +21,9 @@
     "url": "https://github.com/jscodec/jswebm"
   },
   "devDependencies": {
+    "eslint-config-airbnb-base" : "^11.2.0",
+    "eslint" : "^3.19.0",
+    "eslint-plugin-import": "^2.2.0",
     "webpack": "^1.13.3",
     "google-closure-compiler-js": "^20161024.0.0",
     "ogv" : "^1.3.1"

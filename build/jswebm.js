@@ -42,14 +42,14 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__(1);
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var jswebm = __webpack_require__(2);
 
@@ -61,9 +61,9 @@
 	    self.jswebm = jswebm;
 
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -888,9 +888,9 @@
 	module.exports = JsWebm;
 
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	/**
@@ -986,13 +986,7 @@
 	    }
 	    
 	    recieveInput(data){
-	        /*
-	        if(this.currentBuffer !== null)
-	            throw "Buffer getting wrecked +" + this.overallPointer;
-	        //console.warn("getting buffer size " + data.byteLength);
-	        this.currentBuffer = new DataView(data);
-	        this.internalPointer = 0;
-	        */
+
 	        if(this.currentBuffer === null){
 	            this.currentBuffer = new DataView(data);
 	            this.internalPointer = 0;
@@ -1000,39 +994,19 @@
 	            //queue it for later
 	            this.dataBuffers.push(new DataView(data));
 	        }
-
+	        
 	    }
 
 	    popBuffer() {
-	        
 	        if (this.remainingBytes === 0){
-	            //console.warn("popping");
-	            //this.currentBuffer = null;
-	            
-	            
+
 	            if(this.dataBuffers.length > 0){
-	                
 	                this.currentBuffer = this.dataBuffers.shift();
-	                
-	            }else{
-	                
+	            }else{   
 	                this.currentBuffer = null;
 	            }
-	            
-	            this.internalPointer = 0;
-	            
+	            this.internalPointer = 0;         
 	        }
-	        /*
-	        this.dataBuffers.shift();
-	        this.internalPointer = 0;
-
-	        if (this.dataBuffers.length !== 0) {
-	            this.currentBuffer = this.dataBuffers[0];
-
-	        } else {
-	            this.currentBuffer = null;
-	        }
-	*/
 	    }
 	    
 	    readDate(size){
@@ -1776,9 +1750,9 @@
 
 	module.exports = DataInterface;
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -1832,9 +1806,9 @@
 
 	module.exports = ElementHeader;
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -1848,9 +1822,9 @@
 
 	module.exports = DateParser;
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -1929,9 +1903,9 @@
 
 	module.exports = SeekHead;
 
-/***/ },
+/***/ }),
 /* 7 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -2005,9 +1979,9 @@
 
 	module.exports = Seek;
 
-/***/ },
+/***/ }),
 /* 8 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -2130,9 +2104,9 @@
 
 	module.exports = SegmentInfo;
 
-/***/ },
+/***/ }),
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var Seek = __webpack_require__(7);
@@ -2636,9 +2610,9 @@
 
 	module.exports = Tracks;
 
-/***/ },
+/***/ }),
 /* 10 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var UNSET = -1;
@@ -2802,9 +2776,9 @@
 
 
 
-/***/ },
+/***/ }),
 /* 11 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -3198,9 +3172,9 @@
 	module.exports = SimpleBlock;
 
 
-/***/ },
+/***/ }),
 /* 12 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -3281,9 +3255,9 @@
 
 	module.exports = BlockGroup;
 
-/***/ },
+/***/ }),
 /* 13 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var CueTrackPositions = __webpack_require__(14);
@@ -3463,9 +3437,9 @@
 
 	module.exports = Cues;
 
-/***/ },
+/***/ }),
 /* 14 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -3540,9 +3514,9 @@
 
 	module.exports = CueTrackPositions;
 
-/***/ },
+/***/ }),
 /* 15 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -3617,9 +3591,9 @@
 
 	module.exports = Tags;
 
-/***/ },
+/***/ }),
 /* 16 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -3709,9 +3683,9 @@
 
 	module.exports = Tag;
 
-/***/ },
+/***/ }),
 /* 17 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -3767,9 +3741,9 @@
 
 	module.exports = Targets;
 
-/***/ },
+/***/ }),
 /* 18 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -3843,5 +3817,5 @@
 
 	module.exports = SimpleTag;
 
-/***/ }
+/***/ })
 /******/ ]);
