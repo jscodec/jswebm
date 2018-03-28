@@ -294,8 +294,8 @@ class JsWebm {
         this.dataInterface.recieveInput(data);
     }
 
-    demux() {
-        var status = false;
+    demux(data) {
+        this.queueData(data);
         switch (this.state) {
             case STATE_INITIAL:
             this.initDemuxer();
@@ -312,8 +312,6 @@ class JsWebm {
                 default:
             //fill this out
         }
-
-        return status;
     }
 
     process(callback) {
@@ -332,10 +330,6 @@ class JsWebm {
         //console.warn("Process called");
         var start = getTimestamp();
         var status = false;
-
-
-        //this.processing = true;
-
         switch (this.state) {
             case STATE_INITIAL:
             this.initDemuxer();
@@ -368,12 +362,6 @@ class JsWebm {
         
         if(!this.dataInterface.currentBuffer)
             result = 0;
-
-
-        // + ":" + this.audioPackets.length + ":" + this.videoPackets.length
-        //console.warn(result + ":" + this.audioPackets.length + ":" + this.videoPackets.length);
-        //console.warn(this.dataInterface.remainingBytes);
-        //console.warn(!!result);
         callback(!!result);
     }
 
@@ -383,17 +371,12 @@ class JsWebm {
      */
      load() {
         var status = false;
-
         while (this.dataInterface.offset < this.segment.end) {
-
-
-
             if (!this.tempElementHeader.status) {
                 this.dataInterface.peekAndSetElement(this.tempElementHeader);
                 if (!this.tempElementHeader.status)
                     return null;
             }
-
             switch (this.tempElementHeader.id) {
 
                 case 0x114D9B74: //Seek Head
@@ -686,15 +669,10 @@ class JsWebm {
      * @param {function} callback 
      */
      seekToKeypoint(timeSeconds, callback) {
-
         this.state = STATE_SEEKING;
         console.warn("SEEK BEING CALLED");
-
         var ret = this.time(function () {
-
             var status;
-
-
             this.seekTime = timeSeconds * 1000000000;
             if (this.hasVideo) {
                 this.seekTrack = this.videoTrack;
@@ -703,19 +681,12 @@ class JsWebm {
             } else {
                 return 0;
             }
-
-            //this._flush();
             this.processSeeking();
-
-
             return 1;
-
         }.bind(this));
-
         this.audioPackets = [];
         this.videoPackets = [];
         callback(!!ret);
-
     }
 
     processSeeking() {
@@ -730,22 +701,17 @@ class JsWebm {
                 this.onseek(this.cuesOffset);
                 return 0;
             }
-
             if (!this.currentElement) {
-
                 this.currentElement = this.dataInterface.peekElement();
                 if (this.currentElement === null)
                     return 0;
             }
-
             if (!this.cues)
                 this.cues = new Cues(this.currentElement, this.dataInterface, this);
-
             //processing cues
             this.cues.load();
             if (!this.cues.loaded)
                 return 0;
-
             this.cuesLoaded = true;
             //console.warn(this.cues);
             return 0;

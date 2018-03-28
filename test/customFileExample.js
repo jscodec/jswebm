@@ -1,14 +1,14 @@
+const JsWebm = require('../src/JsWebm');
+const CircularJSON = require ('circular-json');
+
 const fileRequest = new XMLHttpRequest();
-fileRequest.open("GET", "PUT YOUR SAMPLE FILE HERE", true);
+fileRequest.open("GET", "matroska-test-files/test_files/test1.mkv", true);
 fileRequest.responseType = "arraybuffer";
 
 const runTest = (buffer) =>{
-	const demuxer = new OGVDemuxerWebM();
-	demuxer.receiveInput(buffer, () =>{
-		demuxer.process((status) => {
-			console.log(demuxer);
-		}); 
-	});
+	const demuxer = new JsWebm();
+	demuxer.demux(buffer);
+	console.log(demuxer);
 };
 
 fileRequest.onload = (event) => {

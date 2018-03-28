@@ -1,37 +1,22 @@
-const ClosureCompiler = require('google-closure-compiler-js').webpack;
 const path = require('path');
- 
-var JsWebm = {
+
+
+
+module.exports = {
   entry: [
-    path.join(__dirname, 'src', 'interfaces' , 'JsWebm.js' )
+  path.join(__dirname, 'test', 'customFileExample.js' )
   ],
   output: {
     path: path.join(__dirname, 'build'),
-    filename: 'jswebm.js'
+    filename: 'customFileExample.js'
+  }, 
+  module:{
+    rules:[
+    {
+      test: /\.(js|jsx)$/,
+      loaders: 'babel-loader',
+      exclude: /node_modules/,
+    }
+    ]
   }
-  
 };
-
-var OGVMin = {
-  entry: [
-    path.join(__dirname, 'src', 'interfaces' , 'OGVDemuxerWebM.js' )
-  ],
-  output: {
-    path: path.join(__dirname, 'build'),
-    filename: 'ogv-demuxer-webm.js'
-  },
-  plugins: [
-      /*
-    new ClosureCompiler({
-      options: {
-        compilationLevel: 'SIMPLE',
-        //warningLevel: 'VERBOSE'
-      }
-    })
-    */
-  ]
-  
-};
-
-
-module.exports = [OGVMin, JsWebm];

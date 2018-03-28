@@ -429,12 +429,9 @@ class VideoTrack extends Track{
                 default:
                     console.warn("Info element not found, skipping: " + this.currentElement.id.toString(16));
                     break;
-
             }
-
             this.currentElement = null;
         }
-        
         
         if(!this.displayWidth)
             this.displayWidth = this.width - this.pixelCropLeft;// - Math.PI;
@@ -444,11 +441,9 @@ class VideoTrack extends Track{
             
         this.loaded = true;
     }
-
 }
 
 class AudioTrack extends Track{
-    
     constructor(trackHeader, dataInterface) {
         super();
         this.dataInterface = dataInterface;
@@ -462,7 +457,6 @@ class AudioTrack extends Track{
     }
 
     load() {
-
         while (this.dataInterface.offset < this.end) {
             if (!this.currentElement) {
                 this.currentElement = this.dataInterface.peekElement();
