@@ -7,7 +7,7 @@ const runTest = (buffer) =>{
 const demuxer = new OGVDemuxerWebM();
     demuxer.receiveInput(buffer, () =>{
     	demuxer.process((status) => {
-       		document.write(JSON.stringify(demuxer, null, 2));
+       		console.log(demuxer);
        }); 
     });
 };
