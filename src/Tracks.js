@@ -139,6 +139,8 @@ class TrackLoader {
                         return;
                     break;
 
+                
+
                 case 0xE1: //Audio Number
                     if (!this.tempTrack)
                         this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
@@ -209,6 +211,24 @@ class TrackLoader {
                         this.trackData.lacing = lacing;
                     else
                         return null;
+                    break;
+
+                case 0xB9: //FlagEnabled
+                    var flagEnabled = this.dataInterface.getBinary(this.currentElement.size);
+                    if (flagEnabled !== null){
+                        this.trackData.flagEnabled = flagEnabled;                        
+                    }else{
+                        return null;
+                    }
+                    break;
+
+                case 0x55AA: //FlagForced
+                    var flagForced = this.dataInterface.getBinary(this.currentElement.size);
+                    if (flagForced !== null){
+                        this.trackData.flagForced = flagForced;                        
+                    }else{
+                        return null;
+                    }
                     break;
 
                 case 0x63A2: //Codec Private 

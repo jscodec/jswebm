@@ -67,25 +67,24 @@
 
 	'use strict';
 
-	var DataInterface = __webpack_require__(3);
-	var SeekHead = __webpack_require__(6);
-	var SegmentInfo = __webpack_require__(8);
-	var Tracks = __webpack_require__(9);
-	var Cluster = __webpack_require__(10);
-	var Cues = __webpack_require__(13);
-	var ElementHeader = __webpack_require__(4);
-	var Tags = __webpack_require__(15);
+	const DataInterface = __webpack_require__(3);
+	const SeekHead = __webpack_require__(6);
+	const SegmentInfo = __webpack_require__(8);
+	const Tracks = __webpack_require__(9);
+	const Cluster = __webpack_require__(10);
+	const Cues = __webpack_require__(13);
+	const ElementHeader = __webpack_require__(4);
+	const Tags = __webpack_require__(15);
 
 	//States
-	var STATE_INITIAL = 0;
-	var STATE_DECODING = 1;
-	var STATE_SEEKING = 2;
-	var META_LOADED = 3;
-	var STATE_FINISHED = 4;
-	var EXIT_OK = 666;
+	const STATE_INITIAL = 0;
+	const STATE_DECODING = 1;
+	const STATE_SEEKING = 2;
+	const META_LOADED = 3;
+	const STATE_FINISHED = 4;
+	const EXIT_OK = 666;
 
-
-	var getTimestamp;
+	let getTimestamp;
 	if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
 	    getTimestamp = Date.now;
 	} else {
@@ -96,7 +95,6 @@
 	 * @classdesc Wrapper class to handle webm demuxing
 	 */
 	class JsWebm {
-
 	    constructor() {
 	        this.shown = false; // for testin
 	        this.clusters = [];
@@ -206,7 +204,7 @@
 
 	        Object.defineProperty(this, 'nextKeyframeTimestamp', {
 	            get: function () {
-	                
+
 	                /*
 	                for (var i = 0; i < this.videoPackets.length; i++) {
 	                    var packet = this.videoPackets[i];
@@ -216,11 +214,9 @@
 	                    }
 	                }*/
 	                //console.warn(this);
-	                console.warn("getting timestamp");
 	                return -1;
 	            }
 	        });
-
 
 	        console.log('%c JSWEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
 	    }
@@ -228,9 +224,9 @@
 	    /**
 	     * Times a function call
 	     */
-	    time(func) {
+	     time(func) {
 	        var start = getTimestamp(),
-	                ret;
+	        ret;
 	        ret = func();
 	        var delta = (getTimestamp() - start);
 	        this.cpuTime += delta;
@@ -242,7 +238,7 @@
 	     * 
 	     * Sets up the meta data validation after
 	     */
-	    validateMetadata() {
+	     validateMetadata() {
 	        var codecID;
 	        var channels;
 	        var rate;
@@ -262,16 +258,16 @@
 	        var codecName;
 	        switch (codecID) {
 	            case "A_VORBIS":
-	                this.audioCodec = "vorbis";
-	                this.initVorbisHeaders(tempTrack);
-	                break;
+	            this.audioCodec = "vorbis";
+	            this.initVorbisHeaders(tempTrack);
+	            break;
 	            case "A_OPUS":
-	                this.audioCodec = "opus";
-	                this.initOpusHeaders(tempTrack);
-	                break;
+	            this.audioCodec = "opus";
+	            this.initOpusHeaders(tempTrack);
+	            break;
 	            default:
-	                this.audioCodec = null;
-	                break;
+	            this.audioCodec = null;
+	            break;
 	        }
 
 
@@ -286,14 +282,14 @@
 
 	        switch (codecID) {
 	            case "V_VP8" :
-	                this.videoCodec = "vp8";
-	                break;
+	            this.videoCodec = "vp8";
+	            break;
 	            case "V_VP8" :
-	                this.videoCodec = "vp9";
-	                break;
+	            this.videoCodec = "vp9";
+	            break;
 	            default:
-	                this.videoCodec = null;
-	                break;
+	            this.videoCodec = null;
+	            break;
 	        }
 
 
@@ -361,7 +357,7 @@
 	     * @param {arraybuffer} data
 	     * @returns {void}
 	     */
-	    queueData(data) {
+	     queueData(data) {
 	        this.dataInterface.recieveInput(data);
 	    }
 
@@ -369,18 +365,18 @@
 	        var status = false;
 	        switch (this.state) {
 	            case STATE_INITIAL:
-	                this.initDemuxer();
-	                if (this.state !== STATE_DECODING)
-	                    break;
+	            this.initDemuxer();
+	            if (this.state !== STATE_DECODING)
+	                break;
 	            case STATE_DECODING:
-	                status = this.load();
+	            status = this.load();
 	                //if (this.state !== STATE_FINISHED)
 	                break;
-	            case STATE_SEEKING:
+	                case STATE_SEEKING:
 	                status = this.processSeeking();
 	                //if (this.state !== META_LOADED)
 	                break;
-	            default:
+	                default:
 	            //fill this out
 	        }
 
@@ -391,7 +387,7 @@
 	        var result;
 	        //console.warn("Processing at : " + this.dataInterface.offset);
 	        if (this.dataInterface.currentBuffer === null && this.state !== STATE_SEEKING) {
-	            
+
 	            console.error("Read with no Buffer " + this.dataInterface.offset);
 	            //throw("wrong " + this.dataInterface.offset);
 	            result = 0;
@@ -399,7 +395,7 @@
 	            callback(!!result);
 	            return;
 	        }
-	            
+
 	        //console.warn("Process called");
 	        var start = getTimestamp();
 	        var status = false;
@@ -409,22 +405,22 @@
 
 	        switch (this.state) {
 	            case STATE_INITIAL:
-	                this.initDemuxer();
-	                if (this.state !== STATE_DECODING)
-	                    break;
+	            this.initDemuxer();
+	            if (this.state !== STATE_DECODING)
+	                break;
 	            case STATE_DECODING:
-	                status = this.load();
+	            status = this.load();
 	                //if (this.state !== STATE_FINISHED)
 	                break;
-	            case STATE_SEEKING:
+	                case STATE_SEEKING:
 	                console.warn("Seek processing");
 	                status = this.processSeeking();
 	                //if (this.state !== META_LOADED)
 	                break;
-	            default:
+	                default:
 	                throw "state got wrecked";
 	                //fill this out
-	        }
+	            }
 
 	        //this.processing = false;
 	        var delta = (getTimestamp() - start);
@@ -452,13 +448,13 @@
 	     * General process loop, 
 	     * TODO, refactor this!!!!!
 	     */
-	    load() {
+	     load() {
 	        var status = false;
 
 	        while (this.dataInterface.offset < this.segment.end) {
-	            
-	            
-	            
+
+
+
 	            if (!this.tempElementHeader.status) {
 	                this.dataInterface.peekAndSetElement(this.tempElementHeader);
 	                if (!this.tempElementHeader.status)
@@ -468,80 +464,80 @@
 	            switch (this.tempElementHeader.id) {
 
 	                case 0x114D9B74: //Seek Head
-	                    if (!this.seekHead)
-	                        this.seekHead = new SeekHead(this.tempElementHeader.getData(), this.dataInterface);
-	                    this.seekHead.load();
-	                    if (!this.seekHead.loaded)
-	                        return false;
-	                    break;
+	                if (!this.seekHead)
+	                    this.seekHead = new SeekHead(this.tempElementHeader.getData(), this.dataInterface);
+	                this.seekHead.load();
+	                if (!this.seekHead.loaded)
+	                    return false;
+	                break;
 
 	                case 0xEC: //VOid
-	                    var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
-	                    if (skipped === false)
-	                        return;
+	                var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
+	                if (skipped === false)
+	                    return;
 
-	                    break;
+	                break;
 
 	                case 0x1549A966: //Info
-	                    if (!this.segmentInfo)
-	                        this.segmentInfo = new SegmentInfo(this.tempElementHeader.getData(), this.dataInterface);
-	                    this.segmentInfo.load();
-	                    if (!this.segmentInfo.loaded)
-	                        return false;
-	                    break;
+	                if (!this.segmentInfo)
+	                    this.segmentInfo = new SegmentInfo(this.tempElementHeader.getData(), this.dataInterface);
+	                this.segmentInfo.load();
+	                if (!this.segmentInfo.loaded)
+	                    return false;
+	                break;
 
 	                case 0x1654AE6B: //Tracks
-	                    if (!this.tracks)
-	                        this.tracks = new Tracks(this.tempElementHeader.getData(), this.dataInterface, this);
-	                    this.tracks.load();
-	                    if (!this.tracks.loaded)
-	                        return false;
-	                    break;
+	                if (!this.tracks)
+	                    this.tracks = new Tracks(this.tempElementHeader.getData(), this.dataInterface, this);
+	                this.tracks.load();
+	                if (!this.tracks.loaded)
+	                    return false;
+	                break;
 
 	                case 0x1C53BB6B: //Cues
-	                    if (!this.cues)
-	                        this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
-	                    this.cues.load();
-	                    if (!this.cues.loaded)
-	                        return false;
-	                    this.cuesLoaded = true;
-	                    break;
-	                    
+	                if (!this.cues)
+	                    this.cues = new Cues(this.tempElementHeader.getData(), this.dataInterface, this);
+	                this.cues.load();
+	                if (!this.cues.loaded)
+	                    return false;
+	                this.cuesLoaded = true;
+	                break;
+
 	                case 0x1254c367: //Tags
-	                    if (!this.tags)
-	                        this.tags = new Tags(this.tempElementHeader.getData(), this.dataInterface, this);
-	                    this.tags.load();
-	                    if (!this.tags.loaded)
-	                        return false;
-	                    break;
+	                if (!this.tags)
+	                    this.tags = new Tags(this.tempElementHeader.getData(), this.dataInterface, this);
+	                this.tags.load();
+	                if (!this.tags.loaded)
+	                    return false;
+	                break;
 
 	                case 0x1F43B675: //Cluster
-	                    if (!this.loadedMetadata) {
-	                        this.validateMetadata();
-	                        return true;
-	                    }
-	                    if (!this.currentCluster) {
-	                        this.currentCluster = new Cluster(
-	                                this.tempElementHeader.offset,
-	                                this.tempElementHeader.size,
-	                                this.tempElementHeader.end,
-	                                this.tempElementHeader.dataOffset,
-	                                this.dataInterface,
-	                                this
-	                                );
+	                if (!this.loadedMetadata) {
+	                    this.validateMetadata();
+	                    return true;
+	                }
+	                if (!this.currentCluster) {
+	                    this.currentCluster = new Cluster(
+	                        this.tempElementHeader.offset,
+	                        this.tempElementHeader.size,
+	                        this.tempElementHeader.end,
+	                        this.tempElementHeader.dataOffset,
+	                        this.dataInterface,
+	                        this
+	                        );
 
-	                    }
-
-
-	                    status = this.currentCluster.load();
-	                    if (!this.currentCluster.loaded) {
-	                        return status;
-	                    }
+	                }
 
 
+	                status = this.currentCluster.load();
+	                if (!this.currentCluster.loaded) {
+	                    return status;
+	                }
 
-	                    this.currentCluster = null;
-	                    break;
+
+
+	                this.currentCluster = null;
+	                break;
 
 
 
@@ -554,17 +550,17 @@
 	                    console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
 	                    break;
 
+	                }
+
+	                this.tempElementHeader.reset();
 	            }
 
-	            this.tempElementHeader.reset();
+	            this.eof = true;
+	            this.state = STATE_FINISHED;
+	            return status;
 	        }
 
-	        this.eof = true;
-	        this.state = STATE_FINISHED;
-	        return status;
-	    }
-
-	    initDemuxer() {
+	        initDemuxer() {
 	        //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
 	        var dataInterface = this.dataInterface; //cache dataInterface reference
 
@@ -592,82 +588,82 @@
 	                switch (this.tempElementHeader.id) {
 
 	                    case 0x4286: //EBMLVersion
-	                        var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                        if (version !== null)
-	                            this.version = version;
-	                        else
-	                            return null;
-	                        break;
+	                    var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (version !== null)
+	                        this.version = version;
+	                    else
+	                        return null;
+	                    break;
 
 	                    case 0x42F7: //EBMLReadVersion 
-	                        var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                        if (readVersion !== null)
-	                            this.readVersion = readVersion;
-	                        else
-	                            return null;
-	                        break;
+	                    var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (readVersion !== null)
+	                        this.readVersion = readVersion;
+	                    else
+	                        return null;
+	                    break;
 
 	                    case 0x42F2: //EBMLMaxIDLength
-	                        var maxIdLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                        if (maxIdLength !== null)
-	                            this.maxIdLength = maxIdLength;
-	                        else
-	                            return null;
-	                        break;
+	                    var maxIdLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (maxIdLength !== null)
+	                        this.maxIdLength = maxIdLength;
+	                    else
+	                        return null;
+	                    break;
 
 	                    case 0x42F3: //EBMLMaxSizeLength
-	                        var maxSizeLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                        if (maxSizeLength !== null)
-	                            this.maxSizeLength = maxSizeLength;
-	                        else
-	                            return null;
-	                        break;
+	                    var maxSizeLength = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (maxSizeLength !== null)
+	                        this.maxSizeLength = maxSizeLength;
+	                    else
+	                        return null;
+	                    break;
 
 	                    case 0x4282: //DocType
-	                        var docType = dataInterface.readString(this.tempElementHeader.size);
-	                        if (docType !== null)
-	                            this.docType = docType;
-	                        else
-	                            return null;
-	                        break;
+	                    var docType = dataInterface.readString(this.tempElementHeader.size);
+	                    if (docType !== null)
+	                        this.docType = docType;
+	                    else
+	                        return null;
+	                    break;
 
 	                    case 0x4287: //DocTypeVersion //worked
-	                        var docTypeVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                        if (docTypeVersion !== null)
-	                            this.docTypeVersion = docTypeVersion;
-	                        else
-	                            return null;
-	                        break;
+	                    var docTypeVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (docTypeVersion !== null)
+	                        this.docTypeVersion = docTypeVersion;
+	                    else
+	                        return null;
+	                    break;
 
 	                    case 0x4285: //DocTypeReadVersion //worked
-	                        var docTypeReadVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
-	                        if (docTypeReadVersion !== null)
-	                            this.docTypeReadVersion = docTypeReadVersion;
-	                        else
-	                            return null;
-	                        break;
-	                        
+	                    var docTypeReadVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
+	                    if (docTypeReadVersion !== null)
+	                        this.docTypeReadVersion = docTypeReadVersion;
+	                    else
+	                        return null;
+	                    break;
+
 	                    case 0xbf: //CRC-32
-	                        var crc = dataInterface.getBinary(this.tempElementHeader.size);
-	                        if (crc !== null)
-	                            crc;
+	                    var crc = dataInterface.getBinary(this.tempElementHeader.size);
+	                    if (crc !== null)
+	                        crc;
 	                            //this.docTypeReadVersion = docTypeReadVersion;
-	                        else
-	                            return null;
-	                        break;
-	                        
-	                    default:
-	                        console.warn("UNSUPORTED HEADER ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
+	                            else
+	                                return null;
+	                            break;
+
+	                            default:
+	                            console.warn("UNSUPORTED HEADER ELEMENT FOUND, SKIPPING : "  + this.tempElementHeader.id.toString(16));
 	                        //console.warn("Header element not found, skipping");
 	                        break;
 
+	                    }
+
+	                    this.tempElementHeader.reset();
 	                }
 
-	                this.tempElementHeader.reset();
+	                this.headerIsLoaded = true;
 	            }
-
-	            this.headerIsLoaded = true;
-	        }
 
 	        //Now find segment offsets
 	        if (!this.currentElement)
@@ -680,16 +676,16 @@
 	        switch (this.currentElement.id) {
 
 	            case 0x18538067: // Segment
-	                this.segment = this.currentElement;
+	            this.segment = this.currentElement;
 	                //this.segmentOffset = segmentOffset;
 	                break;
 	            case 0xEC: // void
-	                var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
-	                    if (skipped === false)
-	                        return null;
-	                break;
+	            var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
+	            if (skipped === false)
+	                return null;
+	            break;
 	            default:
-	                console.warn("Global element not found, id: " + this.currentElement.id);
+	            console.warn("Global element not found, id: " + this.currentElement.id);
 	        }
 
 
@@ -711,7 +707,7 @@
 	     * Dequeue and return a packet off the video queue
 	     * @param {function} callback after packet removal complete
 	     */
-	    dequeueVideoPacket(callback) {
+	     dequeueVideoPacket(callback) {
 	        if (this.videoPackets.length > 0) {
 	            var packet = this.videoPackets.shift().data;
 	            //console.warn("dequeing packet size: " + packet.byteLength);
@@ -742,7 +738,7 @@
 	     * @param {number} timeSeconds
 	     * @param {function} callback
 	     */
-	    getKeypointOffset(timeSeconds, callback) {
+	     getKeypointOffset(timeSeconds, callback) {
 	        var offset = this.time(function () {
 
 	            return -1; // not used
@@ -756,7 +752,7 @@
 	     * @param {number} timeSeconds seconds to jump to
 	     * @param {function} callback 
 	     */
-	    seekToKeypoint(timeSeconds, callback) {
+	     seekToKeypoint(timeSeconds, callback) {
 
 	        this.state = STATE_SEEKING;
 	        console.warn("SEEK BEING CALLED");
@@ -840,7 +836,7 @@
 	     * Send seek request to cues, then make it keep reading bytes and waiting until cues are loaded
 	     * @returns {undefined}
 	     */
-	    initCues() {
+	     initCues() {
 
 	        if (!this.cuesOffset) {
 
@@ -849,7 +845,7 @@
 	            //console.warn(this.seekHead);
 	            var seekOffset;
 	            //Todo : make this less messy
-	            for (var i = 0; i < length; i++) {
+	            for (var i = 0; i < length; i+=1) {
 	                if (entries[i].seekId === 0x1C53BB6B) // cues
 	                    this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
 	            }
@@ -860,7 +856,7 @@
 	    /**
 	     * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
 	     */
-	    calculateKeypointOffset() {
+	     calculateKeypointOffset() {
 	        var r;
 	        var timecodeScale = this.segmentInfo.timecodeScale;
 	        this.seekTime;
@@ -868,7 +864,6 @@
 	        var length = this.cues.entries.length; // total number of cues;
 	        var scanPoint = cuesPoints[0];
 	        var tempPoint;
-
 
 	        //do linear search now
 	        //Todo, make binary search
@@ -906,8 +901,6 @@
 	class DataInterface{
 	    
 	    constructor(demuxer){
-	        //this._dataView = new DataView();
-	        //console.warn(this._dataView);
 	        this.demuxer = demuxer;
 	        this.overallPointer = 0;
 	        this.internalPointer = 0;
@@ -1186,7 +1179,6 @@
 	        
 	        this.tempByteCounter = null;
 	        this.tempByteBuffer = null;
-	        console.warn("buffered vint");
 	        return result;
 	        
 	    }
@@ -1276,7 +1268,6 @@
 	    }
 	    
 	    readSignedByte(){
-	        console.warn("start read signed byte");
 	        if(!this.currentBuffer)
 	            console.error('READING OUT OF BOUNDS');
 	        var byteToRead = this.currentBuffer.getInt8(this.internalPointer);
@@ -1354,12 +1345,8 @@
 	     * @returns {boolean} has enough bytes to read
 	     */
 	    peekBytes(n) {
-
-
 	        if ((this.remainingBytes  - n) >= 0)
 	            return true;
-
-	        console.error("peeked bytes");
 	        return false;
 	    }
 
@@ -1369,7 +1356,6 @@
 	     * @param {number} bytesToSkip
 	     */
 	    skipBytes(bytesToSkip) {
-	        console.warn("skipping bytes");
 	        var chunkToErase = 0;
 	        var counter = 0;
 	        
@@ -1402,13 +1388,11 @@
 	        }
 	        
 	        this.tempCounter = INITIAL_COUNTER;
-	        console.warn("Skipped bytes");
 	        return true;
 	        
 	    }
 	    
 	    getRemainingBytes(){
-	         console.warn("getting remaining bytes");
 	        if (!this.currentBuffer)
 	            return 0;
 	        return this.currentBuffer.byteLength - this.internalPointer;
@@ -1485,7 +1469,6 @@
 	    }
 
 	    readSignedInt(size) {
-	        console.warn("reading s int start");
 	        if (!this.currentBuffer)// if we run out of data return null
 	                return null; //Nothing to parse
 	            
@@ -1561,12 +1544,10 @@
 	        var retString = this.tempString;
 	        this.tempString = null;
 	        this.tempCounter = INITIAL_COUNTER;
-	        console.warn("read string");
 	        return retString;
 	    }
 	    
 	    readFloat(size) {
-	console.warn("start read  float");
 	        if (size === 8) {
 	            
 	            
@@ -1639,7 +1620,6 @@
 	        var result = this.tempResult;
 	        this.tempResult = null;
 	        this.tempCounter = INITIAL_COUNTER;
-	        console.warn("reading float");
 	        return result;
 	    }
 	    
@@ -2249,6 +2229,8 @@
 	                        return;
 	                    break;
 
+	                
+
 	                case 0xE1: //Audio Number
 	                    if (!this.tempTrack)
 	                        this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
@@ -2319,6 +2301,24 @@
 	                        this.trackData.lacing = lacing;
 	                    else
 	                        return null;
+	                    break;
+
+	                case 0xB9: //FlagEnabled
+	                    var flagEnabled = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (flagEnabled !== null){
+	                        this.trackData.flagEnabled = flagEnabled;                        
+	                    }else{
+	                        return null;
+	                    }
+	                    break;
+
+	                case 0x55AA: //FlagForced
+	                    var flagForced = this.dataInterface.getBinary(this.currentElement.size);
+	                    if (flagForced !== null){
+	                        this.trackData.flagForced = flagForced;                        
+	                    }else{
+	                        return null;
+	                    }
 	                    break;
 
 	                case 0x63A2: //Codec Private 
@@ -3178,9 +3178,7 @@
 
 	'use strict';
 
-
 	class BlockGroup {
-
 	    constructor(blockGroupHeader, dataInterface) {
 	        this.dataInterface = dataInterface;
 	        this.offset = blockGroupHeader.offset;
@@ -3189,7 +3187,6 @@
 	        this.loaded = false;
 	        this.tempElement = null;
 	        this.currentElement = null;
-
 	    }
 
 	    load() {
@@ -3201,59 +3198,54 @@
 	                    return null;
 	            }
 
-
 	            switch (this.currentElement.id) {
 
 	                case 0xA1: //Block
-	                    var block = this.dataInterface.getBinary(this.currentElement.size);
-	                    if (block !== null)
-	                        block;
+	                var block = this.dataInterface.getBinary(this.currentElement.size);
+	                if (block !== null)
+	                    block;
 	                    //this.docTypeReadVersion = docTypeReadVersion;
 	                    else
 	                        return null;
 	                    break;
 
 	                case 0x9b: //BlockDuration
-	                    var blockDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
-	                    if (blockDuration !== null)
-	                        this.blockDuration = blockDuration;
-	                    else
-	                        return null;
-	                    break;
+	                var blockDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	                if (blockDuration !== null)
+	                    this.blockDuration = blockDuration;
+	                else
+	                    return null;
+	                break;
 
 	                case 0xFB: //ReferenceBlock
-	                    var referenceBlock = this.dataInterface.readSignedInt(this.currentElement.size);
-	                    if (referenceBlock !== null)
-	                        this.referenceBlock = referenceBlock;
-	                    else
-	                        return null;
-	                    break;
-	                    
+	                var referenceBlock = this.dataInterface.readSignedInt(this.currentElement.size);
+	                if (referenceBlock !== null)
+	                    this.referenceBlock = referenceBlock;
+	                else
+	                    return null;
+	                break;
+
 	                case 0x75A2: //DiscardPadding
-	                    var discardPadding = this.dataInterface.readSignedInt(this.currentElement.size);
-	                    if (discardPadding !== null)
-	                        this.discardPadding = discardPadding;
-	                    else
-	                        return null;
-	                    break;
+	                var discardPadding = this.dataInterface.readSignedInt(this.currentElement.size);
+	                if (discardPadding !== null)
+	                    this.discardPadding = discardPadding;
+	                else
+	                    return null;
+	                break;
 
 	                default:
-	                    console.warn("block group element not found, skipping " + this.currentElement.id.toString(16));
-	                    break;
-
+	                console.warn("block group element not found, skipping " + this.currentElement.id.toString(16));
+	                break;
 	            }
-
 	            this.currentElement = null;
 	        }
-
 	        this.loaded = true;
 	    }
 
 	}
 
-
-
 	module.exports = BlockGroup;
+
 
 /***/ }),
 /* 13 */

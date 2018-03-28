@@ -12,8 +12,6 @@ var DateParser = require('./DateParser.js');
 class DataInterface{
     
     constructor(demuxer){
-        //this._dataView = new DataView();
-        //console.warn(this._dataView);
         this.demuxer = demuxer;
         this.overallPointer = 0;
         this.internalPointer = 0;
@@ -292,7 +290,6 @@ class DataInterface{
         
         this.tempByteCounter = null;
         this.tempByteBuffer = null;
-        console.warn("buffered vint");
         return result;
         
     }
@@ -382,7 +379,6 @@ class DataInterface{
     }
     
     readSignedByte(){
-        console.warn("start read signed byte");
         if(!this.currentBuffer)
             console.error('READING OUT OF BOUNDS');
         var byteToRead = this.currentBuffer.getInt8(this.internalPointer);
@@ -460,12 +456,8 @@ class DataInterface{
      * @returns {boolean} has enough bytes to read
      */
     peekBytes(n) {
-
-
         if ((this.remainingBytes  - n) >= 0)
             return true;
-
-        console.error("peeked bytes");
         return false;
     }
 
@@ -475,7 +467,6 @@ class DataInterface{
      * @param {number} bytesToSkip
      */
     skipBytes(bytesToSkip) {
-        console.warn("skipping bytes");
         var chunkToErase = 0;
         var counter = 0;
         
@@ -508,13 +499,11 @@ class DataInterface{
         }
         
         this.tempCounter = INITIAL_COUNTER;
-        console.warn("Skipped bytes");
         return true;
         
     }
     
     getRemainingBytes(){
-         console.warn("getting remaining bytes");
         if (!this.currentBuffer)
             return 0;
         return this.currentBuffer.byteLength - this.internalPointer;
@@ -591,7 +580,6 @@ class DataInterface{
     }
 
     readSignedInt(size) {
-        console.warn("reading s int start");
         if (!this.currentBuffer)// if we run out of data return null
                 return null; //Nothing to parse
             
@@ -667,12 +655,10 @@ class DataInterface{
         var retString = this.tempString;
         this.tempString = null;
         this.tempCounter = INITIAL_COUNTER;
-        console.warn("read string");
         return retString;
     }
     
     readFloat(size) {
-console.warn("start read  float");
         if (size === 8) {
             
             
@@ -745,7 +731,6 @@ console.warn("start read  float");
         var result = this.tempResult;
         this.tempResult = null;
         this.tempCounter = INITIAL_COUNTER;
-        console.warn("reading float");
         return result;
     }
     
