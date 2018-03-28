@@ -110,7 +110,7 @@ class SimpleBlock {
                 return null;
 
             this.keyframe = (((this.flags >> 7) & 0x01) === 0) ? false : true;
-            this.invisible = (((this.flags >> 2) & 0x01) === 0) ? false : true;
+            this.invisible = (((this.flags >> 2) & 0x01) === 0) ? true : false;
             this.lacing = ((this.flags & 0x06) >> 1);
             if (this.lacing > 3 || this.lacing < 0)
                 throw "INVALID LACING";
@@ -145,8 +145,8 @@ class SimpleBlock {
                 var tempFrame = dataInterface.getBinary(this.frameLength - 1);
                 
                 if (tempFrame === null) {
-                    if (dataInterface.usingBufferedRead === false)
-                        throw "SHOULD BE BUFFERED READ";
+                    //if (dataInterface.usingBufferedRead === false)
+                    //    throw "SHOULD BE BUFFERED READ";
                     //console.warn("frame has been split");
                     return null;
                 }
@@ -327,8 +327,8 @@ class SimpleBlock {
 
  
                 if (tempFrame === null) {
-                    if (dataInterface.usingBufferedRead === false)
-                        throw "SHOULD BE BUFFERED READ";
+                    //if (dataInterface.usingBufferedRead === false)
+                    //    throw "SHOULD BE BUFFERED READ " + dataInterface.offset;
                     //console.warn("frame has been split");
                     return null;
                 } else {
@@ -353,7 +353,7 @@ class SimpleBlock {
                         data: tempFrame,
                         timestamp: timeStamp,
                         keyframeTimestamp: timeStamp,
-                        isKeyframe : true
+                        isKeyframe : this.keyFrame
                     });
                 } else if (this.track.trackType === 2) {
                     this.audioPackets.push({//This could be improved

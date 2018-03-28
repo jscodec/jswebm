@@ -139,6 +139,8 @@ class TrackLoader {
                         return;
                     break;
 
+                
+
                 case 0xE1: //Audio Number
                     if (!this.tempTrack)
                         this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
@@ -211,6 +213,24 @@ class TrackLoader {
                         return null;
                     break;
 
+                case 0xB9: //FlagEnabled
+                    var flagEnabled = this.dataInterface.getBinary(this.currentElement.size);
+                    if (flagEnabled !== null){
+                        this.trackData.flagEnabled = flagEnabled;                        
+                    }else{
+                        return null;
+                    }
+                    break;
+
+                case 0x55AA: //FlagForced
+                    var flagForced = this.dataInterface.getBinary(this.currentElement.size);
+                    if (flagForced !== null){
+                        this.trackData.flagForced = flagForced;                        
+                    }else{
+                        return null;
+                    }
+                    break;
+
                 case 0x63A2: //Codec Private 
                     var codecPrivate = this.dataInterface.getBinary(this.currentElement.size);
                     if (codecPrivate !== null){
@@ -262,6 +282,16 @@ class TrackLoader {
                     else
                         return null;
                     break;
+
+                case 0x88: //CRC-32
+                    var flagDefault = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    if (flagDefault !== null)
+                        this.flagDefault = flagDefault;
+                    //this.docTypeReadVersion = docTypeReadVersion;
+                    else
+                        return null;
+                    break;
+
                     
                 default:
                     console.warn("track data element not found, skipping : " + this.currentElement.id.toString(16));
@@ -386,10 +416,18 @@ class VideoTrack extends Track{
                         return null;
                     break;
 
+                case 0x9A: //FlagInterlaced
+                    var flagInterlaced = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    if (flagInterlaced !== null)
+                        this.flagInterlaced = flagInterlaced;
+                    else
+                        return null;
+                    break;
+                    
                 case 0x55B0: //Color
                     console.error("NO COLOR LOADING YET");
                 default:
-                    console.warn("Info element not found, skipping: " + this.currentElement.id.toFixed(16));
+                    console.warn("Info element not found, skipping: " + this.currentElement.id.toString(16));
                     break;
 
             }

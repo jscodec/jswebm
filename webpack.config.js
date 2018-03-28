@@ -21,13 +21,16 @@ var OGVMin = {
     filename: 'ogv-demuxer-webm.js'
   },
   plugins: [
+      /*
     new ClosureCompiler({
       options: {
         compilationLevel: 'SIMPLE',
         //warningLevel: 'VERBOSE'
       }
     })
+    */
   ]
+  
 };
 
 
