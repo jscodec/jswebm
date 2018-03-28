@@ -61,7 +61,7 @@
 	const runTest = (buffer) =>{
 		const demuxer = new JsWebm();
 		demuxer.demux(buffer);
-		document.write(CircularJSON.stringify(demuxer));
+		console.log(demuxer);
 	};
 
 	fileRequest.onload = (event) => {
