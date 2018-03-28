@@ -2,6 +2,17 @@
 A javascript implementation of the Webm Demuxer (matroska).
 
 Building for the OGV.js project.
+# Webm Demuxer
+Running the demo
+`npm install`
+`node test/example.js`
+Then put your example file in the test folder, then in customFileExample.js, put the file name there.
+
+`fileRequest.open("GET", "PUT YOUR SAMPLE FILE HERE", true);`
+
+It will print the demuxer state to the console after processing it.
+
+Will be updating the demo this week and the readme since the api is totally out of date. Will take suggestions on api. Any help is welcome, project needs a lot of maintenance.
 
 ## Change Log
 * V0.0.3
