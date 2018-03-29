@@ -1,7 +1,7 @@
 'use strict';
 
 class Targets{
-    
+
     constructor(targetsHeader, dataInterface) {
         this.dataInterface = dataInterface;
         this.offset = targetsHeader.offset;
@@ -26,8 +26,14 @@ class Targets{
 
 
             switch (this.currentElement.id) {
-
-                default:
+                    case 0x63C5: //tagTrackUID 
+                    var tagTrackUID = this.dataInterface.readUnsignedInt(this.currentElement.size);
+                    if (tagTrackUID !== null)
+                        this.tagTrackUID = tagTrackUID;
+                    else
+                        return null;
+                    break;
+                    default:
 
                     if (!this.dataInterface.peekBytes(this.currentElement.size))
                         return false;
@@ -37,17 +43,17 @@ class Targets{
                     console.warn("targets element not found ! : " + this.currentElement.id.toString(16));
                     break;
 
+                }
+
+                this.currentElement = null;
             }
 
-            this.currentElement = null;
+            if (this.dataInterface.offset !== this.end)
+                console.error("Invalid Targets Formatting");
+
+            this.loaded = true;
         }
 
-        if (this.dataInterface.offset !== this.end)
-            console.error("Invalid Targets Formatting");
-
-        this.loaded = true;
     }
-    
-}
 
-module.exports = Targets;
+    module.exports = Targets;

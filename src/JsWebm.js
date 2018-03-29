@@ -243,8 +243,6 @@ class JsWebm {
         };
 
         this.loadedMetadata = true;
-        
-        console.log(this);
     }
 
     initOpusHeaders(trackEntry){

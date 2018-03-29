@@ -2,7 +2,7 @@ const JsWebm = require('../src/JsWebm');
 const CircularJSON = require ('circular-json');
 
 const fileRequest = new XMLHttpRequest();
-fileRequest.open("GET", "matroska-test-files/test_files/test1.mkv", true);
+fileRequest.open("GET", "clock.webm", true);
 fileRequest.responseType = "arraybuffer";
 
 const runTest = (buffer) =>{

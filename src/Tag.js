@@ -4,7 +4,6 @@ var Targets = require('./Targets.js');
 var SimpleTag = require('./SimpleTag.js');
 
 class Tag {
-
     constructor(tagHeader, dataInterface, demuxer) {
         this.dataInterface = dataInterface;
         this.offset = tagHeader.offset;
