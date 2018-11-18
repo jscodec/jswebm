@@ -1,5 +1,6 @@
 # Webm Demuxer
-A javascript implementation of the Webm Demuxer (matroska).
+A javascript implementation of the Webm Demuxer (matroska). View a demo of a dumux result [here](https://jscodec.github.io/jswebm/)
+Better examples and reworked api coming soon.
 
 Building for the OGV.js project.
 # Webm Demuxer
@@ -61,62 +62,5 @@ __Closeup of Vint or Element ID__
 
 # API
 
-## Properties
-`audioCodec` String describing the audio codec
-
-`audioFormat`
-
-`videoCodec` Plain text readable video codec string
-
-`videoFormat`
-
-`videoPackets`
-
-`audioPackets`
-
-`loadedMetadata`
-
-`frameReady`
-
-`audioReady`
-
-`cpuTime`
-
-`duration`
-
-`tracks`
-
-`processing`
-
-`seekable`
-
-## Methods
-`onseek`
-
-`init():Promise`
-
-`receiveInput`
-
-`process(data:ArrayBuffer):Promise`
-
-`dequeueAudioPacket(callback)`
-
-`dequeueVideoPacket(callback)`
-
-`flush(callback)`
-
-`getKeypointOffset(timeSeconds, callback)`
-
-`seekToKeypoint(timeSeconds, callback)`
-
-`onpacket: function(event:Event)|null`
-
-`getKeypointOffset(timeSeconds:number):Promise`
-
-`flush():Promise`
-
-`close()`
-
-
-
+Coming Soon!
 
