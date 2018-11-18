@@ -34,7 +34,6 @@
   "dependencies": {
     "@babel/core": "^7.0.0-beta.42",
     "@babel/preset-env": "^7.0.0-beta.42",
-    "circular-json": "^0.5.1",
-    "express": "^4.16.3"
+    "circular-json": "^0.5.1"
   }
 }
