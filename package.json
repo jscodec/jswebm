@@ -10,7 +10,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "test": "node test/test.js",
-    "lint": "eslint src/WebmDemuxer.js"
+    "lint": "eslint src"
   },
   "author": "Brian Parra",
   "contributors": [],

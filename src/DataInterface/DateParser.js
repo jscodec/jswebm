@@ -1,11 +1,11 @@
 'use strict';
 
-class DateParser{
-    
-    constructor(){
-        
-    }
-    
+class DateParser {
+
+  constructor() {
+
+  }
+
 }
 
 module.exports = DateParser;
