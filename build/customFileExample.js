@@ -55,7 +55,7 @@
 	const CircularJSON = __webpack_require__(19);
 
 	const fileRequest = new XMLHttpRequest();
-	fileRequest.open("GET", "clock.webm", true);
+	fileRequest.open("GET", "./test/clock.webm", true);
 	fileRequest.responseType = "arraybuffer";
 
 	const runTest = (buffer) => {
