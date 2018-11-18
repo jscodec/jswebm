@@ -1,12 +1,10 @@
-'use strict';
 
-var NO_LACING = 0;
-var XIPH_LACING = 1;
-var FIXED_LACING = 2;
-var EBML_LACING = 3;
+const NO_LACING = 0;
+const XIPH_LACING = 1;
+const FIXED_LACING = 2;
+const EBML_LACING = 3;
 
 class SimpleBlock {
-
   constructor() {
     this.cluster;// = cluster;
     this.dataInterface;// = dataInterface;
@@ -90,7 +88,6 @@ class SimpleBlock {
     if (this.loaded)
       throw "ALREADY LOADED";
 
-
     if (this.trackNumber === null) {
       this.trackNumber = dataInterface.readVint();
       if (this.trackNumber === null)
@@ -123,27 +120,20 @@ class SimpleBlock {
 
 
     switch (this.lacing) {
-
-
-
       case FIXED_LACING:
-
         if (!this.frameLength) {
           this.frameLength = this.size - this.headerSize;
           if (this.frameLength <= 0)
             throw "INVALID FRAME LENGTH " + this.frameLength;
         }
-
         if (!this.lacedFrameCount) {
           this.lacedFrameCount = dataInterface.readUnsignedInt(1);
           if (this.lacedFrameCount === null)
             return null;
-
           this.lacedFrameCount++;
         }
 
         var tempFrame = dataInterface.getBinary(this.frameLength - 1);
-
         if (tempFrame === null) {
           //if (dataInterface.usingBufferedRead === false)
           //    throw "SHOULD BE BUFFERED READ";
@@ -152,9 +142,6 @@ class SimpleBlock {
         }
 
         this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
-
-
-
         var fullTimeCode = this.timeCode + this.cluster.timeCode;
         //var fullTimeCode = this.cluster.timeCode;
         var timeStamp = fullTimeCode / 1000;
@@ -177,33 +164,20 @@ class SimpleBlock {
             });
           }
         }
-
-
-
-
-
-
         tempFrame = null;
         break;
-
-
       case EBML_LACING:
-
         if (!this.frameLength) {
           this.frameLength = this.size - this.headerSize;
           if (this.frameLength <= 0)
             throw "INVALID FRAME LENGTH " + this.frameLength;
         }
-
-
         if (!this.lacedFrameCount) {
           this.lacedFrameCount = dataInterface.readUnsignedInt(1);
           if (this.lacedFrameCount === null)
             return null;
-
           this.lacedFrameCount++;
         }
-
         if (!this.firstLacedFrameSize) {
           var firstLacedFrameSize = this.dataInterface.readVint();
           if (firstLacedFrameSize !== null) {
@@ -213,8 +187,6 @@ class SimpleBlock {
             return null;
           }
         }
-
-
         if (!this.tempCounter) {
           this.tempCounter = 0;
         }
@@ -246,14 +218,7 @@ class SimpleBlock {
           this.ebmlLacedSizesParsed = true;
           this.ebmlTotalSize = total + lastSize;
         }
-
-
-
-
-        //console.warn(this.lacedFrameDataSize + ":" + this.ebmlTotalSize);
-
         var tempFrame = dataInterface.getBinary(this.lacedFrameDataSize);
-
         if (tempFrame === null) {
           return null;
         }
@@ -264,7 +229,6 @@ class SimpleBlock {
         if (timeStamp < 0) {
           throw "INVALID TIMESTAMP";
         }
-
 
         var start = 0;
         var end = this.ebmlParsedSizes[0];
@@ -290,31 +254,17 @@ class SimpleBlock {
             end = null;
           }
         }
-
-
-
-
-
-
-
         this.tempCounter = null;
         tempFrame = null;
         break;
-
-
       case XIPH_LACING:
-
       case NO_LACING:
-
         if (this.lacing === EBML_LACING) {
           console.warn("EBML_LACING");
         }
         if (this.lacing === XIPH_LACING) {
           console.warn("XIPH_LACING");
         }
-
-
-
         if (!this.frameLength) {
           this.frameLength = this.size - this.headerSize;
           if (this.frameLength <= 0)
@@ -377,14 +327,12 @@ class SimpleBlock {
       throw "INVALID BLOCK SIZE";
     }
 
-
     this.loaded = true;
     this.headerSize = null;
     this.tempFrame = null;
     this.tempCounter = null;
     this.frameLength = null;
   }
-
 }
 
 module.exports = SimpleBlock;

@@ -1,8 +1,4 @@
-'use strict';
-
-
 class CueTrackPositions {
-
   constructor(cuesPointHeader, dataInterface) {
     this.dataInterface = dataInterface;
     this.offset = cuesPointHeader.offset;
@@ -17,17 +13,13 @@ class CueTrackPositions {
   }
 
   load() {
-
     while (this.dataInterface.offset < this.end) {
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
-
         case 0xF7: //CueTrack
           var cueTrack = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueTrack !== null)
@@ -35,7 +27,6 @@ class CueTrackPositions {
           else
             return null;
           break;
-
         case 0xF1: //Cue ClusterPosition 
           var cueClusterPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueClusterPosition !== null)
@@ -43,7 +34,6 @@ class CueTrackPositions {
           else
             return null;
           break;
-
         case 0xF0: //CueRelativePosition
           var cueRelativePosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueRelativePosition !== null)
@@ -51,22 +41,16 @@ class CueTrackPositions {
           else
             return null;
           break;
-
         default:
           console.warn("Cue track positions not found! " + this.currentElement.id);
           break;
-
       }
-
       this.currentElement = null;
     }
-
     if (this.dataInterface.offset !== this.end)
       console.error("Invalid Seek Formatting");
-
     this.loaded = true;
   }
-
 }
 
 module.exports = CueTrackPositions;

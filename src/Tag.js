@@ -1,7 +1,5 @@
-'use strict';
-
-var Targets = require('./Targets.js');
-var SimpleTag = require('./SimpleTag.js');
+const Targets = require('./Targets.js');
+const SimpleTag = require('./SimpleTag.js');
 
 class Tag {
   constructor(tagHeader, dataInterface, demuxer) {
@@ -26,21 +24,16 @@ class Tag {
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
-
         case 0x63C0: //Targets
           if (!this.tempEntry)
             this.tempEntry = new Targets(this.currentElement, this.dataInterface);
           this.tempEntry.load();
           if (!this.tempEntry.loaded)
             return null;
-
           this.targets.push(this.tempEntry);
           this.tempEntry = null;
           break;
-
         case 0x67C8: //SimpleTag
           if (!this.tempEntry)
             this.tempEntry = new SimpleTag(this.currentElement, this.dataInterface);
@@ -51,18 +44,13 @@ class Tag {
           this.simpleTags.push(this.tempEntry);
           this.tempEntry = null;
           break;
-
-
         default:
-
           if (!this.dataInterface.peekBytes(this.currentElement.size))
             return false;
           else
             this.dataInterface.skipBytes(this.currentElement.size);
-
           console.warn("tag element not found: " + this.currentElement.id.toString(16)); // probably bad
           break;
-
       }
 
       this.tempEntry = null;
@@ -71,16 +59,13 @@ class Tag {
       //this.tempEntry = null;
     }
 
-
     if (this.dataInterface.offset !== this.end) {
       console.log(this);
       throw "INVALID CUE FORMATTING";
     }
 
     this.loaded = true;
-    //console.warn(this);
   }
-
 }
 
 module.exports = Tag;

@@ -1,5 +1,3 @@
-'use strict';
-
 class Queue {
   /**
    * 
@@ -52,8 +50,6 @@ class Queue {
     this.tail = 0;
     this.head = 0;
   }
-
 }
 
 module.exports = Queue;
-

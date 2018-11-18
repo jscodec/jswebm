@@ -1,5 +1,3 @@
-'use strict';
-
 class Seek {
   constructor(seekHeader, dataInterface) {
     this.size = seekHeader.size;
@@ -19,7 +17,6 @@ class Seek {
         if (this.currentElement === null)
           return null;
       }
-
 
       switch (this.currentElement.id) {
         case 0x53AB: //SeekId
@@ -52,7 +49,6 @@ class Seek {
     }
     if (this.dataInterface.offset !== this.end)
       console.error("Invalid Seek Formatting");
-
     this.loaded = true;
   }
 }

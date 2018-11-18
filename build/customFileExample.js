@@ -862,16 +862,10 @@
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
-	/**
-	 * @classdesc This class keeps a queue of arraybuffers in order for demuxer to read continuously without having to overwrite anything
-	 * 
-	 */
-
 	var INITIAL_COUNTER = -1;
 
-	var ElementHeader = __webpack_require__(4);
-	var DateParser = __webpack_require__(5);
+	const ElementHeader = __webpack_require__(4);
+	const DateParser = __webpack_require__(5);
 
 	class DataInterface {
 	  constructor(demuxer) {
@@ -895,8 +889,6 @@
 	        this.overallPointer = offset;
 	      }
 	    });
-
-
 	    this.tempElementOffset = null;
 	    this.tempElementDataOffset = null;
 	    this.tempSize = null;
@@ -916,17 +908,13 @@
 	     * Returns the bytes left in the current buffer
 	     */
 	    Object.defineProperty(this, 'remainingBytes', {
-
 	      get: function () {
 	        if (!this.currentBuffer)
 	          return 0;
 	        else
 	          return this.currentBuffer.byteLength - this.internalPointer;
 	      }
-
 	    });
-
-
 	  }
 
 	  flush() {
@@ -949,11 +937,9 @@
 	    this.internalPointer = 0;
 	    this.tempFloat64 = new DataView(new ArrayBuffer(8));
 	    this.tempFloat32 = new DataView(new ArrayBuffer(4));
-
 	  }
 
 	  recieveInput(data) {
-
 	    if (this.currentBuffer === null) {
 	      this.currentBuffer = new DataView(data);
 	      this.internalPointer = 0;
@@ -961,12 +947,10 @@
 	      //queue it for later
 	      this.dataBuffers.push(new DataView(data));
 	    }
-
 	  }
 
 	  popBuffer() {
 	    if (this.remainingBytes === 0) {
-
 	      if (this.dataBuffers.length > 0) {
 	        this.currentBuffer = this.dataBuffers.shift();
 	      } else {
@@ -977,28 +961,20 @@
 	  }
 
 	  readDate(size) {
-
 	    return this.readSignedInt(size);
 	  }
-
 
 	  readId() {
 	    if (!this.currentBuffer)
 	      return null; //Nothing to parse
-
 	    if (!this.tempOctet) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse
-
 	      this.tempElementOffset = this.overallPointer; // Save the element offset
 	      this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
 	      this.incrementPointers(1);
 	      this.tempOctetWidth = this.calculateOctetWidth();
-
-
 	      this.popBuffer();
-
 	    }
 
 	    //We will have at least one byte to read
@@ -1007,10 +983,8 @@
 	      this.tempByteCounter = 0;
 
 	    while (this.tempByteCounter < this.tempOctetWidth) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse 
-
 	      if (this.tempByteCounter === 0) {
 	        this.tempByteBuffer = this.tempOctet;
 	      } else {
@@ -1018,21 +992,15 @@
 	        this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
 	      }
 
-
 	      this.tempByteCounter++;
-
 	      this.popBuffer();
-
 	    }
 
 	    var result = this.tempByteBuffer;
-
-
 	    this.tempOctet = null;
 	    this.tempByteCounter = null;
 	    this.tempByteBuffer = null;
 	    this.tempOctetWidth = null;
-	    //console.warn("Read id");
 	    return result;
 	  }
 
@@ -1056,27 +1024,19 @@
 	          break;
 	      }
 	    }
-
 	    return vint;
 	  }
 
 	  readVint() {
-
 	    if (!this.currentBuffer)
 	      return null; //Nothing to parse
-
 	    if (!this.tempOctet) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse
-
 	      this.tempOctet = this.currentBuffer.getUint8(this.internalPointer);
 	      this.incrementPointers(1);
 	      this.tempOctetWidth = this.calculateOctetWidth();
-
-
 	      this.popBuffer();
-
 	    }
 
 	    if (!this.tempByteCounter)
@@ -1084,10 +1044,8 @@
 	    var tempByte;
 	    var tempOctetWidth = this.tempOctetWidth;
 	    while (this.tempByteCounter < tempOctetWidth) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse
-
 	      if (this.tempByteCounter === 0) {
 	        var mask = ((0xFF << tempOctetWidth) & 0xFF) >> tempOctetWidth;
 	        this.tempByteBuffer = this.tempOctet & mask;
@@ -1095,24 +1053,18 @@
 	        tempByte = this.readByte();
 	        this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
 	      }
-
-
 	      this.tempByteCounter++;
-
 	      this.popBuffer();
-
 	    }
 
 	    var result = this.tempByteBuffer;
 	    this.tempOctet = null;
-
 	    this.lastOctetWidth = this.tempOctetWidth;
 	    this.tempOctetWidth = null;
 	    this.tempByteCounter = null;
 	    this.tempByteBuffer = null;
 	    //console.warn("read vint");
 	    return result;
-
 	  }
 
 	  /**
@@ -1120,19 +1072,13 @@
 	   * @returns {number | null}
 	   */
 	  bufferedReadVint() {
-
 	    //We will have at least one byte to read
 	    var tempByte;
-
 	    if (!this.tempByteCounter)
 	      this.tempByteCounter = 0;
-
-
 	    while (this.tempByteCounter < this.tempOctetWidth) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse
-
 	      if (this.tempByteCounter === 0) {
 	        var mask = ((0xFF << this.tempOctetWidth) & 0xFF) >> this.tempOctetWidth;
 	        this.tempByteBuffer = this.tempOctet & mask;
@@ -1140,21 +1086,13 @@
 	        tempByte = this.readByte();
 	        this.tempByteBuffer = (this.tempByteBuffer << 8) | tempByte;
 	      }
-
-
 	      this.tempByteCounter++;
-
 	      this.popBuffer();
-
 	    }
-
 	    var result = this.tempByteBuffer;
-
-
 	    this.tempByteCounter = null;
 	    this.tempByteBuffer = null;
 	    return result;
-
 	  }
 
 	  clearTemps() {
@@ -1173,7 +1111,6 @@
 	   * @returns {Number|null} 
 	   */
 	  forceReadVint() {
-
 	    var result;
 	    switch (this.tempOctetWidth) {
 	      case 1:
@@ -1220,7 +1157,6 @@
 	    }
 
 	    this.popBuffer();
-
 	    this.tempOctetWidth = null;
 	    this.tempOctet = null;
 	    return result;
@@ -1228,12 +1164,9 @@
 
 
 	  readByte() {
-
 	    if (!this.currentBuffer) {
 	      console.error("READING OUT OF BOUNDS");
-
 	    }
-
 	    var byteToRead = this.currentBuffer.getUint8(this.internalPointer);
 	    this.incrementPointers(1);
 	    this.popBuffer();
@@ -1252,10 +1185,8 @@
 	  }
 
 	  peekElement() {
-
 	    if (!this.currentBuffer)
 	      return null; //Nothing to parse
-
 	    //check if we return an id
 	    if (!this.tempElementId) {
 	      this.tempElementId = this.readId();
@@ -1263,33 +1194,26 @@
 	        return null;
 	    }
 
-
 	    if (!this.tempElementSize) {
 	      this.tempElementSize = this.readVint();
 	      if (this.tempElementSize === null)
 	        return null;
 	    }
-
 	    var element = new ElementHeader(this.tempElementId, this.tempElementSize, this.tempElementOffset, this.overallPointer);
 
 	    //clear the temp holders
 	    this.tempElementId = null;
 	    this.tempElementSize = null;
 	    this.tempElementOffset = null;
-
-
 	    return element;
-
 	  }
 
 	  /**
 	   * sets the information on an existing element without creating a new objec
 	   */
 	  peekAndSetElement(element) {
-
 	    if (!this.currentBuffer)
 	      return null; //Nothing to parse
-
 	    //check if we return an id
 	    if (!this.tempElementId) {
 	      this.tempElementId = this.readId();
@@ -1297,20 +1221,16 @@
 	        return null;
 	    }
 
-
 	    if (!this.tempElementSize) {
 	      this.tempElementSize = this.readVint();
 	      if (this.tempElementSize === null)
 	        return null;
 	    }
-
 	    element.init(this.tempElementId, this.tempElementSize, this.tempElementOffset, this.overallPointer);
-
 	    //clear the temp holders
 	    this.tempElementId = null;
 	    this.tempElementSize = null;
 	    this.tempElementOffset = null;
-
 	  }
 
 	  /*
@@ -1332,38 +1252,22 @@
 	  skipBytes(bytesToSkip) {
 	    var chunkToErase = 0;
 	    var counter = 0;
-
 	    if (this.tempCounter === INITIAL_COUNTER)
 	      this.tempCounter = 0;
-
 	    while (this.tempCounter < bytesToSkip) {
-
-
-
 	      if (!this.currentBuffer)
 	        return false;
-
-
 	      if ((bytesToSkip - this.tempCounter) > this.remainingBytes) {
 	        chunkToErase = this.remainingBytes;
 	      } else {
 	        chunkToErase = bytesToSkip - this.tempCounter;
 	      }
-
-
 	      this.incrementPointers(chunkToErase);
-
-
 	      this.popBuffer();
-
-
 	      this.tempCounter += chunkToErase;
-
 	    }
-
 	    this.tempCounter = INITIAL_COUNTER;
 	    return true;
-
 	  }
 
 	  getRemainingBytes() {
@@ -1383,7 +1287,6 @@
 	      leadingZeroes++;
 
 	    } while (leadingZeroes < 8);
-
 	    //Set the width of the octet
 	    return leadingZeroes + 1;
 	  }
@@ -1396,40 +1299,27 @@
 	  }
 
 	  readUnsignedInt(size) {
-
 	    if (!this.currentBuffer)// if we run out of data return null
 	      return null; //Nothing to parse
-
 	    //need to fix overflow for 64bit unsigned int
 	    if (size <= 0 || size > 8) {
 	      console.warn("invalid file size");
 	    }
-
 	    if (this.tempResult === null)
 	      this.tempResult = 0;
-
 	    if (this.tempCounter === INITIAL_COUNTER)
 	      this.tempCounter = 0;
-
 	    var b;
-
 	    while (this.tempCounter < size) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse
-
 	      b = this.readByte();
-
 	      if (this.tempCounter === 0 && b < 0) {
 	        console.warn("invalid integer value");
 	      }
-
-
 	      this.tempResult <<= 8;
 	      this.tempResult |= b;
-
 	      this.popBuffer();
-
 	      this.tempCounter++;
 	    }
 
@@ -1437,7 +1327,6 @@
 	    var result = this.tempResult;
 	    this.tempResult = null;
 	    this.tempCounter = INITIAL_COUNTER;
-
 	    //console.warn("read u int");
 	    return result;
 	  }
@@ -1445,27 +1334,18 @@
 	  readSignedInt(size) {
 	    if (!this.currentBuffer)// if we run out of data return null
 	      return null; //Nothing to parse
-
 	    //need to fix overflow for 64bit unsigned int
 	    if (size <= 0 || size > 8) {
 	      console.warn("invalid file size");
 	    }
-
 	    if (this.tempResult === null)
 	      this.tempResult = 0;
-
 	    if (this.tempCounter === INITIAL_COUNTER)
 	      this.tempCounter = 0;
-
 	    var b;
-
 	    while (this.tempCounter < size) {
-
 	      if (!this.currentBuffer)// if we run out of data return null
 	        return null; //Nothing to parse
-
-
-
 	      if (this.tempCounter === 0)
 	        b = this.readByte();
 	      else
@@ -1473,9 +1353,7 @@
 
 	      this.tempResult <<= 8;
 	      this.tempResult |= b;
-
 	      this.popBuffer();
-
 	      this.tempCounter++;
 	    }
 
@@ -1708,8 +1586,6 @@
 /* 4 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
 	/**
 	 * @classdesc A class to handle managment of matroska elements
 	 */
@@ -1859,8 +1735,6 @@
 /* 7 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
 	class Seek {
 	  constructor(seekHeader, dataInterface) {
 	    this.size = seekHeader.size;
@@ -1880,7 +1754,6 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
 
 	      switch (this.currentElement.id) {
 	        case 0x53AB: //SeekId
@@ -1913,7 +1786,6 @@
 	    }
 	    if (this.dataInterface.offset !== this.end)
 	      console.error("Invalid Seek Formatting");
-
 	    this.loaded = true;
 	  }
 	}
@@ -2074,7 +1946,6 @@
 	          return null;
 	      }
 	      switch (this.currentElement.id) {
-
 	        case 0xAE: //Track Entry
 	          if (!this.trackLoader.loading)
 	            this.trackLoader.init(this.currentElement, this.dataInterface);
@@ -2084,9 +1955,7 @@
 	          else
 	            var trackEntry = this.trackLoader.getTrackEntry();
 	          this.trackEntries.push(trackEntry);
-
 	          break;
-
 	        case 0xbf: //CRC-32
 	          var crc = this.dataInterface.getBinary(this.currentElement.size);
 	          if (crc !== null)
@@ -2095,14 +1964,10 @@
 	          else
 	            return null;
 	          break;
-
 	        default:
 	          console.warn("track element not found, skipping : " + this.currentElement.id.toString(16));
 	          break;
-
 	      }
-
-
 	      this.currentElement = null;
 	    }
 
@@ -2113,7 +1978,6 @@
 	    if (!this.tempEntry)
 	      this.tempEntry = new Seek(this.currentElement, this.dataInterface);
 	  }
-
 	}
 
 	/**
@@ -2122,7 +1986,6 @@
 	 * level data plus the track container which can be either audio video, content encodings, and maybe subtitles.
 	 */
 	class TrackLoader {
-
 	  constructor() {
 	    this.dataInterface = null;
 	    this.offset = null;
@@ -2175,8 +2038,6 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
 	        //TODO support content encodings
 	        case 0xE0: //Video Track
@@ -2186,9 +2047,6 @@
 	          if (!this.tempTrack.loaded)
 	            return;
 	          break;
-
-
-
 	        case 0xE1: //Audio Number
 	          if (!this.tempTrack)
 	            this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
@@ -2196,7 +2054,6 @@
 	          if (!this.tempTrack.loaded)
 	            return;
 	          break;
-
 	        case 0xD7: //Track Number
 	          var trackNumber = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (trackNumber !== null)
@@ -2204,7 +2061,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x83: //TrackType 
 	          var trackType = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (trackType !== null)
@@ -2212,7 +2068,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x536E: //Name
 	          var name = this.dataInterface.readString(this.currentElement.size);
 	          if (name !== null)
@@ -2220,7 +2075,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x258688: //CodecName
 	          var codecName = this.dataInterface.readString(this.currentElement.size);
 	          if (codecName !== null)
@@ -2228,7 +2082,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x22B59C: //Language
 	          var language = this.dataInterface.readString(this.currentElement.size);
 	          if (language !== null)
@@ -2236,7 +2089,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x23E383: //DefaultDuration 
 	          var defaultDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (defaultDuration !== null)
@@ -2244,7 +2096,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x86: //CodecId
 	          var codecID = this.dataInterface.readString(this.currentElement.size);
 	          if (codecID !== null)
@@ -2252,7 +2103,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x9C: //FlagLacing 
 	          var lacing = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (lacing !== null)
@@ -2260,7 +2110,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0xB9: //FlagEnabled
 	          var flagEnabled = this.dataInterface.getBinary(this.currentElement.size);
 	          if (flagEnabled !== null) {
@@ -2269,7 +2118,6 @@
 	            return null;
 	          }
 	          break;
-
 	        case 0x55AA: //FlagForced
 	          var flagForced = this.dataInterface.getBinary(this.currentElement.size);
 	          if (flagForced !== null) {
@@ -2278,18 +2126,14 @@
 	            return null;
 	          }
 	          break;
-
 	        case 0x63A2: //Codec Private 
 	          var codecPrivate = this.dataInterface.getBinary(this.currentElement.size);
 	          if (codecPrivate !== null) {
 	            this.trackData.codecPrivate = codecPrivate;
-	            //this must be pushed onto the queue!
-
 	          } else {
 	            return null;
 	          }
 	          break;
-
 	        case 0x56AA: //Codec Delay 
 	          var codecDelay = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (codecDelay !== null)
@@ -2297,7 +2141,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x56BB: //Pre Seek Roll 
 	          var seekPreRoll = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (seekPreRoll !== null)
@@ -2305,7 +2148,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x73C5: //Track UID
 	          var trackUID = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (trackUID !== null)
@@ -2313,7 +2155,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x6DE7: //MinCache
 	          var minCache = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (minCache !== null)
@@ -2321,7 +2162,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0xbf: //CRC-32
 	          var crc = this.dataInterface.getBinary(this.currentElement.size);
 	          if (crc !== null)
@@ -2330,7 +2170,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x88: //CRC-32
 	          var flagDefault = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (flagDefault !== null)
@@ -2339,8 +2178,6 @@
 	          else
 	            return null;
 	          break;
-
-
 	        default:
 	          if (!this.dataInterface.peekBytes(this.currentElement.size))
 	            return false;
@@ -2348,12 +2185,9 @@
 	            this.dataInterface.skipBytes(this.currentElement.size);
 	          console.warn("track data element not found, skipping : " + this.currentElement.id.toString(16));
 	          break;
-
 	      }
-
 	      this.currentElement = null;
 	    }
-
 	    this.loaded = true;
 	  }
 
@@ -2368,17 +2202,14 @@
 	}
 
 	class Track {
-
 	  loadMeta(meta) {
 	    for (var key in meta) {
 	      this[key] = meta[key];
 	    }
 	  }
-
 	}
 
 	class VideoTrack extends Track {
-
 	  constructor(trackHeader, dataInterface) {
 	    super();
 	    this.dataInterface = dataInterface;
@@ -2406,8 +2237,6 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
 	        //TODO add color
 	        case 0xB0: //Pixel width
@@ -2417,7 +2246,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0xBA: //Pixel Height 
 	          var height = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (height !== null)
@@ -2425,7 +2253,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x54B0: //Display width
 	          var displayWidth = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (displayWidth !== null)
@@ -2433,7 +2260,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x54BA: //Display height
 	          var displayHeight = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (displayHeight !== null)
@@ -2441,7 +2267,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x54B2: //Display unit
 	          var displayUnit = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (displayUnit !== null)
@@ -2540,19 +2365,14 @@
 	          else
 	            return null;
 	          break;
-
 	        default:
 	          console.warn("Ifno element not found, skipping");
 	          break;
-
 	      }
-
 	      this.currentElement = null;
 	    }
-
 	    this.loaded = true;
 	  }
-
 	}
 
 	class TrackSettings {
@@ -2563,6 +2383,7 @@
 	}
 
 	module.exports = Tracks;
+
 
 /***/ }),
 /* 10 */
@@ -2613,14 +2434,12 @@
 
 	  load() {
 	    var status = false;
-
 	    while (this.dataInterface.offset < this.end) {
 	      if (!this.tempElementHeader.status) {
 	        this.dataInterface.peekAndSetElement(this.tempElementHeader);
 	        if (!this.tempElementHeader.status)
 	          return null;
 	      }
-
 	      switch (this.tempElementHeader.id) {
 	        case 0xE7: //TimeCode
 	          var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
@@ -2642,19 +2461,15 @@
 	              this
 	            );
 	          this.tempBlock.load();
-
 	          //if(!this.dataInterface.currentBuffer)
 	          //      return false;
-
 	          if (!this.tempBlock.loaded)
 	            return 0;
 	          //else
 	          //  this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
 	          this.tempBlock.reset();
-
 	          this.tempEntry = null;
 	          this.tempElementHeader.reset();
-
 	          if (this.dataInterface.offset !== this.end) {
 	            if (!this.dataInterface.currentBuffer)
 	              return false;
@@ -2676,11 +2491,9 @@
 	          this.currentBlockGroup.load();
 	          if (!this.currentBlockGroup.loaded)
 	            return false;
-
 	          this.blockGroups.push(this.currentTag);
 	          this.currentBlockGroup = null;
 	          break;
-
 	        case 0xAB: //PrevSize
 	          var prevSize = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
 	          if (prevSize !== null)
@@ -2688,26 +2501,17 @@
 	          else
 	            return null;
 	          break;
-
 	        //TODO, ADD VOID
 	        default:
 	          console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
 	          throw "cluster";
 	          //This means we probably are out of the cluster now, double check bounds when end not available
 	          break;
-
 	      }
 	      this.tempEntry = null;
 	      this.tempElementHeader.reset();
 	      //return 1;
 	    }
-
-
-	    //if (this.dataInterface.offset !== this.end){
-	    //  console.log(this);
-	    //throw "INVALID CLUSTER FORMATTING";
-	    //}
-
 	    this.loaded = true;
 	    return status;
 	  }
@@ -2720,15 +2524,13 @@
 /* 11 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
-	var NO_LACING = 0;
-	var XIPH_LACING = 1;
-	var FIXED_LACING = 2;
-	var EBML_LACING = 3;
+	
+	const NO_LACING = 0;
+	const XIPH_LACING = 1;
+	const FIXED_LACING = 2;
+	const EBML_LACING = 3;
 
 	class SimpleBlock {
-
 	  constructor() {
 	    this.cluster;// = cluster;
 	    this.dataInterface;// = dataInterface;
@@ -2812,7 +2614,6 @@
 	    if (this.loaded)
 	      throw "ALREADY LOADED";
 
-
 	    if (this.trackNumber === null) {
 	      this.trackNumber = dataInterface.readVint();
 	      if (this.trackNumber === null)
@@ -2845,27 +2646,20 @@
 
 
 	    switch (this.lacing) {
-
-
-
 	      case FIXED_LACING:
-
 	        if (!this.frameLength) {
 	          this.frameLength = this.size - this.headerSize;
 	          if (this.frameLength <= 0)
 	            throw "INVALID FRAME LENGTH " + this.frameLength;
 	        }
-
 	        if (!this.lacedFrameCount) {
 	          this.lacedFrameCount = dataInterface.readUnsignedInt(1);
 	          if (this.lacedFrameCount === null)
 	            return null;
-
 	          this.lacedFrameCount++;
 	        }
 
 	        var tempFrame = dataInterface.getBinary(this.frameLength - 1);
-
 	        if (tempFrame === null) {
 	          //if (dataInterface.usingBufferedRead === false)
 	          //    throw "SHOULD BE BUFFERED READ";
@@ -2874,9 +2668,6 @@
 	        }
 
 	        this.fixedFrameLength = (this.frameLength - 1) / this.lacedFrameCount;
-
-
-
 	        var fullTimeCode = this.timeCode + this.cluster.timeCode;
 	        //var fullTimeCode = this.cluster.timeCode;
 	        var timeStamp = fullTimeCode / 1000;
@@ -2899,33 +2690,20 @@
 	            });
 	          }
 	        }
-
-
-
-
-
-
 	        tempFrame = null;
 	        break;
-
-
 	      case EBML_LACING:
-
 	        if (!this.frameLength) {
 	          this.frameLength = this.size - this.headerSize;
 	          if (this.frameLength <= 0)
 	            throw "INVALID FRAME LENGTH " + this.frameLength;
 	        }
-
-
 	        if (!this.lacedFrameCount) {
 	          this.lacedFrameCount = dataInterface.readUnsignedInt(1);
 	          if (this.lacedFrameCount === null)
 	            return null;
-
 	          this.lacedFrameCount++;
 	        }
-
 	        if (!this.firstLacedFrameSize) {
 	          var firstLacedFrameSize = this.dataInterface.readVint();
 	          if (firstLacedFrameSize !== null) {
@@ -2935,8 +2713,6 @@
 	            return null;
 	          }
 	        }
-
-
 	        if (!this.tempCounter) {
 	          this.tempCounter = 0;
 	        }
@@ -2968,14 +2744,7 @@
 	          this.ebmlLacedSizesParsed = true;
 	          this.ebmlTotalSize = total + lastSize;
 	        }
-
-
-
-
-	        //console.warn(this.lacedFrameDataSize + ":" + this.ebmlTotalSize);
-
 	        var tempFrame = dataInterface.getBinary(this.lacedFrameDataSize);
-
 	        if (tempFrame === null) {
 	          return null;
 	        }
@@ -2986,7 +2755,6 @@
 	        if (timeStamp < 0) {
 	          throw "INVALID TIMESTAMP";
 	        }
-
 
 	        var start = 0;
 	        var end = this.ebmlParsedSizes[0];
@@ -3012,31 +2780,17 @@
 	            end = null;
 	          }
 	        }
-
-
-
-
-
-
-
 	        this.tempCounter = null;
 	        tempFrame = null;
 	        break;
-
-
 	      case XIPH_LACING:
-
 	      case NO_LACING:
-
 	        if (this.lacing === EBML_LACING) {
 	          console.warn("EBML_LACING");
 	        }
 	        if (this.lacing === XIPH_LACING) {
 	          console.warn("XIPH_LACING");
 	        }
-
-
-
 	        if (!this.frameLength) {
 	          this.frameLength = this.size - this.headerSize;
 	          if (this.frameLength <= 0)
@@ -3099,14 +2853,12 @@
 	      throw "INVALID BLOCK SIZE";
 	    }
 
-
 	    this.loaded = true;
 	    this.headerSize = null;
 	    this.tempFrame = null;
 	    this.tempCounter = null;
 	    this.frameLength = null;
 	  }
-
 	}
 
 	module.exports = SimpleBlock;
@@ -3116,72 +2868,63 @@
 /* 12 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
 	class BlockGroup {
-	    constructor(blockGroupHeader, dataInterface) {
-	        this.dataInterface = dataInterface;
-	        this.offset = blockGroupHeader.offset;
-	        this.size = blockGroupHeader.size;
-	        this.end = blockGroupHeader.end;
-	        this.loaded = false;
-	        this.tempElement = null;
-	        this.currentElement = null;
+	  constructor(blockGroupHeader, dataInterface) {
+	    this.dataInterface = dataInterface;
+	    this.offset = blockGroupHeader.offset;
+	    this.size = blockGroupHeader.size;
+	    this.end = blockGroupHeader.end;
+	    this.loaded = false;
+	    this.tempElement = null;
+	    this.currentElement = null;
+	  }
+
+	  load() {
+	    var end = this.end;
+	    while (this.dataInterface.offset < end) {
+	      if (!this.currentElement) {
+	        this.currentElement = this.dataInterface.peekElement();
+	        if (this.currentElement === null)
+	          return null;
+	      }
+	      switch (this.currentElement.id) {
+	        case 0xA1: //Block
+	          var block = this.dataInterface.getBinary(this.currentElement.size);
+	          if (block !== null)
+	            block;
+	          //this.docTypeReadVersion = docTypeReadVersion;
+	          else
+	            return null;
+	          break;
+	        case 0x9b: //BlockDuration
+	          var blockDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	          if (blockDuration !== null)
+	            this.blockDuration = blockDuration;
+	          else
+	            return null;
+	          break;
+	        case 0xFB: //ReferenceBlock
+	          var referenceBlock = this.dataInterface.readSignedInt(this.currentElement.size);
+	          if (referenceBlock !== null)
+	            this.referenceBlock = referenceBlock;
+	          else
+	            return null;
+	          break;
+	        case 0x75A2: //DiscardPadding
+	          var discardPadding = this.dataInterface.readSignedInt(this.currentElement.size);
+	          if (discardPadding !== null)
+	            this.discardPadding = discardPadding;
+	          else
+	            return null;
+	          break;
+	        default:
+	          console.warn("block group element not found, skipping " + this.currentElement.id.toString(16));
+	          break;
+	      }
+	      this.currentElement = null;
 	    }
-
-	    load() {
-	        var end = this.end;
-	        while (this.dataInterface.offset < end) {
-	            if (!this.currentElement) {
-	                this.currentElement = this.dataInterface.peekElement();
-	                if (this.currentElement === null)
-	                    return null;
-	            }
-
-	            switch (this.currentElement.id) {
-
-	                case 0xA1: //Block
-	                    var block = this.dataInterface.getBinary(this.currentElement.size);
-	                    if (block !== null)
-	                        block;
-	                    //this.docTypeReadVersion = docTypeReadVersion;
-	                    else
-	                        return null;
-	                    break;
-
-	                case 0x9b: //BlockDuration
-	                    var blockDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
-	                    if (blockDuration !== null)
-	                        this.blockDuration = blockDuration;
-	                    else
-	                        return null;
-	                    break;
-
-	                case 0xFB: //ReferenceBlock
-	                    var referenceBlock = this.dataInterface.readSignedInt(this.currentElement.size);
-	                    if (referenceBlock !== null)
-	                        this.referenceBlock = referenceBlock;
-	                    else
-	                        return null;
-	                    break;
-
-	                case 0x75A2: //DiscardPadding
-	                    var discardPadding = this.dataInterface.readSignedInt(this.currentElement.size);
-	                    if (discardPadding !== null)
-	                        this.discardPadding = discardPadding;
-	                    else
-	                        return null;
-	                    break;
-
-	                default:
-	                    console.warn("block group element not found, skipping " + this.currentElement.id.toString(16));
-	                    break;
-	            }
-	            this.currentElement = null;
-	        }
-	        this.loaded = true;
-	    }
-
+	    this.loaded = true;
+	  }
 	}
 
 	module.exports = BlockGroup;
@@ -3372,11 +3115,7 @@
 /* 14 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
-
 	class CueTrackPositions {
-
 	  constructor(cuesPointHeader, dataInterface) {
 	    this.dataInterface = dataInterface;
 	    this.offset = cuesPointHeader.offset;
@@ -3391,17 +3130,13 @@
 	  }
 
 	  load() {
-
 	    while (this.dataInterface.offset < this.end) {
 	      if (!this.currentElement) {
 	        this.currentElement = this.dataInterface.peekElement();
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
-
 	        case 0xF7: //CueTrack
 	          var cueTrack = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (cueTrack !== null)
@@ -3409,7 +3144,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0xF1: //Cue ClusterPosition 
 	          var cueClusterPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (cueClusterPosition !== null)
@@ -3417,7 +3151,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0xF0: //CueRelativePosition
 	          var cueRelativePosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (cueRelativePosition !== null)
@@ -3425,25 +3158,20 @@
 	          else
 	            return null;
 	          break;
-
 	        default:
 	          console.warn("Cue track positions not found! " + this.currentElement.id);
 	          break;
-
 	      }
-
 	      this.currentElement = null;
 	    }
-
 	    if (this.dataInterface.offset !== this.end)
 	      console.error("Invalid Seek Formatting");
-
 	    this.loaded = true;
 	  }
-
 	}
 
 	module.exports = CueTrackPositions;
+
 
 /***/ }),
 /* 15 */
@@ -3515,10 +3243,8 @@
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var Targets = __webpack_require__(17);
-	var SimpleTag = __webpack_require__(18);
+	const Targets = __webpack_require__(17);
+	const SimpleTag = __webpack_require__(18);
 
 	class Tag {
 	  constructor(tagHeader, dataInterface, demuxer) {
@@ -3543,21 +3269,16 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
-
 	        case 0x63C0: //Targets
 	          if (!this.tempEntry)
 	            this.tempEntry = new Targets(this.currentElement, this.dataInterface);
 	          this.tempEntry.load();
 	          if (!this.tempEntry.loaded)
 	            return null;
-
 	          this.targets.push(this.tempEntry);
 	          this.tempEntry = null;
 	          break;
-
 	        case 0x67C8: //SimpleTag
 	          if (!this.tempEntry)
 	            this.tempEntry = new SimpleTag(this.currentElement, this.dataInterface);
@@ -3568,18 +3289,13 @@
 	          this.simpleTags.push(this.tempEntry);
 	          this.tempEntry = null;
 	          break;
-
-
 	        default:
-
 	          if (!this.dataInterface.peekBytes(this.currentElement.size))
 	            return false;
 	          else
 	            this.dataInterface.skipBytes(this.currentElement.size);
-
 	          console.warn("tag element not found: " + this.currentElement.id.toString(16)); // probably bad
 	          break;
-
 	      }
 
 	      this.tempEntry = null;
@@ -3588,19 +3304,17 @@
 	      //this.tempEntry = null;
 	    }
 
-
 	    if (this.dataInterface.offset !== this.end) {
 	      console.log(this);
 	      throw "INVALID CUE FORMATTING";
 	    }
 
 	    this.loaded = true;
-	    //console.warn(this);
 	  }
-
 	}
 
 	module.exports = Tag;
+
 
 /***/ }),
 /* 17 */
@@ -3660,8 +3374,6 @@
 /* 18 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
 	class SimpleTag {
 	  constructor(simpleTagHeader, dataInterface) {
 	    this.dataInterface = dataInterface;
@@ -3685,10 +3397,7 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
-
 	        case 0x45A3: //TagName
 	          var tagName = this.dataInterface.readString(this.currentElement.size);
 	          if (tagName !== null)
@@ -3696,7 +3405,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x4487: //TagString
 	          var tagString = this.dataInterface.readString(this.currentElement.size);
 	          if (tagString !== null)
@@ -3704,31 +3412,25 @@
 	          else
 	            return null;
 	          break;
-
 	        default:
-
 	          if (!this.dataInterface.peekBytes(this.currentElement.size))
 	            return false;
 	          else
 	            this.dataInterface.skipBytes(this.currentElement.size);
-
 	          console.warn("simple tag element not found ! : " + this.currentElement.id.toString(16));
 	          break;
-
 	      }
-
 	      this.currentElement = null;
 	    }
 
 	    if (this.dataInterface.offset !== this.end)
 	      console.error("Invalid Targets Formatting");
-
 	    this.loaded = true;
 	  }
-
 	}
 
 	module.exports = SimpleTag;
+
 
 /***/ })
 /******/ ]);

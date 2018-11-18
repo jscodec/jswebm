@@ -43,14 +43,12 @@ class Cluster {
 
   load() {
     var status = false;
-
     while (this.dataInterface.offset < this.end) {
       if (!this.tempElementHeader.status) {
         this.dataInterface.peekAndSetElement(this.tempElementHeader);
         if (!this.tempElementHeader.status)
           return null;
       }
-
       switch (this.tempElementHeader.id) {
         case 0xE7: //TimeCode
           var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
@@ -72,19 +70,15 @@ class Cluster {
               this
             );
           this.tempBlock.load();
-
           //if(!this.dataInterface.currentBuffer)
           //      return false;
-
           if (!this.tempBlock.loaded)
             return 0;
           //else
           //  this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
           this.tempBlock.reset();
-
           this.tempEntry = null;
           this.tempElementHeader.reset();
-
           if (this.dataInterface.offset !== this.end) {
             if (!this.dataInterface.currentBuffer)
               return false;
@@ -106,11 +100,9 @@ class Cluster {
           this.currentBlockGroup.load();
           if (!this.currentBlockGroup.loaded)
             return false;
-
           this.blockGroups.push(this.currentTag);
           this.currentBlockGroup = null;
           break;
-
         case 0xAB: //PrevSize
           var prevSize = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
           if (prevSize !== null)
@@ -118,26 +110,17 @@ class Cluster {
           else
             return null;
           break;
-
         //TODO, ADD VOID
         default:
           console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
           throw "cluster";
           //This means we probably are out of the cluster now, double check bounds when end not available
           break;
-
       }
       this.tempEntry = null;
       this.tempElementHeader.reset();
       //return 1;
     }
-
-
-    //if (this.dataInterface.offset !== this.end){
-    //  console.log(this);
-    //throw "INVALID CLUSTER FORMATTING";
-    //}
-
     this.loaded = true;
     return status;
   }

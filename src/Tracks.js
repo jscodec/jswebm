@@ -23,7 +23,6 @@ class Tracks {
           return null;
       }
       switch (this.currentElement.id) {
-
         case 0xAE: //Track Entry
           if (!this.trackLoader.loading)
             this.trackLoader.init(this.currentElement, this.dataInterface);
@@ -33,9 +32,7 @@ class Tracks {
           else
             var trackEntry = this.trackLoader.getTrackEntry();
           this.trackEntries.push(trackEntry);
-
           break;
-
         case 0xbf: //CRC-32
           var crc = this.dataInterface.getBinary(this.currentElement.size);
           if (crc !== null)
@@ -44,14 +41,10 @@ class Tracks {
           else
             return null;
           break;
-
         default:
           console.warn("track element not found, skipping : " + this.currentElement.id.toString(16));
           break;
-
       }
-
-
       this.currentElement = null;
     }
 
@@ -62,7 +55,6 @@ class Tracks {
     if (!this.tempEntry)
       this.tempEntry = new Seek(this.currentElement, this.dataInterface);
   }
-
 }
 
 /**
@@ -71,7 +63,6 @@ class Tracks {
  * level data plus the track container which can be either audio video, content encodings, and maybe subtitles.
  */
 class TrackLoader {
-
   constructor() {
     this.dataInterface = null;
     this.offset = null;
@@ -124,8 +115,6 @@ class TrackLoader {
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
         //TODO support content encodings
         case 0xE0: //Video Track
@@ -135,9 +124,6 @@ class TrackLoader {
           if (!this.tempTrack.loaded)
             return;
           break;
-
-
-
         case 0xE1: //Audio Number
           if (!this.tempTrack)
             this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
@@ -145,7 +131,6 @@ class TrackLoader {
           if (!this.tempTrack.loaded)
             return;
           break;
-
         case 0xD7: //Track Number
           var trackNumber = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (trackNumber !== null)
@@ -153,7 +138,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x83: //TrackType 
           var trackType = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (trackType !== null)
@@ -161,7 +145,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x536E: //Name
           var name = this.dataInterface.readString(this.currentElement.size);
           if (name !== null)
@@ -169,7 +152,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x258688: //CodecName
           var codecName = this.dataInterface.readString(this.currentElement.size);
           if (codecName !== null)
@@ -177,7 +159,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x22B59C: //Language
           var language = this.dataInterface.readString(this.currentElement.size);
           if (language !== null)
@@ -185,7 +166,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x23E383: //DefaultDuration 
           var defaultDuration = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (defaultDuration !== null)
@@ -193,7 +173,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x86: //CodecId
           var codecID = this.dataInterface.readString(this.currentElement.size);
           if (codecID !== null)
@@ -201,7 +180,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x9C: //FlagLacing 
           var lacing = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (lacing !== null)
@@ -209,7 +187,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0xB9: //FlagEnabled
           var flagEnabled = this.dataInterface.getBinary(this.currentElement.size);
           if (flagEnabled !== null) {
@@ -218,7 +195,6 @@ class TrackLoader {
             return null;
           }
           break;
-
         case 0x55AA: //FlagForced
           var flagForced = this.dataInterface.getBinary(this.currentElement.size);
           if (flagForced !== null) {
@@ -227,18 +203,14 @@ class TrackLoader {
             return null;
           }
           break;
-
         case 0x63A2: //Codec Private 
           var codecPrivate = this.dataInterface.getBinary(this.currentElement.size);
           if (codecPrivate !== null) {
             this.trackData.codecPrivate = codecPrivate;
-            //this must be pushed onto the queue!
-
           } else {
             return null;
           }
           break;
-
         case 0x56AA: //Codec Delay 
           var codecDelay = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (codecDelay !== null)
@@ -246,7 +218,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x56BB: //Pre Seek Roll 
           var seekPreRoll = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (seekPreRoll !== null)
@@ -254,7 +225,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x73C5: //Track UID
           var trackUID = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (trackUID !== null)
@@ -262,7 +232,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x6DE7: //MinCache
           var minCache = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (minCache !== null)
@@ -270,7 +239,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0xbf: //CRC-32
           var crc = this.dataInterface.getBinary(this.currentElement.size);
           if (crc !== null)
@@ -279,7 +247,6 @@ class TrackLoader {
           else
             return null;
           break;
-
         case 0x88: //CRC-32
           var flagDefault = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (flagDefault !== null)
@@ -288,8 +255,6 @@ class TrackLoader {
           else
             return null;
           break;
-
-
         default:
           if (!this.dataInterface.peekBytes(this.currentElement.size))
             return false;
@@ -297,12 +262,9 @@ class TrackLoader {
             this.dataInterface.skipBytes(this.currentElement.size);
           console.warn("track data element not found, skipping : " + this.currentElement.id.toString(16));
           break;
-
       }
-
       this.currentElement = null;
     }
-
     this.loaded = true;
   }
 
@@ -317,17 +279,14 @@ class TrackLoader {
 }
 
 class Track {
-
   loadMeta(meta) {
     for (var key in meta) {
       this[key] = meta[key];
     }
   }
-
 }
 
 class VideoTrack extends Track {
-
   constructor(trackHeader, dataInterface) {
     super();
     this.dataInterface = dataInterface;
@@ -355,8 +314,6 @@ class VideoTrack extends Track {
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
         //TODO add color
         case 0xB0: //Pixel width
@@ -366,7 +323,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0xBA: //Pixel Height 
           var height = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (height !== null)
@@ -374,7 +330,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x54B0: //Display width
           var displayWidth = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (displayWidth !== null)
@@ -382,7 +337,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x54BA: //Display height
           var displayHeight = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (displayHeight !== null)
@@ -390,7 +344,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x54B2: //Display unit
           var displayUnit = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (displayUnit !== null)
@@ -489,19 +442,14 @@ class AudioTrack extends Track {
           else
             return null;
           break;
-
         default:
           console.warn("Ifno element not found, skipping");
           break;
-
       }
-
       this.currentElement = null;
     }
-
     this.loaded = true;
   }
-
 }
 
 class TrackSettings {
