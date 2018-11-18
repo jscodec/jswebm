@@ -1,4 +1,5 @@
 const JsWebm = require('../src/JsWebm');
+const CircularJSON = require('circular-json');
 
 const fileRequest = new XMLHttpRequest();
 fileRequest.open("GET", "clock.webm", true);
@@ -7,7 +8,7 @@ fileRequest.responseType = "arraybuffer";
 const runTest = (buffer) => {
 	const demuxer = new JsWebm();
 	demuxer.demux(buffer);
-	console.log(demuxer);
+	document.getElementById('output').innerHTML = CircularJSON.stringify(demuxer, null, 2);
 };
 
 fileRequest.onload = (event) => {
