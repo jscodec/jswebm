@@ -1,6 +1,6 @@
 'use strict';
 
-var Seek = require('./Seek.js');
+const Seek = require('./Seek.js');
 
 class SeekHead {
   constructor(seekHeadHeader, dataInterface) {

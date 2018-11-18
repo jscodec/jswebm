@@ -714,17 +714,14 @@ class JsWebm {
       //console.warn(this.cues);
       return 0;
     }
-
     //now we can caluclate the pointer offset
     this.calculateKeypointOffset();
     //we should now have the cue point
     var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
-
     this._flush();
     this.dataInterface.offset = clusterOffset;
     this.onseek(clusterOffset);
     this.state = STATE_DECODING;
-
     return 0;
   }
 
@@ -734,9 +731,7 @@ class JsWebm {
    * @returns {undefined}
    */
   initCues() {
-
     if (!this.cuesOffset) {
-
       var length = this.seekHead.entries.length;
       var entries = this.seekHead.entries;
       //console.warn(this.seekHead);
@@ -747,7 +742,6 @@ class JsWebm {
           this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
       }
     }
-
   }
 
   /**
@@ -771,10 +765,8 @@ class JsWebm {
         break;
       scanPoint = tempPoint;
     }
-
     this.seekCueTarget = scanPoint;
   }
-
 }
 
 module.exports = JsWebm;

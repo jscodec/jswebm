@@ -793,17 +793,14 @@
 	      //console.warn(this.cues);
 	      return 0;
 	    }
-
 	    //now we can caluclate the pointer offset
 	    this.calculateKeypointOffset();
 	    //we should now have the cue point
 	    var clusterOffset = this.seekCueTarget.cueTrackPositions.cueClusterPosition + this.segment.dataOffset;
-
 	    this._flush();
 	    this.dataInterface.offset = clusterOffset;
 	    this.onseek(clusterOffset);
 	    this.state = STATE_DECODING;
-
 	    return 0;
 	  }
 
@@ -813,9 +810,7 @@
 	   * @returns {undefined}
 	   */
 	  initCues() {
-
 	    if (!this.cuesOffset) {
-
 	      var length = this.seekHead.entries.length;
 	      var entries = this.seekHead.entries;
 	      //console.warn(this.seekHead);
@@ -826,7 +821,6 @@
 	          this.cuesOffset = entries[i].seekPosition + this.segment.dataOffset; // its the offset from data offset
 	      }
 	    }
-
 	  }
 
 	  /**
@@ -850,10 +844,8 @@
 	        break;
 	      scanPoint = tempPoint;
 	    }
-
 	    this.seekCueTarget = scanPoint;
 	  }
-
 	}
 
 	module.exports = JsWebm;
@@ -1658,7 +1650,7 @@
 
 	'use strict';
 
-	var Seek = __webpack_require__(7);
+	const Seek = __webpack_require__(7);
 
 	class SeekHead {
 	  constructor(seekHeadHeader, dataInterface) {
@@ -1798,8 +1790,6 @@
 /* 8 */
 /***/ (function(module, exports) {
 
-	'use strict';
-
 	class SegmentInfo {
 	  constructor(infoHeader, dataInterface) {
 	    this.dataInterface = dataInterface;
@@ -1816,20 +1806,16 @@
 	    this.segmentUID = null;
 	    this.duration = null;
 	    this.dateUTC;
-
 	  }
 
 	  load() {
 	    var end = this.end;
 	    while (this.dataInterface.offset < end) {
-
-
 	      if (!this.currentElement) {
 	        this.currentElement = this.dataInterface.peekElement();
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
 
 	      switch (this.currentElement.id) {
 	        //TODO add duration and title
@@ -1863,7 +1849,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x73A4: //segmentUID
 	          //TODO, LOAD THIS AS A BINARY ARRAY, SHOULD BE 128 BIT UNIQUE ID
 	          var segmentUID = this.dataInterface.readString(this.currentElement.size);
@@ -1897,13 +1882,10 @@
 	          else
 	            return null;
 	          break;
-
 	        default:
 	          console.error("Ifno element not found, skipping : " + this.currentElement.id.toString(16));
 	          break;
-
 	      }
-
 	      this.currentElement = null;
 	    }
 
@@ -1922,8 +1904,7 @@
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
-	var Seek = __webpack_require__(7);
+	const Seek = __webpack_require__(7);
 
 	class Tracks {
 	  constructor(seekHeadHeader, dataInterface, demuxer) {
@@ -1976,8 +1957,9 @@
 	  }
 
 	  loadTrackEntry() {
-	    if (!this.tempEntry)
+	    if (!this.tempEntry) {
 	      this.tempEntry = new Seek(this.currentElement, this.dataInterface);
+	    }
 	  }
 	}
 
@@ -2036,8 +2018,7 @@
 	    while (this.dataInterface.offset < end) {
 	      if (!this.currentElement) {
 	        this.currentElement = this.dataInterface.peekElement();
-	        if (this.currentElement === null)
-	          return null;
+	        if (this.currentElement === null) return null;
 	      }
 	      switch (this.currentElement.id) {
 	        //TODO support content encodings
@@ -2045,15 +2026,13 @@
 	          if (!this.tempTrack)
 	            this.tempTrack = new VideoTrack(this.currentElement, this.dataInterface);
 	          this.tempTrack.load();
-	          if (!this.tempTrack.loaded)
-	            return;
+	          if (!this.tempTrack.loaded) return;
 	          break;
 	        case 0xE1: //Audio Number
 	          if (!this.tempTrack)
 	            this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
 	          this.tempTrack.load();
-	          if (!this.tempTrack.loaded)
-	            return;
+	          if (!this.tempTrack.loaded) return;
 	          break;
 	        case 0xD7: //Track Number
 	          var trackNumber = this.dataInterface.readUnsignedInt(this.currentElement.size);
@@ -2199,12 +2178,11 @@
 	    this.loading = false;
 	    return tempTrack;
 	  }
-
 	}
 
 	class Track {
 	  loadMeta(meta) {
-	    for (var key in meta) {
+	    for (const key in meta) {
 	      this[key] = meta[key];
 	    }
 	  }
@@ -2275,7 +2253,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x53B8: //Stereo mode
 	          var stereoMode = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (stereoMode !== null)
@@ -2283,7 +2260,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x2383E3: //FRAME RATE //NEEDS TO BE FLOAT
 	          var frameRate = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (frameRate !== null)
@@ -2291,7 +2267,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x9A: //FlagInterlaced
 	          var flagInterlaced = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (flagInterlaced !== null)
@@ -2299,7 +2274,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x55B0: //Color
 	          console.error("NO COLOR LOADING YET");
 	        default:
@@ -2309,12 +2283,13 @@
 	      this.currentElement = null;
 	    }
 
-	    if (!this.displayWidth)
+	    if (!this.displayWidth) {
 	      this.displayWidth = this.width - this.pixelCropLeft;// - Math.PI;
+	    }
 
-	    if (!this.displayHeight)
+	    if (!this.displayHeight) {
 	      this.displayHeight = this.height - this.pixelCropTop;// - Math.PI;
-
+	    }
 	    this.loaded = true;
 	  }
 	}
@@ -2340,7 +2315,6 @@
 	          return null;
 	      }
 
-
 	      switch (this.currentElement.id) {
 	        //TODO add duration and title
 	        case 0xB5: //Sample Frequency //TODO: MAKE FLOAT
@@ -2358,7 +2332,6 @@
 	          else
 	            return null;
 	          break;
-
 	        case 0x6264: //bitDepth 
 	          var bitDepth = this.dataInterface.readUnsignedInt(this.currentElement.size);
 	          if (bitDepth !== null)
@@ -2415,11 +2388,9 @@
 	    this.timeCode = null;
 	    this.tempBlock = null;
 	    this.position = null;
-
 	    this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
 	    this.tempElementHeader.reset();
 	    this.tempBlock = new SimpleBlock();
-
 	    this.blockGroups = [];
 	    //this.demuxer.loadedMetadata = true; // Testing only
 	    return true;
@@ -2935,8 +2906,7 @@
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
-	var CueTrackPositions = __webpack_require__(14);
+	const CueTrackPositions = __webpack_require__(14);
 
 	/**
 	 * @classdesc This class keeps track of keyframes for seeking
@@ -2964,10 +2934,7 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
-
 	        case 0xBB: //CuePoint
 	          if (!this.tempEntry)
 	            this.tempEntry = new CuePoint(this.currentElement, this.dataInterface);
@@ -2977,9 +2944,6 @@
 	          else
 	            this.entries.push(this.tempEntry);
 	          break;
-
-
-
 	        case 0xbf: //CRC-32
 	          var crc = this.dataInterface.getBinary(this.currentElement.size);
 	          if (crc !== null)
@@ -2988,13 +2952,10 @@
 	          else
 	            return null;
 	          break;
-
-
 	        //TODO, ADD VOID
 	        default:
 	          console.warn("Cue Head element not found " + this.currentElement.id.toString(16)); // probably bad
 	          break;
-
 	      }
 
 	      this.tempEntry = null;
@@ -3052,7 +3013,6 @@
 	}
 
 	class CuePoint {
-
 	  constructor(cuesPointHeader, dataInterface) {
 	    this.dataInterface = dataInterface;
 	    this.offset = cuesPointHeader.offset;
@@ -3073,8 +3033,6 @@
 	        if (this.currentElement === null)
 	          return null;
 	      }
-
-
 	      switch (this.currentElement.id) {
 	        case 0xB7: //Cue Track Positions
 	          if (!this.cueTrackPositions)
@@ -3091,26 +3049,18 @@
 	          else
 	            return null;
 	          break;
-
-
-
 	        default:
 	          console.warn("Cue Point not found, skipping");
 	          break;
-
 	      }
-
 	      this.currentElement = null;
 	    }
-
 	    this.loaded = true;
 	  }
-
 	}
 
-
-
 	module.exports = Cues;
+
 
 /***/ }),
 /* 14 */

@@ -1,5 +1,4 @@
-'use strict';
-var Seek = require('./Seek.js');
+const Seek = require('./Seek.js');
 
 class Tracks {
   constructor(seekHeadHeader, dataInterface, demuxer) {
@@ -52,8 +51,9 @@ class Tracks {
   }
 
   loadTrackEntry() {
-    if (!this.tempEntry)
+    if (!this.tempEntry) {
       this.tempEntry = new Seek(this.currentElement, this.dataInterface);
+    }
   }
 }
 
@@ -112,8 +112,7 @@ class TrackLoader {
     while (this.dataInterface.offset < end) {
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
-        if (this.currentElement === null)
-          return null;
+        if (this.currentElement === null) return null;
       }
       switch (this.currentElement.id) {
         //TODO support content encodings
@@ -121,15 +120,13 @@ class TrackLoader {
           if (!this.tempTrack)
             this.tempTrack = new VideoTrack(this.currentElement, this.dataInterface);
           this.tempTrack.load();
-          if (!this.tempTrack.loaded)
-            return;
+          if (!this.tempTrack.loaded) return;
           break;
         case 0xE1: //Audio Number
           if (!this.tempTrack)
             this.tempTrack = new AudioTrack(this.currentElement, this.dataInterface);
           this.tempTrack.load();
-          if (!this.tempTrack.loaded)
-            return;
+          if (!this.tempTrack.loaded) return;
           break;
         case 0xD7: //Track Number
           var trackNumber = this.dataInterface.readUnsignedInt(this.currentElement.size);
@@ -275,12 +272,11 @@ class TrackLoader {
     this.loading = false;
     return tempTrack;
   }
-
 }
 
 class Track {
   loadMeta(meta) {
-    for (var key in meta) {
+    for (const key in meta) {
       this[key] = meta[key];
     }
   }
@@ -351,7 +347,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x53B8: //Stereo mode
           var stereoMode = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (stereoMode !== null)
@@ -359,7 +354,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x2383E3: //FRAME RATE //NEEDS TO BE FLOAT
           var frameRate = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (frameRate !== null)
@@ -367,7 +361,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x9A: //FlagInterlaced
           var flagInterlaced = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (flagInterlaced !== null)
@@ -375,7 +368,6 @@ class VideoTrack extends Track {
           else
             return null;
           break;
-
         case 0x55B0: //Color
           console.error("NO COLOR LOADING YET");
         default:
@@ -385,12 +377,13 @@ class VideoTrack extends Track {
       this.currentElement = null;
     }
 
-    if (!this.displayWidth)
+    if (!this.displayWidth) {
       this.displayWidth = this.width - this.pixelCropLeft;// - Math.PI;
+    }
 
-    if (!this.displayHeight)
+    if (!this.displayHeight) {
       this.displayHeight = this.height - this.pixelCropTop;// - Math.PI;
-
+    }
     this.loaded = true;
   }
 }
@@ -416,25 +409,21 @@ class AudioTrack extends Track {
           return null;
       }
 
-
       switch (this.currentElement.id) {
         //TODO add duration and title
         case 0xB5: //Sample Frequency //TODO: MAKE FLOAT
           var rate = this.dataInterface.readFloat(this.currentElement.size);
-          if (rate !== null)
-            this.rate = rate;
+          if (rate !== null) this.rate = rate;
           else
             return null;
           break;
 
         case 0x9F: //Channels 
           var channels = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (channels !== null)
-            this.channels = channels;
+          if (channels !== null) this.channels = channels;
           else
             return null;
           break;
-
         case 0x6264: //bitDepth 
           var bitDepth = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (bitDepth !== null)

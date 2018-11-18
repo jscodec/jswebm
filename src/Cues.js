@@ -1,5 +1,4 @@
-'use strict';
-var CueTrackPositions = require('./CueTrackPositions.js');
+const CueTrackPositions = require('./CueTrackPositions.js');
 
 /**
  * @classdesc This class keeps track of keyframes for seeking
@@ -27,10 +26,7 @@ class Cues {
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
-
         case 0xBB: //CuePoint
           if (!this.tempEntry)
             this.tempEntry = new CuePoint(this.currentElement, this.dataInterface);
@@ -40,9 +36,6 @@ class Cues {
           else
             this.entries.push(this.tempEntry);
           break;
-
-
-
         case 0xbf: //CRC-32
           var crc = this.dataInterface.getBinary(this.currentElement.size);
           if (crc !== null)
@@ -51,13 +44,10 @@ class Cues {
           else
             return null;
           break;
-
-
         //TODO, ADD VOID
         default:
           console.warn("Cue Head element not found " + this.currentElement.id.toString(16)); // probably bad
           break;
-
       }
 
       this.tempEntry = null;
@@ -115,7 +105,6 @@ class Cues {
 }
 
 class CuePoint {
-
   constructor(cuesPointHeader, dataInterface) {
     this.dataInterface = dataInterface;
     this.offset = cuesPointHeader.offset;
@@ -136,8 +125,6 @@ class CuePoint {
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
         case 0xB7: //Cue Track Positions
           if (!this.cueTrackPositions)
@@ -154,23 +141,14 @@ class CuePoint {
           else
             return null;
           break;
-
-
-
         default:
           console.warn("Cue Point not found, skipping");
           break;
-
       }
-
       this.currentElement = null;
     }
-
     this.loaded = true;
   }
-
 }
-
-
 
 module.exports = Cues;

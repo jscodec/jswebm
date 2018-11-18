@@ -23,11 +23,9 @@ class Cluster {
     this.timeCode = null;
     this.tempBlock = null;
     this.position = null;
-
     this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
     this.tempElementHeader.reset();
     this.tempBlock = new SimpleBlock();
-
     this.blockGroups = [];
     //this.demuxer.loadedMetadata = true; // Testing only
     return true;

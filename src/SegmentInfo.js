@@ -1,5 +1,3 @@
-'use strict';
-
 class SegmentInfo {
   constructor(infoHeader, dataInterface) {
     this.dataInterface = dataInterface;
@@ -16,20 +14,16 @@ class SegmentInfo {
     this.segmentUID = null;
     this.duration = null;
     this.dateUTC;
-
   }
 
   load() {
     var end = this.end;
     while (this.dataInterface.offset < end) {
-
-
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
         if (this.currentElement === null)
           return null;
       }
-
 
       switch (this.currentElement.id) {
         //TODO add duration and title
@@ -63,7 +57,6 @@ class SegmentInfo {
           else
             return null;
           break;
-
         case 0x73A4: //segmentUID
           //TODO, LOAD THIS AS A BINARY ARRAY, SHOULD BE 128 BIT UNIQUE ID
           var segmentUID = this.dataInterface.readString(this.currentElement.size);
@@ -97,13 +90,10 @@ class SegmentInfo {
           else
             return null;
           break;
-
         default:
           console.error("Ifno element not found, skipping : " + this.currentElement.id.toString(16));
           break;
-
       }
-
       this.currentElement = null;
     }
 
