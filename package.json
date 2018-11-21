@@ -26,7 +26,7 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^8.0.0-beta.2",
     "babel-preset-env": "^1.6.1",
-    "eslint": "^3.19.0",
+    "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.2.0",
     "google-closure-compiler-js": "^20161024.0.0",
