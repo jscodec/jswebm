@@ -1,9 +1,4 @@
 class Queue {
-  /**
-   * 
-   * @param {number} initialSize the initial size of the queue
-   * @returns {nm$_Queue.Queue}
-   */
   constructor(internalLength) {
     this.bufferLength = internalLength;
     this.buffer = new Array(internalLength);
@@ -13,15 +8,15 @@ class Queue {
   }
 
   push(obj) {
-    if ((this.length + 1) > this.bufferLength)
+    if ((this.length + 1) > this.bufferLength) {
       this.resizeBuffer();
+    }
     this.buffer[this.head] = obj;
     this.length++;
     this.head = (this.head + 1) % this.bufferLength;
   }
 
   resizeBuffer() {
-    console.warn("resizing buffer");
     this.bufferLength = this.bufferLength << 1;
     var newBuffer = new Array(this.bufferLength);
     for (var i = this.tail; i < this.head; i++) {
