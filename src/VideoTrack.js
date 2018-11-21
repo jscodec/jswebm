@@ -25,71 +25,87 @@ class VideoTrack extends Track {
     while (this.dataInterface.offset < this.end) {
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
-        if (this.currentElement === null)
-          return null;
+        if (this.currentElement === null) return null;
       }
       switch (this.currentElement.id) {
-        //TODO add color
-        case 0xB0: //Pixel width
-          var width = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (width !== null)
+        // TODO add color
+        case 0xB0: { // Pixel width
+          const width = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (width !== null) {
             this.width = width;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0xBA: //Pixel Height 
-          var height = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (height !== null)
+        }
+        case 0xBA: { // Pixel Height
+          const height = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (height !== null) {
             this.height = height;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x54B0: //Display width
-          var displayWidth = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (displayWidth !== null)
+        }
+        case 0x54B0: { // Display width
+          const displayWidth = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (displayWidth !== null) {
             this.displayWidth = displayWidth;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x54BA: //Display height
-          var displayHeight = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (displayHeight !== null)
+        }
+        case 0x54BA: { // Display height
+          const displayHeight = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (displayHeight !== null) {
             this.displayHeight = displayHeight;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x54B2: //Display unit
-          var displayUnit = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (displayUnit !== null)
+        }
+        case 0x54B2: { // Display unit
+          const displayUnit = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (displayUnit !== null) {
             this.displayUnit = displayUnit;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x53B8: //Stereo mode
-          var stereoMode = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (stereoMode !== null)
+        }
+        case 0x53B8: { // Stereo mode
+          const stereoMode = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (stereoMode !== null) {
             this.stereoMode = stereoMode;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x2383E3: //FRAME RATE //NEEDS TO BE FLOAT
-          var frameRate = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (frameRate !== null)
+        }
+        case 0x2383E3: { // FRAME RATE - NEEDS TO BE FLOAT
+          const frameRate = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (frameRate !== null) {
             this.frameRate = frameRate;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x9A: //FlagInterlaced
-          var flagInterlaced = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (flagInterlaced !== null)
+        }
+        case 0x9A: { // FlagInterlaced
+          const flagInterlaced = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (flagInterlaced !== null) {
             this.flagInterlaced = flagInterlaced;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x55B0: //Color
-          console.error("NO COLOR LOADING YET");
+        }
+        case 0x55B0: { // Color
+          throw new Error('COLOR NOT IMPLEMENTED');
+        }
         default:
-          console.warn("Info element not found, skipping: " + this.currentElement.id.toString(16));
+          console.warn(`Info element not found, skipping: ${this.currentElement.id.toString(16)}`);
           break;
       }
       this.currentElement = null;
