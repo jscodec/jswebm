@@ -20,21 +20,21 @@ class CueTrackPositions {
           return null;
       }
       switch (this.currentElement.id) {
-        case 0xF7: //CueTrack
+        case 0xF7: // CueTrack
           var cueTrack = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueTrack !== null)
             this.cueTrack = cueTrack;
           else
             return null;
           break;
-        case 0xF1: //Cue ClusterPosition 
+        case 0xF1: // Cue ClusterPosition 
           var cueClusterPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueClusterPosition !== null)
             this.cueClusterPosition = cueClusterPosition;
           else
             return null;
           break;
-        case 0xF0: //CueRelativePosition
+        case 0xF0: // CueRelativePosition
           var cueRelativePosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueRelativePosition !== null)
             this.cueRelativePosition = cueRelativePosition;
@@ -47,8 +47,9 @@ class CueTrackPositions {
       }
       this.currentElement = null;
     }
-    if (this.dataInterface.offset !== this.end)
-      console.error("Invalid Seek Formatting");
+    if (this.dataInterface.offset !== this.end) {
+      throw new Error('Invalid Seek Formatting');
+    }
     this.loaded = true;
   }
 }

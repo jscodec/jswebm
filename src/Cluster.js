@@ -47,16 +47,15 @@ class Cluster {
           return null;
       }
       switch (this.tempElementHeader.id) {
-        case 0xE7: //TimeCode
+        case 0xE7: // TimeCode
           var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
           if (timeCode !== null) {
             this.timeCode = timeCode;
-            //console.warn("timecode seeked to:" + this.timeCode);
           } else {
             return null;
           }
           break;
-        case 0xA3: //Simple Block
+        case 0xA3: // Simple Block
           if (!this.tempBlock.status)
             this.tempBlock.init(
               this.tempElementHeader.offset,
@@ -67,31 +66,28 @@ class Cluster {
               this
             );
           this.tempBlock.load();
-          //if(!this.dataInterface.currentBuffer)
-          //      return false;
           if (!this.tempBlock.loaded)
-            return 0;
-          //else
-          //  this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
+          return 0;
+          // else
+          // this.blocks.push(this.tempBlock); //Later save positions for seeking and debugging
           this.tempBlock.reset();
           this.tempEntry = null;
           this.tempElementHeader.reset();
           if (this.dataInterface.offset !== this.end) {
             if (!this.dataInterface.currentBuffer)
               return false;
-            return true; //true?
+            return true;
           }
           break;
-        case 0xA7: //Position
+        case 0xA7: // Position
           var timeCode = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
           if (timeCode !== null) {
             this.timeCode = timeCode;
-            //console.warn("timecode seeked to:" + this.timeCode);
           } else {
             return null;
           }
           break;
-        case 0xA0: //Block Group
+        case 0xA0: // Block Group
           if (!this.currentBlockGroup)
             this.currentBlockGroup = new BlockGroup(this.tempElementHeader.getData(), this.dataInterface);
           this.currentBlockGroup.load();
@@ -100,18 +96,18 @@ class Cluster {
           this.blockGroups.push(this.currentTag);
           this.currentBlockGroup = null;
           break;
-        case 0xAB: //PrevSize
+        case 0xAB: // PrevSize
           var prevSize = this.dataInterface.readUnsignedInt(this.tempElementHeader.size);
           if (prevSize !== null)
             this.prevSize = prevSize;
           else
             return null;
           break;
-        //TODO, ADD VOID
+        // TODO, ADD VOID
         default:
           console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
           throw "cluster";
-          //This means we probably are out of the cluster now, double check bounds when end not available
+          // This means we probably are out of the cluster now, double check bounds when end not available
           break;
       }
       this.tempEntry = null;

@@ -26,7 +26,7 @@ class Queue {
   }
 
   shift() {
-    var obj = this.buffer[this.tail];
+    const obj = this.buffer[this.tail];
     this.buffer[this.tail] = null;
     this.length--;
     this.tail = (this.tail + 1) % this.bufferLength;

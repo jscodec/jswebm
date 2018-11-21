@@ -19,21 +19,25 @@ class Seek {
       }
 
       switch (this.currentElement.id) {
-        case 0x53AB: //SeekId
-          var seekId = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (seekId !== null)
+        case 0x53AB: { // SeekId
+          const seekId = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (seekId !== null) {
             this.seekId = seekId;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0x53AC: //SeekPosition 
-          var seekPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (seekPosition !== null)
+        }
+        case 0x53AC: { // SeekPosition 
+          const seekPosition = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (seekPosition !== null) {
             this.seekPosition = seekPosition;
-          else
+          } else {
             return null;
+          }
           break;
-        case 0xbf: //CRC-32
+        }
+        case 0xbf: // CRC-32
           var crc = this.dataInterface.getBinary(this.currentElement.size);
           if (crc !== null)
             crc;

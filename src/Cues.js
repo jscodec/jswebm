@@ -1,10 +1,5 @@
 const CueTrackPositions = require('./CueTrackPositions.js');
 
-/**
- * @classdesc This class keeps track of keyframes for seeking
- * 76514630 - 43 - 8
- */
-
 class Cues {
   constructor(cuesHeader, dataInterface, demuxer) {
     this.dataInterface = dataInterface;
@@ -19,7 +14,7 @@ class Cues {
   }
 
   load() {
-    var end = this.end;
+    const end = this.end;
     while (this.dataInterface.offset < end) {
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
@@ -56,14 +51,10 @@ class Cues {
       //this.tempEntry = null;
     }
 
-
     if (this.dataInterface.offset !== this.end) {
-      console.log(this);
-      throw "INVALID CUE FORMATTING";
+      throw new Error('INVALID CUE FORMATTING');
     }
-
     this.loaded = true;
-    //console.warn(this);
   }
 
   getCount() {
@@ -101,7 +92,6 @@ class Cues {
   findOrPreloadCluster() {
 
   }
-
 }
 
 class CuePoint {
@@ -118,7 +108,7 @@ class CuePoint {
   }
 
   load() {
-    var end = this.end;
+    const end = this.end;
     while (this.dataInterface.offset < end) {
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
@@ -126,15 +116,14 @@ class CuePoint {
           return null;
       }
       switch (this.currentElement.id) {
-        case 0xB7: //Cue Track Positions
+        case 0xB7: // Cue Track Positions
           if (!this.cueTrackPositions)
             this.cueTrackPositions = new CueTrackPositions(this.currentElement, this.dataInterface);
           this.cueTrackPositions.load();
           if (!this.cueTrackPositions.loaded)
             return;
           break;
-
-        case 0xB3: //Cue Time 
+        case 0xB3: // Cue Time 
           var cueTime = this.dataInterface.readUnsignedInt(this.currentElement.size);
           if (cueTime !== null)
             this.cueTime = cueTime;

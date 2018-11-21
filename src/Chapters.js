@@ -1,5 +1,3 @@
-'use strict';
-
 class Chapters {
   constructor(tagsHeader, dataInterface) {
     this.dataInterface = dataInterface;
@@ -13,7 +11,6 @@ class Chapters {
   }
 
   load() {
-
   }
 }
 

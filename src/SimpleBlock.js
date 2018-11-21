@@ -6,7 +6,7 @@ const EBML_LACING = 3;
 
 class SimpleBlock {
   constructor() {
-    this.cluster;// = cluster;
+    this.cluster;
     this.dataInterface;// = dataInterface;
     this.offset;// = blockHeader.offset;
     this.dataOffset;// = blockHeader.dataOffset;
@@ -28,7 +28,7 @@ class SimpleBlock {
     this.track = null;
     this.frameLength = null;
     this.isLaced = false;
-    this.stop = null;// = this.offset + this.size;
+    this.stop = null; // = this.offset + this.size;
     this.status = false;
     this.ebmlLacedSizes = [];
     this.ebmlParsedSizes = [];
@@ -78,15 +78,14 @@ class SimpleBlock {
   }
 
   loadTrack() {
-    //could be cleaner
     this.track = this.trackEntries[this.trackNumber - 1];
   }
 
   load() {
-    //6323
     var dataInterface = this.dataInterface;
-    if (this.loaded)
-      throw "ALREADY LOADED";
+    if (this.loaded) {
+      throw new Error('ALREADY LOADED');
+    }
 
     if (this.trackNumber === null) {
       this.trackNumber = dataInterface.readVint();
@@ -113,11 +112,8 @@ class SimpleBlock {
         throw "INVALID LACING";
     }
 
-
-    //console.warn(this);
     if (!this.headerSize)
       this.headerSize = dataInterface.offset - this.dataOffset;
-
 
     switch (this.lacing) {
       case FIXED_LACING:
@@ -199,8 +195,7 @@ class SimpleBlock {
           this.tempCounter++;
         }
 
-        //Now parse the frame sizes
-
+        // Now parse the frame sizes
         if (!this.ebmlLacedSizesParsed) {
           this.ebmlParsedSizes[0] = this.ebmlLacedSizes[0];
           var total = this.ebmlParsedSizes[0];
@@ -213,8 +208,6 @@ class SimpleBlock {
 
           var lastSize = this.lacedFrameDataSize - total;
           this.ebmlParsedSizes.push(lastSize);
-
-
           this.ebmlLacedSizesParsed = true;
           this.ebmlTotalSize = total + lastSize;
         }
@@ -233,7 +226,6 @@ class SimpleBlock {
         var start = 0;
         var end = this.ebmlParsedSizes[0];
         for (var i = 0; i < this.lacedFrameCount; i++) {
-
           if (this.track.trackType === 1) {
             this.videoPackets.push({//This could be improved
               data: tempFrame.slice(start, end),
@@ -271,11 +263,7 @@ class SimpleBlock {
             throw "INVALID FRAME LENGTH " + this.frameLength;
         }
 
-
-
         var tempFrame = dataInterface.getBinary(this.frameLength);
-
-
         if (tempFrame === null) {
           //if (dataInterface.usingBufferedRead === false)
           //    throw "SHOULD BE BUFFERED READ " + dataInterface.offset;
@@ -297,7 +285,6 @@ class SimpleBlock {
           throw "INVALID TIMESTAMP";
         }
 
-
         if (this.track.trackType === 1) {
           this.videoPackets.push({//This could be improved
             data: tempFrame,
@@ -313,7 +300,6 @@ class SimpleBlock {
         }
 
         tempFrame = null;
-
         break;
       default:
         console.log(this);
@@ -322,9 +308,7 @@ class SimpleBlock {
     }
 
     if (this.end !== dataInterface.offset) {
-
-      console.error(this);
-      throw "INVALID BLOCK SIZE";
+      throw new Error('INVALID BLOCK SIZE');
     }
 
     this.loaded = true;

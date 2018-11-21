@@ -23,11 +23,8 @@ class SeekHead {
         if (this.currentElement === null)
           return null;
       }
-
-
       switch (this.currentElement.id) {
-
-        case 0x4DBB: //Seek
+        case 0x4DBB: // Seek
           if (!this.tempEntry)
             this.tempEntry = new Seek(this.currentElement, this.dataInterface);
           this.tempEntry.load();
@@ -36,38 +33,30 @@ class SeekHead {
           else
             this.entries.push(this.tempEntry);
           break;
-
-        case 0xbf: //CRC-32
+        case 0xbf: // CRC-32
           var crc = this.dataInterface.getBinary(this.currentElement.size);
           if (crc !== null)
             crc;
-          //this.docTypeReadVersion = docTypeReadVersion;
+          // this.docTypeReadVersion = docTypeReadVersion;
           else
             return null;
           break;
-
-        //TODO, ADD VOID
+        // TODO, ADD VOID
         default:
           console.warn("Seek head element not found, skipping : " + this.currentElement.id.toString(16));
           break;
-
       }
-
       this.tempEntry = null;
       this.currentElement = null;
     }
-
 
     if (this.dataInterface.offset !== this.end) {
       console.log(this);
       throw "INVALID SEEKHEAD FORMATTING"
     }
 
-
     this.loaded = true;
   }
-
 }
-
 
 module.exports = SeekHead;
