@@ -27,22 +27,23 @@ class SegmentInfo {
 
       switch (this.currentElement.id) {
         //TODO add duration and title
-        case 0x2AD7B1: //TimeCodeScale
+        case 0x2AD7B1: { // TimeCodeScale
           var timecodeScale = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (timecodeScale !== null)
+          if (timecodeScale !== null) {
             this.timecodeScale = timecodeScale;
-          else
+          } else {
             return null;
+          }
           break;
-
-        case 0x4D80: //Muxing App 
+        }
+        case 0x4D80: // Muxing App 
           var muxingApp = this.dataInterface.readString(this.currentElement.size);
           if (muxingApp !== null)
             this.muxingApp = muxingApp;
           else
             return null;
           break;
-        case 0x5741: //writing App 
+        case 0x5741: // writing App 
           var writingApp = this.dataInterface.readString(this.currentElement.size);
           if (writingApp !== null)
             this.writingApp = writingApp;
@@ -50,15 +51,15 @@ class SegmentInfo {
             return null;
           break;
 
-        case 0x7BA9: //title
+        case 0x7BA9: // title
           var title = this.dataInterface.readString(this.currentElement.size);
           if (title !== null)
             this.title = title;
           else
             return null;
           break;
-        case 0x73A4: //segmentUID
-          //TODO, LOAD THIS AS A BINARY ARRAY, SHOULD BE 128 BIT UNIQUE ID
+        case 0x73A4: // segmentUID
+          // TODO, LOAD THIS AS A BINARY ARRAY, SHOULD BE 128 BIT UNIQUE ID
           var segmentUID = this.dataInterface.readString(this.currentElement.size);
           if (segmentUID !== null)
             this.segmentUID = segmentUID;
@@ -66,7 +67,7 @@ class SegmentInfo {
             return null;
           break;
 
-        case 0x4489: //duration
+        case 0x4489: // duration
           var duration = this.dataInterface.readFloat(this.currentElement.size);
           if (duration !== null)
             this.duration = duration;
@@ -74,7 +75,7 @@ class SegmentInfo {
             return null;
           break;
 
-        case 0x4461: //DateUTC
+        case 0x4461: // DateUTC
           var dateUTC = this.dataInterface.readDate(this.currentElement.size);
           if (dateUTC !== null)
             this.dateUTC = dateUTC;
@@ -82,7 +83,7 @@ class SegmentInfo {
             return null;
           break;
 
-        case 0xbf: //CRC-32
+        case 0xbf: // CRC-32
           var crc = this.dataInterface.getBinary(this.currentElement.size);
           if (crc !== null)
             crc;
@@ -97,13 +98,11 @@ class SegmentInfo {
       this.currentElement = null;
     }
 
-    if (this.dataInterface.offset !== this.end)
-      console.error("Invalid SegmentInfo Formatting");
-
-
+    if (this.dataInterface.offset !== this.end) {
+      throw new Error('Invalid SegmentInfo Formatting');
+    }
     this.loaded = true;
   }
-
 }
 
 module.exports = SegmentInfo;
