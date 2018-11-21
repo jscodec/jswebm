@@ -1,5 +1,3 @@
-'use strict';
-
 const Seek = require('./Seek.js');
 
 class SeekHead {

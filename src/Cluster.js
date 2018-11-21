@@ -1,8 +1,7 @@
-'use strict';
-var UNSET = -1;
-var ElementHeader = require('./ElementHeader.js');
-var SimpleBlock = require('./SimpleBlock.js');
-var BlockGroup = require('./BlockGroup.js');
+const UNSET = -1;
+const ElementHeader = require('./ElementHeader.js');
+const SimpleBlock = require('./SimpleBlock.js');
+const BlockGroup = require('./BlockGroup.js');
 
 class Cluster {
   constructor(offset, size, end, dataOffset, dataInterface, demuxer) {

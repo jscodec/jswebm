@@ -52,23 +52,32 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	const JsWebm = __webpack_require__(2);
-	const CircularJSON = __webpack_require__(19);
+	const CircularJSON = __webpack_require__(22);
 
 	const fileRequest = new XMLHttpRequest();
+
+
+
 	fileRequest.open("GET", "./test/clock.webm", true);
 	fileRequest.responseType = "arraybuffer";
 
 	const runTest = (buffer) => {
-		const demuxer = new JsWebm();
-		demuxer.demux(buffer);
-		document.getElementById('output').innerHTML = CircularJSON.stringify(demuxer, null, 2);
+	  const demuxer = new JsWebm();
+	  demuxer.queueData(buffer);
+	  while (!demuxer.eof) {
+	    demuxer.demux();
+	  }
+	  console.log(demuxer);
+	  console.log(`total video packets : ${demuxer.videoPackets.length}`);
+	  console.log(`total audio packets : ${demuxer.audioPackets.length}`);
+	  document.getElementById('output').innerHTML = CircularJSON.stringify(demuxer, null, 2);
 	};
 
 	fileRequest.onload = (event) => {
-		const arrayBuffer = fileRequest.response;
-		if (arrayBuffer) {
-			runTest(arrayBuffer);
-		}
+	  const arrayBuffer = fileRequest.response;
+	  if (arrayBuffer) {
+	    runTest(arrayBuffer);
+	  }
 	};
 
 	fileRequest.send(null);
@@ -83,10 +92,10 @@
 	const SeekHead = __webpack_require__(6);
 	const SegmentInfo = __webpack_require__(8);
 	const Tracks = __webpack_require__(9);
-	const Cluster = __webpack_require__(10);
-	const Cues = __webpack_require__(13);
+	const Cluster = __webpack_require__(13);
+	const Cues = __webpack_require__(16);
 	const ElementHeader = __webpack_require__(4);
-	const Tags = __webpack_require__(15);
+	const Tags = __webpack_require__(18);
 
 	//States
 	const STATE_INITIAL = 0;
@@ -372,7 +381,7 @@
 	  }
 
 	  demux(data) {
-	    this.queueData(data);
+	    //this.queueData(data);
 	    switch (this.state) {
 	      case STATE_INITIAL:
 	        this.initDemuxer();
@@ -579,7 +588,6 @@
 	        }
 
 	        switch (this.tempElementHeader.id) {
-
 	          case 0x4286: //EBMLVersion
 	            var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
 	            if (version !== null)
@@ -647,14 +655,10 @@
 
 	          default:
 	            console.warn("UNSUPORTED HEADER ELEMENT FOUND, SKIPPING : " + this.tempElementHeader.id.toString(16));
-	            //console.warn("Header element not found, skipping");
 	            break;
-
 	        }
-
 	        this.tempElementHeader.reset();
 	      }
-
 	      this.headerIsLoaded = true;
 	    }
 
@@ -665,9 +669,7 @@
 	    if (!this.currentElement)
 	      return null;
 
-
 	    switch (this.currentElement.id) {
-
 	      case 0x18538067: // Segment
 	        this.segment = this.currentElement;
 	        //this.segmentOffset = segmentOffset;
@@ -680,7 +682,6 @@
 	      default:
 	        console.warn("Global element not found, id: " + this.currentElement.id);
 	    }
-
 
 	    this.currentElement = null;
 	    this.segmentIsLoaded = true;
@@ -719,7 +720,6 @@
 	    this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
 	    this.tempElementHeader.reset();
 
-
 	    this.currentElement = null;
 	    this.currentCluster = null;
 	    this.eof = false;
@@ -733,11 +733,8 @@
 	   */
 	  getKeypointOffset(timeSeconds, callback) {
 	    var offset = this.time(function () {
-
 	      return -1; // not used
-
 	    }.bind(this));
-
 	    callback(offset);
 	  }
 
@@ -827,7 +824,6 @@
 	   * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
 	   */
 	  calculateKeypointOffset() {
-	    var r;
 	    var timecodeScale = this.segmentInfo.timecodeScale;
 	    this.seekTime;
 	    var cuesPoints = this.cues.entries; //cache for faster lookups;
@@ -1648,8 +1644,6 @@
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
-
 	const Seek = __webpack_require__(7);
 
 	class SeekHead {
@@ -1905,6 +1899,8 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	const Seek = __webpack_require__(7);
+	const AudioTrack = __webpack_require__(10);
+	const VideoTrack = __webpack_require__(12);
 
 	class Tracks {
 	  constructor(seekHeadHeader, dataInterface, demuxer) {
@@ -2180,6 +2176,80 @@
 	  }
 	}
 
+	class TrackSettings {
+	  constructor() {
+	    this.offset = -1;
+	    this.size = -1;
+	  }
+	}
+
+	module.exports = Tracks;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	const Track = __webpack_require__(11);
+
+	class AudioTrack extends Track {
+	  constructor(trackHeader, dataInterface) {
+	    super();
+	    this.dataInterface = dataInterface;
+	    this.offset = trackHeader.offset;
+	    this.size = trackHeader.size;
+	    this.end = trackHeader.end;
+	    this.loaded = false;
+	    this.rate = null;
+	    this.channel = null;
+	    this.bitDepth = null;
+	  }
+
+	  load() {
+	    while (this.dataInterface.offset < this.end) {
+	      if (!this.currentElement) {
+	        this.currentElement = this.dataInterface.peekElement();
+	        if (this.currentElement === null) return null;
+	      }
+
+	      switch (this.currentElement.id) {
+	        //TODO add duration and title
+	        case 0xB5: //Sample Frequency //TODO: MAKE FLOAT
+	          var rate = this.dataInterface.readFloat(this.currentElement.size);
+	          if (rate !== null) this.rate = rate;
+	          else
+	            return null;
+	          break;
+	        case 0x9F: //Channels 
+	          var channels = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	          if (channels !== null) this.channels = channels;
+	          else
+	            return null;
+	          break;
+	        case 0x6264: //bitDepth 
+	          var bitDepth = this.dataInterface.readUnsignedInt(this.currentElement.size);
+	          if (bitDepth !== null)
+	            this.bitDepth = bitDepth;
+	          else
+	            return null;
+	          break;
+	        default:
+	          console.warn("Ifno element not found, skipping");
+	          break;
+	      }
+	      this.currentElement = null;
+	    }
+	    this.loaded = true;
+	  }
+	}
+
+	module.exports = AudioTrack;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
 	class Track {
 	  loadMeta(meta) {
 	    for (const key in meta) {
@@ -2187,6 +2257,15 @@
 	    }
 	  }
 	}
+
+	module.exports = Track;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	const Track = __webpack_require__(11);
 
 	class VideoTrack extends Track {
 	  constructor(trackHeader, dataInterface) {
@@ -2294,80 +2373,16 @@
 	  }
 	}
 
-	class AudioTrack extends Track {
-	  constructor(trackHeader, dataInterface) {
-	    super();
-	    this.dataInterface = dataInterface;
-	    this.offset = trackHeader.offset;
-	    this.size = trackHeader.size;
-	    this.end = trackHeader.end;
-	    this.loaded = false;
-	    this.rate = null;
-	    this.channel = null;
-	    this.bitDepth = null;
-	  }
-
-	  load() {
-	    while (this.dataInterface.offset < this.end) {
-	      if (!this.currentElement) {
-	        this.currentElement = this.dataInterface.peekElement();
-	        if (this.currentElement === null)
-	          return null;
-	      }
-
-	      switch (this.currentElement.id) {
-	        //TODO add duration and title
-	        case 0xB5: //Sample Frequency //TODO: MAKE FLOAT
-	          var rate = this.dataInterface.readFloat(this.currentElement.size);
-	          if (rate !== null)
-	            this.rate = rate;
-	          else
-	            return null;
-	          break;
-
-	        case 0x9F: //Channels 
-	          var channels = this.dataInterface.readUnsignedInt(this.currentElement.size);
-	          if (channels !== null)
-	            this.channels = channels;
-	          else
-	            return null;
-	          break;
-	        case 0x6264: //bitDepth 
-	          var bitDepth = this.dataInterface.readUnsignedInt(this.currentElement.size);
-	          if (bitDepth !== null)
-	            this.bitDepth = bitDepth;
-	          else
-	            return null;
-	          break;
-	        default:
-	          console.warn("Ifno element not found, skipping");
-	          break;
-	      }
-	      this.currentElement = null;
-	    }
-	    this.loaded = true;
-	  }
-	}
-
-	class TrackSettings {
-	  constructor() {
-	    this.offset = -1;
-	    this.size = -1;
-	  }
-	}
-
-	module.exports = Tracks;
-
+	module.exports = VideoTrack;
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
-	var UNSET = -1;
-	var ElementHeader = __webpack_require__(4);
-	var SimpleBlock = __webpack_require__(11);
-	var BlockGroup = __webpack_require__(12);
+	const UNSET = -1;
+	const ElementHeader = __webpack_require__(4);
+	const SimpleBlock = __webpack_require__(14);
+	const BlockGroup = __webpack_require__(15);
 
 	class Cluster {
 	  constructor(offset, size, end, dataOffset, dataInterface, demuxer) {
@@ -2493,7 +2508,7 @@
 
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports) {
 
 	
@@ -2837,7 +2852,7 @@
 
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports) {
 
 	class BlockGroup {
@@ -2903,10 +2918,10 @@
 
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	const CueTrackPositions = __webpack_require__(14);
+	const CueTrackPositions = __webpack_require__(17);
 
 	/**
 	 * @classdesc This class keeps track of keyframes for seeking
@@ -3063,7 +3078,7 @@
 
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports) {
 
 	class CueTrackPositions {
@@ -3125,10 +3140,10 @@
 
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	const Tag = __webpack_require__(16);
+	const Tag = __webpack_require__(19);
 
 	class Tags {
 	  constructor(tagsHeader, dataInterface) {
@@ -3191,11 +3206,11 @@
 
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	const Targets = __webpack_require__(17);
-	const SimpleTag = __webpack_require__(18);
+	const Targets = __webpack_require__(20);
+	const SimpleTag = __webpack_require__(21);
 
 	class Tag {
 	  constructor(tagHeader, dataInterface, demuxer) {
@@ -3268,7 +3283,7 @@
 
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports) {
 
 	class Targets {
@@ -3289,23 +3304,21 @@
 	    while (this.dataInterface.offset < this.end) {
 	      if (!this.currentElement) {
 	        this.currentElement = this.dataInterface.peekElement();
-	        if (this.currentElement === null)
-	          return null;
+	        if (this.currentElement === null) return null;
 	      }
 	      switch (this.currentElement.id) {
-	        case 0x63C5: //tagTrackUID 
+	        case 0x63C5: // tagTrackUID
 	          var tagTrackUID = this.dataInterface.readUnsignedInt(this.currentElement.size);
-	          if (tagTrackUID !== null)
-	            this.tagTrackUID = tagTrackUID;
+	          if (tagTrackUID !== null) this.tagTrackUID = tagTrackUID;
 	          else
 	            return null;
 	          break;
 	        default:
-	          if (!this.dataInterface.peekBytes(this.currentElement.size))
+	          if (!this.dataInterface.peekBytes(this.currentElement.size)) {
 	            return false;
-	          else
+	          } else {
 	            this.dataInterface.skipBytes(this.currentElement.size);
-
+	          }
 	          console.warn("targets element not found ! : " + this.currentElement.id.toString(16));
 	          break;
 	      }
@@ -3313,7 +3326,7 @@
 	    }
 
 	    if (this.dataInterface.offset !== this.end)
-	      console.error("Invalid Targets Formatting");
+	      console.error('Invalid Targets Formatting');
 	    this.loaded = true;
 	  }
 	}
@@ -3322,7 +3335,7 @@
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports) {
 
 	class SimpleTag {
@@ -3384,7 +3397,7 @@
 
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports) {
 
 	/*!

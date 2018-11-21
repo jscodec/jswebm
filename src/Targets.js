@@ -16,23 +16,21 @@ class Targets {
     while (this.dataInterface.offset < this.end) {
       if (!this.currentElement) {
         this.currentElement = this.dataInterface.peekElement();
-        if (this.currentElement === null)
-          return null;
+        if (this.currentElement === null) return null;
       }
       switch (this.currentElement.id) {
-        case 0x63C5: //tagTrackUID 
+        case 0x63C5: // tagTrackUID
           var tagTrackUID = this.dataInterface.readUnsignedInt(this.currentElement.size);
-          if (tagTrackUID !== null)
-            this.tagTrackUID = tagTrackUID;
+          if (tagTrackUID !== null) this.tagTrackUID = tagTrackUID;
           else
             return null;
           break;
         default:
-          if (!this.dataInterface.peekBytes(this.currentElement.size))
+          if (!this.dataInterface.peekBytes(this.currentElement.size)) {
             return false;
-          else
+          } else {
             this.dataInterface.skipBytes(this.currentElement.size);
-
+          }
           console.warn("targets element not found ! : " + this.currentElement.id.toString(16));
           break;
       }
@@ -40,7 +38,7 @@ class Targets {
     }
 
     if (this.dataInterface.offset !== this.end)
-      console.error("Invalid Targets Formatting");
+      console.error('Invalid Targets Formatting');
     this.loaded = true;
   }
 }

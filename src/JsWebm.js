@@ -293,7 +293,7 @@ class JsWebm {
   }
 
   demux(data) {
-    this.queueData(data);
+    //this.queueData(data);
     switch (this.state) {
       case STATE_INITIAL:
         this.initDemuxer();
@@ -500,7 +500,6 @@ class JsWebm {
         }
 
         switch (this.tempElementHeader.id) {
-
           case 0x4286: //EBMLVersion
             var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
             if (version !== null)
@@ -568,14 +567,10 @@ class JsWebm {
 
           default:
             console.warn("UNSUPORTED HEADER ELEMENT FOUND, SKIPPING : " + this.tempElementHeader.id.toString(16));
-            //console.warn("Header element not found, skipping");
             break;
-
         }
-
         this.tempElementHeader.reset();
       }
-
       this.headerIsLoaded = true;
     }
 
@@ -586,9 +581,7 @@ class JsWebm {
     if (!this.currentElement)
       return null;
 
-
     switch (this.currentElement.id) {
-
       case 0x18538067: // Segment
         this.segment = this.currentElement;
         //this.segmentOffset = segmentOffset;
@@ -601,7 +594,6 @@ class JsWebm {
       default:
         console.warn("Global element not found, id: " + this.currentElement.id);
     }
-
 
     this.currentElement = null;
     this.segmentIsLoaded = true;
@@ -640,7 +632,6 @@ class JsWebm {
     this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
     this.tempElementHeader.reset();
 
-
     this.currentElement = null;
     this.currentCluster = null;
     this.eof = false;
@@ -654,11 +645,8 @@ class JsWebm {
    */
   getKeypointOffset(timeSeconds, callback) {
     var offset = this.time(function () {
-
       return -1; // not used
-
     }.bind(this));
-
     callback(offset);
   }
 
@@ -748,7 +736,6 @@ class JsWebm {
    * Get the offset based off the seconds, probably use binary search and have to parse the keypoints to numbers
    */
   calculateKeypointOffset() {
-    var r;
     var timecodeScale = this.segmentInfo.timecodeScale;
     this.seekTime;
     var cuesPoints = this.cues.entries; //cache for faster lookups;
