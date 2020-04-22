@@ -103,6 +103,13 @@ class Cluster {
           else
             return null;
           break;
+        case 0xBF: // CRC-32
+          var crc = this.dataInterface.getBinary(this.tempElementHeader.size);
+          if (crc !== null)
+            crc;
+          else
+            return null;
+          break;
         // TODO, ADD VOID
         default:
           console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
