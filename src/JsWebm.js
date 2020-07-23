@@ -17,13 +17,6 @@ const META_LOADED = 3;
 const STATE_FINISHED = 4;
 const EXIT_OK = 666;
 
-let getTimestamp;
-if (typeof performance === 'undefined' || typeof performance.now === 'undefined') {
-  getTimestamp = Date.now;
-} else {
-  getTimestamp = performance.now.bind(performance);
-}
-
 /**
  * @classdesc Wrapper class to handle webm demuxing
  */
@@ -134,18 +127,6 @@ class JsWebm {
         }
       }
     });
-  }
-
-  /**
-   * Times a function call
-   */
-  time(func) {
-    var start = getTimestamp(),
-      ret;
-    ret = func();
-    var delta = (getTimestamp() - start);
-    this.cpuTime += delta;
-    return ret;
   }
 
   /**
@@ -573,43 +554,6 @@ class JsWebm {
     this.currentCluster = null;
     this.eof = false;
     //Note: was wrapped in a time function but the callback doesnt seem to take that param
-  }
-
-  /**
-   * Depreciated, don't use!
-   * @param {number} timeSeconds
-   * @param {function} callback
-   */
-  getKeypointOffset(timeSeconds, callback) {
-    var offset = this.time(function () {
-      return -1; // not used
-    }.bind(this));
-    callback(offset);
-  }
-
-  /*
-   * @param {number} timeSeconds seconds to jump to
-   * @param {function} callback 
-   */
-  seekToKeypoint(timeSeconds, callback) {
-    this.state = STATE_SEEKING;
-    console.warn("SEEK BEING CALLED");
-    var ret = this.time(function () {
-      var status;
-      this.seekTime = timeSeconds * 1000000000;
-      if (this.hasVideo) {
-        this.seekTrack = this.videoTrack;
-      } else if (this.hasAudio) {
-        this.seekTrack = this.audioTrack;
-      } else {
-        return 0;
-      }
-      this.processSeeking();
-      return 1;
-    }.bind(this));
-    this.audioPackets = [];
-    this.videoPackets = [];
-    callback(!!ret);
   }
 
   processSeeking() {
