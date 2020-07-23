@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@babel/preset-env": "^7.0.0-beta.42",
-    "circular-json": "^0.5.1"
+    "circular-json": "^0.5.1",
+    "lodash": "4.17.19"
   }
 }
