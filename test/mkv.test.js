@@ -12,7 +12,22 @@ const runTestFile = i => {
   return demuxer;
 };
 
-test('Test first test file', () => {
+test('test1.mkv', () => {
   const demuxer = runTestFile(1);
+  expect(demuxer.docType).toBe('matroska');
+});
+
+test('test2.mkv', () => {
+  const demuxer = runTestFile(2);
+  expect(demuxer.docType).toBe('matroska');
+});
+
+test('test3.mkv', () => {
+  const demuxer = runTestFile(3);
+  expect(demuxer.docType).toBe('matroska');
+});
+
+test('test6.mkv', () => {
+  const demuxer = runTestFile(6);
   expect(demuxer.docType).toBe('matroska');
 });

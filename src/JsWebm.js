@@ -36,7 +36,7 @@ class JsWebm {
     this.videoPackets = [];
     this.audioPackets = [];
     this.loadedMetadata = false;
-    this.seekable = true;//keep false until seek is finished
+    this.seekable = true; //keep false until seek is finished
     this.dataInterface = new DataInterface(this);
     this.segment = null;
     this.currentElement = null; // placeholder for last element
@@ -134,24 +134,6 @@ class JsWebm {
         }
       }
     });
-
-    Object.defineProperty(this, 'nextKeyframeTimestamp', {
-      get: function () {
-
-        /*
-        for (var i = 0; i < this.videoPackets.length; i++) {
-            var packet = this.videoPackets[i];
-            if (packet.isKeyframe) {
-                console.warn(packet.timestamp);
-                return packet.timestamp;
-            }
-        }*/
-        //console.warn(this);
-        return -1;
-      }
-    });
-
-    console.log('%c JSWEBM DEMUXER LOADED', 'background: #F27127; color:  #2a2a2a');
   }
 
   /**
@@ -163,7 +145,6 @@ class JsWebm {
     ret = func();
     var delta = (getTimestamp() - start);
     this.cpuTime += delta;
-    //console.log('demux time ' + delta);
     return ret;
   }
 
@@ -318,57 +299,6 @@ class JsWebm {
       default:
       //fill this out
     }
-  }
-
-  process(callback) {
-    var result;
-    //console.warn("Processing at : " + this.dataInterface.offset);
-    if (this.dataInterface.currentBuffer === null && this.state !== STATE_SEEKING) {
-
-      console.error("Read with no Buffer " + this.dataInterface.offset);
-      //throw("wrong " + this.dataInterface.offset);
-      result = 0;
-      //console.warn(!!result);
-      callback(!!result);
-      return;
-    }
-
-    //console.warn("Process called");
-    var start = getTimestamp();
-    var status = false;
-    switch (this.state) {
-      case STATE_INITIAL:
-        this.initDemuxer();
-        if (this.state !== STATE_DECODING)
-          break;
-      case STATE_DECODING:
-        status = this.load();
-        //if (this.state !== STATE_FINISHED)
-        break;
-      case STATE_SEEKING:
-        console.warn("Seek processing");
-        status = this.processSeeking();
-        //if (this.state !== META_LOADED)
-        break;
-      default:
-        throw "state got wrecked";
-      //fill this out
-    }
-
-    //this.processing = false;
-    var delta = (getTimestamp() - start);
-    this.cpuTime += delta;
-
-    //return status;
-    if (status === 1 || status === true) {
-      result = 1;
-    } else {
-      result = 0;
-    }
-
-    if (!this.dataInterface.currentBuffer)
-      result = 0;
-    callback(!!result);
   }
 
   /**
@@ -632,7 +562,6 @@ class JsWebm {
   }
 
   _flush() {
-    //console.log("flushing demuxer buffer private");
     this.audioPackets = [];
     this.videoPackets = [];
     this.dataInterface.flush();
