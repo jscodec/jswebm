@@ -308,11 +308,11 @@ class JsWebm {
         if (this.state !== STATE_DECODING)
           break;
       case STATE_DECODING:
-        status = this.load();
+        this.load();
         //if (this.state !== STATE_FINISHED)
         break;
       case STATE_SEEKING:
-        status = this.processSeeking();
+        this.processSeeking();
         //if (this.state !== META_LOADED)
         break;
       default:

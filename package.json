@@ -8,8 +8,7 @@
     "jsvpx"
   ],
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "test": "npx babel-node test/validate.js",
+    "test": "jest test/",
     "lint": "eslint src"
   },
   "author": "Brian Parra",
@@ -29,6 +28,7 @@
     "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.2.0",
+    "jest": "^26.1.0",
     "ogv": "^1.3.1",
     "webpack": "^1.15.0"
   },
