@@ -198,6 +198,10 @@ class JsWebm {
         this.audioCodec = "opus";
         this.initOpusHeaders(tempTrack);
         break;
+      case "A_AAC":
+        this.audioCodec = "aac";
+        this.initAacHeaders(tempTrack);
+        break;
       default:
         this.audioCodec = null;
         break;
@@ -217,7 +221,7 @@ class JsWebm {
       case "V_VP8":
         this.videoCodec = "vp8";
         break;
-      case "V_VP8":
+      case "V_VP9":
         this.videoCodec = "vp9";
         break;
       default:
@@ -280,6 +284,10 @@ class JsWebm {
     });
 
     //trackEntry.codecPrivate = null; //won't need it anymore
+    this.audioTrack = trackEntry;
+  }
+
+  initAacHeaders(trackEntry) {
     this.audioTrack = trackEntry;
   }
 

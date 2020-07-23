@@ -102,7 +102,8 @@ class VideoTrack extends Track {
           break;
         }
         case 0x55B0: { // Color
-          throw new Error('COLOR NOT IMPLEMENTED');
+          const colours = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          break;
         }
         default:
           console.warn(`Info element not found, skipping: ${this.currentElement.id.toString(16)}`);
