@@ -113,7 +113,6 @@ class Cluster {
         // TODO, ADD VOID
         default:
           console.warn("cluster data element not found, skipping : " + this.tempElementHeader.id.toString(16));
-          throw "cluster";
           // This means we probably are out of the cluster now, double check bounds when end not available
           break;
       }

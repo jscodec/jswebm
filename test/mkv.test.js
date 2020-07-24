@@ -15,6 +15,7 @@ const runTestFile = i => {
 test('test1.mkv', () => {
   const demuxer = runTestFile(1);
   expect(demuxer.docType).toBe('matroska');
+  expect(demuxer.audioPackets.length).toBe(3639);
 });
 
 test('test2.mkv', () => {
@@ -25,7 +26,7 @@ test('test2.mkv', () => {
 test('test3.mkv', () => {
   const demuxer = runTestFile(3);
   expect(demuxer.docType).toBe('matroska');
-});7
+}); 7
 
 test('test5.mkv', () => {
   const demuxer = runTestFile(5);
@@ -37,10 +38,10 @@ test('test6.mkv', () => {
   expect(demuxer.docType).toBe('matroska');
 });
 
-// test('test7.mkv', () => {
-//   const demuxer = runTestFile(7);
-//   expect(demuxer.docType).toBe('matroska');
-// });
+test('test7.mkv', () => {
+  const demuxer = runTestFile(7);
+  expect(demuxer.docType).toBe('matroska');
+});
 
 test('test8.mkv', () => {
   const demuxer = runTestFile(8);
