@@ -66,64 +66,12 @@ class JsWebm {
       }
     });
 
-    Object.defineProperty(this, 'frameReady', {
-      get: function () {
-        return this.videoPackets.length > 0;
-      }
-    });
-
-    Object.defineProperty(this, 'hasAudio', {
-      get: function () {
-        if (this.loadedMetadata && this.audioCodec) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    });
-
-    Object.defineProperty(this, 'audioReady', {
-      get: function () {
-        return this.audioPackets.length > 0;
-      }
-    });
-
-    Object.defineProperty(this, 'audioTimestamp', {
-      get: function () {
-        if (this.audioPackets.length > 0) {
-          return this.audioPackets[0].timestamp;
-        } else {
-          return -1;
-        }
-      }
-    });
-
-    Object.defineProperty(this, 'frameTimestamp', {
-      get: function () {
-        if (this.videoPackets.length > 0) {
-          return this.videoPackets[0].timestamp;
-        } else {
-          return -1;
-        }
-      }
-    });
-
     Object.defineProperty(this, 'keyframeTimestamp', {
       get: function () {
         if (this.videoPackets.length > 0) {
           return this.videoPackets[0].keyframeTimestamp;
         } else {
           return -1;
-        }
-      }
-    });
-
-    Object.defineProperty(this, 'hasVideo', {
-      get: function () {
-        if (this.loadedMetadata && this.videoCodec) {
-          return true;
-        } else {
-          return false;
         }
       }
     });
@@ -358,22 +306,13 @@ class JsWebm {
               this.dataInterface,
               this
             );
-
           }
-
-
           status = this.currentCluster.load();
           if (!this.currentCluster.loaded) {
             return status;
           }
-
-
-
           this.currentCluster = null;
           break;
-
-
-
         default:
           this.state = META_LOADED;//testing
           var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
@@ -396,7 +335,6 @@ class JsWebm {
   initDemuxer() {
     //Header is small so we can read the whole thing in one pass or just wait for more data if necessary
     var dataInterface = this.dataInterface; //cache dataInterface reference
-
     if (!this.headerIsLoaded) {
       //only load it if we didnt already load it
       if (!this.elementEBML) {
@@ -417,7 +355,6 @@ class JsWebm {
           if (!this.tempElementHeader.status)
             return null;
         }
-
         switch (this.tempElementHeader.id) {
           case 0x4286: //EBMLVersion
             var version = dataInterface.readUnsignedInt(this.tempElementHeader.size);
@@ -426,7 +363,6 @@ class JsWebm {
             else
               return null;
             break;
-
           case 0x42F7: //EBMLReadVersion 
             var readVersion = dataInterface.readUnsignedInt(this.tempElementHeader.size);
             if (readVersion !== null)
@@ -519,15 +455,6 @@ class JsWebm {
     this.state = STATE_DECODING;
   }
 
-  dequeueAudioPacket(callback) {
-    if (this.audioPackets.length > 0) {
-      var packet = this.audioPackets.shift().data;
-      callback(packet);
-    } else {
-      callback(null);
-    }
-  }
-
   /**
    * Dequeue and return a packet off the video queue
    * @param {function} callback after packet removal complete
@@ -553,11 +480,9 @@ class JsWebm {
     this.currentElement = null;
     this.currentCluster = null;
     this.eof = false;
-    //Note: was wrapped in a time function but the callback doesnt seem to take that param
   }
 
   processSeeking() {
-    //console.warn("process seek");
     //Have to load cues if not available
     if (!this.cuesLoaded) {
       //throw "cues not loaded";

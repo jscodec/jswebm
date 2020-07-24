@@ -21,6 +21,7 @@ test('test1.mkv', () => {
 test('test2.mkv', () => {
   const demuxer = runTestFile(2);
   expect(demuxer.docType).toBe('matroska');
+  expect(demuxer.audioCodec).toBe('aac');
 });
 
 test('test3.mkv', () => {
