@@ -36,6 +36,18 @@ class SimpleTag {
           else
             return null;
           break;
+        case 0x4484: // Tag Default
+          var tagDefault = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (tagDefault !== null) this.tagDefault = tagDefault;
+          else
+            return null;
+          break;
+        case 0x447A: // Tag Language
+          var tagLanguage = this.dataInterface.readSignedInt(this.currentElement.size);
+          if (tagLanguage !== null) this.tagLanguage = tagLanguage;
+          else
+            return null;
+          break;
         default:
           if (!this.dataInterface.peekBytes(this.currentElement.size))
             return false;

@@ -1,6 +1,7 @@
 const Seek = require('./Seek.js');
 const AudioTrack = require('./AudioTrack.js');
 const VideoTrack = require('./VideoTrack.js');
+const Track = require('./Track.js');
 
 class Tracks {
   constructor(seekHeadHeader, dataInterface, demuxer) {
@@ -276,6 +277,7 @@ class TrackLoader {
   }
 
   getTrackEntry() {
+    this.tempTrack = this.tempTrack || new Track();
     this.tempTrack.loadMeta(this.trackData);
     var tempTrack = this.tempTrack;
     this.tempTrack = null;

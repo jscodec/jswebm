@@ -25,9 +25,24 @@ test('test2.mkv', () => {
 test('test3.mkv', () => {
   const demuxer = runTestFile(3);
   expect(demuxer.docType).toBe('matroska');
+});7
+
+test('test5.mkv', () => {
+  const demuxer = runTestFile(5);
+  expect(demuxer.docType).toBe('matroska');
 });
 
 test('test6.mkv', () => {
   const demuxer = runTestFile(6);
+  expect(demuxer.docType).toBe('matroska');
+});
+
+// test('test7.mkv', () => {
+//   const demuxer = runTestFile(7);
+//   expect(demuxer.docType).toBe('matroska');
+// });
+
+test('test8.mkv', () => {
+  const demuxer = runTestFile(8);
   expect(demuxer.docType).toBe('matroska');
 });

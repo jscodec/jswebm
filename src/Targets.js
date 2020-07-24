@@ -25,6 +25,12 @@ class Targets {
           else
             return null;
           break;
+        case 0x68CA: // TargetTypeValue
+          var targetTypeValue = this.dataInterface.readUnsignedInt(this.currentElement.size);
+          if (targetTypeValue !== null) this.targetTypeValue = targetTypeValue;
+          else
+            return null;
+          break;
         default:
           if (!this.dataInterface.peekBytes(this.currentElement.size)) {
             return false;

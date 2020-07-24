@@ -262,8 +262,7 @@ class JsWebm {
     this.dataInterface.recieveInput(data);
   }
 
-  demux(data) {
-    //this.queueData(data);
+  demux() {
     switch (this.state) {
       case STATE_INITIAL:
         this.initDemuxer();
@@ -278,6 +277,7 @@ class JsWebm {
         //if (this.state !== META_LOADED)
         break;
       default:
+        console.warn('INVALID STATE');
       //fill this out
     }
   }
