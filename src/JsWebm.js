@@ -1,5 +1,3 @@
-'use strict';
-
 const DataInterface = require('./DataInterface/DataInterface.js');
 const SeekHead = require('./SeekHead.js');
 const SegmentInfo = require('./SegmentInfo.js');
@@ -98,7 +96,6 @@ class JsWebm {
       }
     }
     this.audioTrack = tempTrack;
-    var codecName;
     switch (codecID) {
       case "A_VORBIS":
         this.audioCodec = "vorbis";
@@ -139,7 +136,7 @@ class JsWebm {
     }
 
     this.videoTrack = tempTrack;
-    var fps = 0;//For now?
+    var fps = 0; // For now?
     this.videoFormat = {
       width: tempTrack.width,
       height: tempTrack.height,
@@ -171,20 +168,20 @@ class JsWebm {
     var start = 3;
     var end = start + firstLength;
 
-    this.audioPackets.push({//This could be improved
+    this.audioPackets.push({
       data: headerParser.buffer.slice(start, end),
       timestamp: -1
     });
     start = end;
     end = start + secondLength;
 
-    this.audioPackets.push({//This could be improved
+    this.audioPackets.push({
       data: headerParser.buffer.slice(start, end),
       timestamp: -1
     });
     start = end;
     end = start + thirdLength;
-    this.audioPackets.push({//This could be improved
+    this.audioPackets.push({
       data: headerParser.buffer.slice(start, end),
       timestamp: -1
     });
@@ -304,11 +301,10 @@ class JsWebm {
           this.currentCluster = null;
           break;
         default:
-          this.state = META_LOADED;//testing
+          this.state = META_LOADED;
           var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
           if (skipped === false)
             return;
-
           console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : " + this.tempElementHeader.id.toString(16));
           break;
       }
@@ -464,7 +460,6 @@ class JsWebm {
     //this.tempElementHeader.reset();
     this.tempElementHeader = new ElementHeader(-1, -1, -1, -1);
     this.tempElementHeader.reset();
-
     this.currentElement = null;
     this.currentCluster = null;
     this.eof = false;

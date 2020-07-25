@@ -14,7 +14,7 @@ class Tracks {
     this.loaded = false;
     this.tempEntry = null;
     this.currentElement = null;
-    this.trackLoader = new TrackLoader();
+    this.trackLoader = null;
   }
 
   load() {
@@ -26,13 +26,15 @@ class Tracks {
       }
       switch (this.currentElement.id) {
         case 0xAE: //Track Entry
-          if (!this.trackLoader.loading)
-            this.trackLoader.init(this.currentElement, this.dataInterface);
+          if (!this.trackLoader)
+            this.trackLoader = new TrackLoader(this.currentElement, this.dataInterface);
           this.trackLoader.load();
           if (!this.trackLoader.loaded)
             return;
-          else
+          else {
             var trackEntry = this.trackLoader.getTrackEntry();
+            this.trackLoader = null;
+          }
           this.trackEntries.push(trackEntry);
           break;
         case 0xbf: //CRC-32
@@ -49,7 +51,6 @@ class Tracks {
       }
       this.currentElement = null;
     }
-
     this.loaded = true;
   }
 
@@ -66,35 +67,14 @@ class Tracks {
  * level data plus the track container which can be either audio video, content encodings, and maybe subtitles.
  */
 class TrackLoader {
-  constructor() {
-    this.dataInterface = null;
-    this.offset = null;
-    this.size = null;
-    this.end = null;
-    this.loaded = false;
-    this.loading = false;
-    this.trackData = {};
-    this.trackData.trackNumber = null;
-    this.trackData.trackType = null;
-    this.trackData.name = null;
-    this.trackData.codecName = null;
-    this.trackData.defaultDuration = null;
-    this.trackData.codecID = null;
-    this.trackData.lacing = null;
-    this.trackData.codecPrivate = null;
-    this.trackData.codecDelay = null;
-    this.trackData.seekPreRoll = null;
-    this.tempTrack = null;
-    this.minCache = null;
-  }
-
-  init(trackheader, dataInterface) {
+  constructor(trackheader, dataInterface) {
     this.dataInterface = dataInterface;
     this.offset = trackheader.offset;
     this.size = trackheader.size;
     this.end = trackheader.end;
     this.loaded = false;
     this.loading = true;
+    this.trackData = {};
     this.trackData.trackNumber = null;
     this.trackData.trackType = null;
     this.trackData.name = null;
@@ -283,13 +263,6 @@ class TrackLoader {
     this.tempTrack = null;
     this.loading = false;
     return tempTrack;
-  }
-}
-
-class TrackSettings {
-  constructor() {
-    this.offset = -1;
-    this.size = -1;
   }
 }
 

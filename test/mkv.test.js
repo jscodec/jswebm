@@ -16,6 +16,7 @@ test('test1.mkv', () => {
   const demuxer = runTestFile(1);
   expect(demuxer.docType).toBe('matroska');
   expect(demuxer.audioPackets.length).toBe(3639);
+  expect(demuxer.tracks.trackEntries.length).toBe(2);
 });
 
 test('test2.mkv', () => {
