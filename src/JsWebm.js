@@ -117,7 +117,6 @@ class JsWebm {
         break;
     }
 
-
     for (var i in this.tracks.trackEntries) {
       var trackEntry = this.tracks.trackEntries[i];
       if (trackEntry.trackType === 1) { // video track
@@ -139,7 +138,6 @@ class JsWebm {
         break;
     }
 
-
     this.videoTrack = tempTrack;
     var fps = 0;//For now?
     this.videoFormat = {
@@ -155,7 +153,6 @@ class JsWebm {
       displayHeight: tempTrack.displayHeight,
       fps: fps
     };
-
     this.loadedMetadata = true;
   }
 
@@ -171,7 +168,6 @@ class JsWebm {
     var thirdLength = headerParser.byteLength - firstLength - secondLength - 1;
     if (packetCount !== 2)
       throw "INVALID VORBIS HEADER";
-    //throw "last length  = " + thirdLength;
     var start = 3;
     var end = start + firstLength;
 
@@ -192,8 +188,6 @@ class JsWebm {
       data: headerParser.buffer.slice(start, end),
       timestamp: -1
     });
-
-    //trackEntry.codecPrivate = null; //won't need it anymore
     this.audioTrack = trackEntry;
   }
 
@@ -243,7 +237,6 @@ class JsWebm {
           return null;
       }
       switch (this.tempElementHeader.id) {
-
         case 0x114D9B74: //Seek Head
           if (!this.seekHead)
             this.seekHead = new SeekHead(this.tempElementHeader.getData(), this.dataInterface);
@@ -251,14 +244,11 @@ class JsWebm {
           if (!this.seekHead.loaded)
             return false;
           break;
-
         case 0xEC: //VOid
           var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
           if (skipped === false)
             return;
-
           break;
-
         case 0x1549A966: //Info
           if (!this.segmentInfo)
             this.segmentInfo = new SegmentInfo(this.tempElementHeader.getData(), this.dataInterface);
@@ -321,9 +311,7 @@ class JsWebm {
 
           console.log("UNSUPORTED ELEMENT FOUND, SKIPPING : " + this.tempElementHeader.id.toString(16));
           break;
-
       }
-
       this.tempElementHeader.reset();
     }
 
