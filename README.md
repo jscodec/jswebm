@@ -7,6 +7,8 @@ Better examples and reworked api coming soon.
 Top Level wrapper and interface.
 * `videoPackets` : Array of demuxed video packets
 * `audioPackets` : Array of demuxed audio packets
+* `docType` : Document type
+* `audioCodec` : Audio codec for the audio track
 *  `eof` : Boolean, if the end of the file has been reached
 ### Functions
 * `queueData(buffer)` : queue an incoming chunck of data, must be sequential
@@ -36,14 +38,7 @@ console.log(`total audio packets : ${demuxer.audioPackets.length}`);
 # Webm Demuxer
 Running the demo
 `npm install`
-`node test/example.js`
-Then put your example file in the test folder, then in customFileExample.js, put the file name there.
-
-`fileRequest.open("GET", "PUT YOUR SAMPLE FILE HERE", true);`
-
-It will print the demuxer state to the console after processing it.
-
-Will be updating the demo this week and the readme since the api is totally out of date. Will take suggestions on api. Any help is welcome, project needs a lot of maintenance.
+`npm run test`
 
 ## Change Log
 * V0.0.3
@@ -61,8 +56,8 @@ ie: the elements can be arbitrarily broken up across one ore more incoming buffe
 __Main goal__ : To parse the incoming buffers without unnecessary rewrites. The only write will be the time the final frame buffer is made which will be sent off to the decoders.
 
 ### DataInterface Class
-* `receiveInput(data)` receives arrayBuffer chunks of arbitrary length, adds to queue
-* `process(data:ArrayBuffer)` is called from main loop
+* `queueData(data)` receives arrayBuffer chunks of arbitrary length, adds to queue
+* `demux()` is called from main loop
     * Parse as much as possible then exit.
     * Must pick up parsing where it left off.
     * Not possible to know if enough data available to parse.
