@@ -423,7 +423,6 @@ class JsWebm {
     switch (this.currentElement.id) {
       case 0x18538067: // Segment
         this.segment = this.currentElement;
-        //this.segmentOffset = segmentOffset;
         break;
       case 0xEC: // void
         var skipped = this.dataInterface.skipBytes(this.tempElementHeader.size);
@@ -437,20 +436,6 @@ class JsWebm {
     this.currentElement = null;
     this.segmentIsLoaded = true;
     this.state = STATE_DECODING;
-  }
-
-  /**
-   * Dequeue and return a packet off the video queue
-   * @param {function} callback after packet removal complete
-   */
-  dequeueVideoPacket(callback) {
-    if (this.videoPackets.length > 0) {
-      var packet = this.videoPackets.shift().data;
-      //console.warn("dequeing packet size: " + packet.byteLength);
-      callback(packet);
-    } else {
-      callback(null);
-    }
   }
 
   _flush() {
