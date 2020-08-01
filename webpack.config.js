@@ -5,7 +5,7 @@ module.exports = {
   mode: 'production',
   output: {
     library: 'JsWebm',
-    libraryTarget: 'commonjs',
+    libraryTarget: 'commonjs2',
     path: path.resolve(__dirname, 'dist'),
     filename: 'JsWebm.js'
   }
