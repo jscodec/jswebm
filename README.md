@@ -1,6 +1,10 @@
 # Webm Demuxer
 A javascript implementation of the Webm Demuxer (matroska). View a demo of a dumux result [here](https://jscodec.github.io/jswebm/)
 Better examples and reworked api coming soon.
+
+live demo: https://jscodec.github.io/jswebm-demo/
+https://github.com/jscodec/jswebm-demo
+
 # API Proposal
 ## JsWebm
 ### Properties
