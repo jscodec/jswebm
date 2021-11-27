@@ -16,7 +16,7 @@ class SimpleBlock {
     this.trackNumber = null;
     this.timeCode = -1;
     this.flags = null;
-    this.keyframe = false;
+    this.keyFrame = false;
     this.invisible = false;
     this.lacing = NO_LACING;
     this.discardable = false;
@@ -46,7 +46,7 @@ class SimpleBlock {
     this.trackNumber = null;
     this.timeCode = null;
     this.flags = null;
-    this.keyframe = false;
+    this.keyFrame = false;
     this.invisible = false;
     this.lacing = NO_LACING;
     this.discardable = false;
@@ -105,7 +105,7 @@ class SimpleBlock {
       if (this.flags === null)
         return null;
 
-      this.keyframe = (((this.flags >> 7) & 0x01) === 0) ? false : true;
+      this.keyFrame = (((this.flags >> 7) & 0x01) === 0) ? false : true;
       this.invisible = (((this.flags >> 2) & 0x01) === 0) ? true : false;
       this.lacing = ((this.flags & 0x06) >> 1);
       if (this.lacing > 3 || this.lacing < 0)
