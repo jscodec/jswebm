@@ -1,7 +1,7 @@
 const UNSET = -1;
-const ElementHeader = require('./ElementHeader.js');
-const SimpleBlock = require('./SimpleBlock.js');
-const BlockGroup = require('./BlockGroup.js');
+const ElementHeader = require('./ElementHeader');
+const SimpleBlock = require('./SimpleBlock');
+const BlockGroup = require('./BlockGroup');
 
 class Cluster {
   constructor(offset, size, end, dataOffset, dataInterface, demuxer) {

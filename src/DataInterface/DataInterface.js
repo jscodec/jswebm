@@ -1,7 +1,7 @@
 var INITIAL_COUNTER = -1;
 
-const ElementHeader = require('../ElementHeader.js');
-const DateParser = require('./DateParser.js');
+const ElementHeader = require('../ElementHeader');
+const DateParser = require('./DateParser');
 
 class DataInterface {
   constructor(demuxer) {

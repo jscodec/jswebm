@@ -1,11 +1,11 @@
-const DataInterface = require('./DataInterface/DataInterface.js');
-const SeekHead = require('./SeekHead.js');
-const SegmentInfo = require('./SegmentInfo.js');
-const Tracks = require('./Tracks.js');
-const Cluster = require('./Cluster.js');
-const Cues = require('./Cues.js');
-const ElementHeader = require('./ElementHeader.js');
-const Tags = require('./Tags.js');
+const DataInterface = require('./DataInterface/DataInterface');
+const SeekHead = require('./SeekHead');
+const SegmentInfo = require('./SegmentInfo');
+const Tracks = require('./Tracks');
+const Cluster = require('./Cluster');
+const Cues = require('./Cues');
+const ElementHeader = require('./ElementHeader');
+const Tags = require('./Tags');
 
 //States
 const STATE_INITIAL = 0;

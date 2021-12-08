@@ -1,7 +1,7 @@
-const Seek = require('./Seek.js');
-const AudioTrack = require('./AudioTrack.js');
-const VideoTrack = require('./VideoTrack.js');
-const Track = require('./Track.js');
+const Seek = require('./Seek');
+const AudioTrack = require('./AudioTrack');
+const VideoTrack = require('./VideoTrack');
+const Track = require('./Track');
 
 class Tracks {
   constructor(seekHeadHeader, dataInterface, demuxer) {

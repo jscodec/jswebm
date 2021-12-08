@@ -1,5 +1,5 @@
-const Targets = require('./Targets.js');
-const SimpleTag = require('./SimpleTag.js');
+const Targets = require('./Targets');
+const SimpleTag = require('./SimpleTag');
 
 class Tag {
   constructor(tagHeader, dataInterface, demuxer) {

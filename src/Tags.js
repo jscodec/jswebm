@@ -1,4 +1,4 @@
-const Tag = require('./Tag.js');
+const Tag = require('./Tag');
 
 class Tags {
   constructor(tagsHeader, dataInterface) {

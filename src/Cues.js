@@ -1,4 +1,4 @@
-const CueTrackPositions = require('./CueTrackPositions.js');
+const CueTrackPositions = require('./CueTrackPositions');
 
 class Cues {
   constructor(cuesHeader, dataInterface, demuxer) {

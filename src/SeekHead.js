@@ -1,4 +1,4 @@
-const Seek = require('./Seek.js');
+const Seek = require('./Seek');
 
 class SeekHead {
   constructor(seekHeadHeader, dataInterface) {

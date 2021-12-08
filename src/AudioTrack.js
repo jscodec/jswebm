@@ -1,4 +1,4 @@
-const Track = require('./Track.js');
+const Track = require('./Track');
 
 class AudioTrack extends Track {
   constructor(trackHeader, dataInterface) {
