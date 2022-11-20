@@ -106,6 +106,10 @@ class VideoTrack extends Track {
           break;
         }
         default:
+          if (!this.dataInterface.peekBytes(this.currentElement.size))
+            return false;
+          else
+            this.dataInterface.skipBytes(this.currentElement.size);
           console.warn(`Info element not found, skipping: ${this.currentElement.id.toString(16)}`);
           break;
       }
