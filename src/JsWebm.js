@@ -284,6 +284,9 @@ class JsWebm {
             this.validateMetadata();
             return true;
           }
+          // this hack only works for one Cluster webm videos. We need to remove from library element size dependence due to https://w3c.github.io/mse-byte-stream-format-webm/#webm-init-segments
+          if(this.tempElementHeader.size===-1)this.tempElementHeader.size = this.dataInterface.currentBuffer.byteLength-this.dataInterface.offset;
+          if(this.tempElementHeader.end-this.dataInterface.offset===-1)this.tempElementHeader.end = this.dataInterface.currentBuffer.byteLength;
           if (!this.currentCluster) {
             this.currentCluster = new Cluster(
               this.tempElementHeader.offset,
@@ -422,6 +425,9 @@ class JsWebm {
 
     switch (this.currentElement.id) {
       case 0x18538067: // Segment
+        // this hack only works for one segment webm videos. We need to remove from library element size dependence due to https://w3c.github.io/mse-byte-stream-format-webm/#webm-init-segments
+        if(this.currentElement.size===-1)this.currentElement.size = dataInterface.currentBuffer.byteLength-dataInterface.offset;
+        if(this.currentElement.end-dataInterface.offset===-1)this.currentElement.end = dataInterface.currentBuffer.byteLength;
         this.segment = this.currentElement;
         break;
       case 0xEC: // void
